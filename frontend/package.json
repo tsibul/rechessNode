@@ -1,0 +1,46 @@
+{
+  "name": "rechess-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "dev_ssg": "vite-ssg build && vite preview --port 3000",
+    "build": "vite-ssg build",
+    "preview": "vite preview",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest watch",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs",
+    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore"
+  },
+  "dependencies": {
+    "@types/js-cookie": "^3.0.6",
+    "@vueuse/components": "^13.5.0",
+    "@vueuse/core": "^10.9.0",
+    "axios": "^1.6.7",
+    "js-cookie": "^3.0.5",
+    "pinia": "^2.1.7",
+    "vue": "^3.4.21",
+    "vue-router": "^4.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.24",
+    "@vitejs/plugin-vue": "^6.0.0",
+    "@vue/compiler-sfc": "^3.5.17",
+    "@vue/eslint-config-typescript": "^12.0.0",
+    "@vue/test-utils": "^2.4.4",
+    "eslint": "^8.57.0",
+    "eslint-plugin-vue": "^9.22.0",
+    "sass": "^1.63.6",
+    "typescript": "^5.3.3",
+    "vite": "^7.0.4",
+    "vite-plugin-pages": "^0.33.1",
+    "vite-ssg": "^28.0.0",
+    "vitest": "^3.2.4",
+    "vue-tsc": "^3.0.1"
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "source": {
+    "include": ["src"],
+    "includePattern": ".+\\.(js|ts)$",
+    "excludePattern": "(node_modules/|docs/|__tests__/)"
+  },
+  "plugins": [
+    "plugins/markdown",
+    "node_modules/jsdoc-tsimport-plugin/dist/index",
+    "node_modules/better-docs/typescript"
+  ],
+  "opts": {
+    "encoding": "utf8",
+    "destination": "./docs/",
+    "recurse": true,
+    "verbose": true,
+    "template": "node_modules/better-docs"
+  },
+  "templates": {
+    "cleverLinks": false,
+    "monospaceLinks": false,
+    "search": true,
+    "better-docs": {
+      "name": "ReChess Backend API Documentation",
+      "title": "ReChess Backend API Documentation",
+      "css": "style.css",
+      "trackingCode": "",
+      "hideGenerator": false,
+      "navigation": [
+        {
+          "label": "Github",
+          "href": "https://github.com/your-username/rechess"
+        }
+      ]
+    }
+  },
+  "markdown": {
+    "hardwrap": false,
+    "idInHeadings": true
+  },
+  "typescript": {
+    "moduleRoot": "src"
+  }
+} 
