@@ -18,8 +18,8 @@
 
 <style lang="scss">
 // Подключение переменных и миксинов
-@import './styles/vars';
-@import './styles/mixins';
+@use './styles/vars' as *;
+@use './styles/mixins' as *;
 
 // Подключение шрифтов
 @font-face {
