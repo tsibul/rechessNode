@@ -1,1 +1,0 @@
-import{d as e,c as o,o as t,_ as s}from"./app-B86ni01K.js";const a={class:"about-page"},_=e({__name:"About",setup(c){return(n,p)=>(t(),o("div",a))}}),d=s(_,[["__scopeId","data-v-84149632"]]);export{d as default};

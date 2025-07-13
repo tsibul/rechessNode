@@ -1,0 +1,1 @@
+import{d as a,c as t,o,g as s,_ as n}from"./app-CJXa9zXu.js";const c={class:"cabinet-page"},r=a({__name:"Cabinet",setup(_){return(l,e)=>(o(),t("div",c,e[0]||(e[0]=[s("div",{class:"profile"},null,-1),s("div",{class:"orders"},null,-1)])))}}),i=n(r,[["__scopeId","data-v-8364fe0a"]]);export{i as default};

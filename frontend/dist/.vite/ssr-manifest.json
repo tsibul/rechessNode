@@ -44,16 +44,16 @@
     "/assets/pragmatica_medium-DPPWQ33b.woff2"
   ],
   "node_modules/@vueuse/head/node_modules/@unhead/vue/dist/shared/vue.-sixQ7xP.mjs": [
-    "/assets/Index-B3aYsH6L.js",
-    "/assets/Index-DZU9m4SL.css"
+    "/assets/Index-YoJTEkEX.js",
+    "/assets/Index-crHgGhNg.css"
   ],
   "node_modules/@vueuse/head/node_modules/@unhead/vue/dist/shared/vue.ziyDaVMR.mjs": [
-    "/assets/Index-B3aYsH6L.js",
-    "/assets/Index-DZU9m4SL.css"
+    "/assets/Index-YoJTEkEX.js",
+    "/assets/Index-crHgGhNg.css"
   ],
   "node_modules/@vueuse/head/node_modules/unhead/dist/index.mjs": [
-    "/assets/Index-B3aYsH6L.js",
-    "/assets/Index-DZU9m4SL.css"
+    "/assets/Index-YoJTEkEX.js",
+    "/assets/Index-crHgGhNg.css"
   ],
   "node_modules/axios/index.js": [
     "/assets/pragmatica_medium-Bttpa7kS.woff",
@@ -322,7 +322,7 @@
     "/assets/pragmatica_medium-Bttpa7kS.woff",
     "/assets/pragmatica_medium-DPPWQ33b.woff2"
   ],
-  "src/components/floating/CartBadge.vue?vue&type=style&index=0&scoped=17a86e66&lang.scss": [
+  "src/components/floating/CartBadge.vue?vue&type=style&index=0&scoped=4f54f192&lang.scss": [
     "/assets/pragmatica_medium-Bttpa7kS.woff",
     "/assets/pragmatica_medium-DPPWQ33b.woff2"
   ],
@@ -339,119 +339,119 @@
     "/assets/pragmatica_medium-DPPWQ33b.woff2"
   ],
   "src/components/layout/Footer.vue": [
-    "/assets/Index-B3aYsH6L.js",
-    "/assets/Index-DZU9m4SL.css"
+    "/assets/Index-YoJTEkEX.js",
+    "/assets/Index-crHgGhNg.css"
   ],
   "src/components/layout/Footer.vue?vue&type=script&setup=true&lang.ts": [
-    "/assets/Index-B3aYsH6L.js",
-    "/assets/Index-DZU9m4SL.css"
+    "/assets/Index-YoJTEkEX.js",
+    "/assets/Index-crHgGhNg.css"
   ],
   "src/components/layout/Footer.vue?vue&type=style&index=0&scoped=1b0a3a31&lang.scss": [
-    "/assets/Index-B3aYsH6L.js",
-    "/assets/Index-DZU9m4SL.css"
+    "/assets/Index-YoJTEkEX.js",
+    "/assets/Index-crHgGhNg.css"
   ],
   "src/components/layout/Header.vue": [
-    "/assets/Index-B3aYsH6L.js",
-    "/assets/Index-DZU9m4SL.css"
+    "/assets/Index-YoJTEkEX.js",
+    "/assets/Index-crHgGhNg.css"
   ],
   "src/components/layout/Header.vue?vue&type=script&setup=true&lang.ts": [
-    "/assets/Index-B3aYsH6L.js",
-    "/assets/Index-DZU9m4SL.css"
+    "/assets/Index-YoJTEkEX.js",
+    "/assets/Index-crHgGhNg.css"
   ],
   "src/components/layout/Header.vue?vue&type=style&index=0&scoped=7ba2ab09&lang.scss": [
-    "/assets/Index-B3aYsH6L.js",
-    "/assets/Index-DZU9m4SL.css"
+    "/assets/Index-YoJTEkEX.js",
+    "/assets/Index-crHgGhNg.css"
   ],
   "src/components/layout/StaticPage.vue": [
-    "/assets/Index-B3aYsH6L.js",
-    "/assets/Index-DZU9m4SL.css"
+    "/assets/Index-YoJTEkEX.js",
+    "/assets/Index-crHgGhNg.css"
   ],
   "src/components/layout/StaticPage.vue?vue&type=script&setup=true&lang.ts": [
-    "/assets/Index-B3aYsH6L.js",
-    "/assets/Index-DZU9m4SL.css"
+    "/assets/Index-YoJTEkEX.js",
+    "/assets/Index-crHgGhNg.css"
   ],
-  "src/components/layout/StaticPage.vue?vue&type=style&index=0&scoped=343357da&lang.scss": [
-    "/assets/Index-B3aYsH6L.js",
-    "/assets/Index-DZU9m4SL.css"
+  "src/components/layout/StaticPage.vue?vue&type=style&index=0&scoped=c7a64347&lang.scss": [
+    "/assets/Index-YoJTEkEX.js",
+    "/assets/Index-crHgGhNg.css"
   ],
   "src/main.ts": [
     "/assets/pragmatica_medium-Bttpa7kS.woff",
     "/assets/pragmatica_medium-DPPWQ33b.woff2"
   ],
   "src/pages/dynamic/Cabinet.vue": [
-    "/assets/Cabinet-B4lHnAQb.js",
+    "/assets/Cabinet-DPhX0-WI.js",
     "/assets/Shop-tn0RQdqM.css"
   ],
   "src/pages/dynamic/Cabinet.vue?vue&type=script&setup=true&lang.ts": [
-    "/assets/Cabinet-B4lHnAQb.js",
+    "/assets/Cabinet-DPhX0-WI.js",
     "/assets/Shop-tn0RQdqM.css"
   ],
   "src/pages/dynamic/Cabinet.vue?vue&type=style&index=0&scoped=8364fe0a&lang.scss": [
-    "/assets/Cabinet-B4lHnAQb.js",
+    "/assets/Cabinet-DPhX0-WI.js",
     "/assets/Shop-tn0RQdqM.css"
   ],
   "src/pages/dynamic/Cart.vue": [
-    "/assets/Cart-BbV2hi6m.js",
+    "/assets/Cart-Cs_T7csO.js",
     "/assets/Shop-tn0RQdqM.css"
   ],
   "src/pages/dynamic/Cart.vue?vue&type=script&setup=true&lang.ts": [
-    "/assets/Cart-BbV2hi6m.js",
+    "/assets/Cart-Cs_T7csO.js",
     "/assets/Shop-tn0RQdqM.css"
   ],
   "src/pages/dynamic/Cart.vue?vue&type=style&index=0&scoped=22c5b178&lang.scss": [
-    "/assets/Cart-BbV2hi6m.js",
+    "/assets/Cart-Cs_T7csO.js",
     "/assets/Shop-tn0RQdqM.css"
   ],
   "src/pages/static/about/About.vue": [
-    "/assets/About-DEFLskcd.js",
+    "/assets/About-BFkO3CZi.js",
     "/assets/Shop-tn0RQdqM.css"
   ],
   "src/pages/static/about/About.vue?vue&type=script&setup=true&lang.ts": [
-    "/assets/About-DEFLskcd.js",
+    "/assets/About-BFkO3CZi.js",
     "/assets/Shop-tn0RQdqM.css"
   ],
   "src/pages/static/about/About.vue?vue&type=style&index=0&scoped=84149632&lang.scss": [
-    "/assets/About-DEFLskcd.js",
+    "/assets/About-BFkO3CZi.js",
     "/assets/Shop-tn0RQdqM.css"
   ],
   "src/pages/static/index/Index.vue": [
-    "/assets/Index-B3aYsH6L.js",
-    "/assets/Index-DZU9m4SL.css"
+    "/assets/Index-YoJTEkEX.js",
+    "/assets/Index-crHgGhNg.css"
   ],
   "src/pages/static/index/Index.vue?vue&type=script&setup=true&lang.ts": [
-    "/assets/Index-B3aYsH6L.js",
-    "/assets/Index-DZU9m4SL.css"
+    "/assets/Index-YoJTEkEX.js",
+    "/assets/Index-crHgGhNg.css"
   ],
   "src/pages/static/index/Index.vue?vue&type=style&index=0&scoped=2be30cb4&lang.scss": [
-    "/assets/Index-B3aYsH6L.js",
-    "/assets/Index-DZU9m4SL.css"
+    "/assets/Index-YoJTEkEX.js",
+    "/assets/Index-crHgGhNg.css"
   ],
   "src/pages/static/index/content/IndexContent.vue": [
-    "/assets/Index-B3aYsH6L.js",
-    "/assets/Index-DZU9m4SL.css"
+    "/assets/Index-YoJTEkEX.js",
+    "/assets/Index-crHgGhNg.css"
   ],
   "src/pages/static/index/content/IndexContent.vue?vue&type=script&setup=true&lang.ts": [
-    "/assets/Index-B3aYsH6L.js",
-    "/assets/Index-DZU9m4SL.css"
+    "/assets/Index-YoJTEkEX.js",
+    "/assets/Index-crHgGhNg.css"
   ],
-  "src/pages/static/index/content/IndexContent.vue?vue&type=style&index=0&scoped=5fd65a9b&lang.scss": [
-    "/assets/Index-B3aYsH6L.js",
-    "/assets/Index-DZU9m4SL.css"
+  "src/pages/static/index/content/IndexContent.vue?vue&type=style&index=0&scoped=7b7d0e27&lang.scss": [
+    "/assets/Index-YoJTEkEX.js",
+    "/assets/Index-crHgGhNg.css"
   ],
   "src/pages/static/index/seo/IndexSeo.vue?vue&type=script&setup=true&lang.ts": [
-    "/assets/Index-B3aYsH6L.js",
-    "/assets/Index-DZU9m4SL.css"
+    "/assets/Index-YoJTEkEX.js",
+    "/assets/Index-crHgGhNg.css"
   ],
   "src/pages/static/shop/Shop.vue": [
-    "/assets/Shop-DhbSayyu.js",
+    "/assets/Shop-emqUPecs.js",
     "/assets/Shop-tn0RQdqM.css"
   ],
   "src/pages/static/shop/Shop.vue?vue&type=script&setup=true&lang.ts": [
-    "/assets/Shop-DhbSayyu.js",
+    "/assets/Shop-emqUPecs.js",
     "/assets/Shop-tn0RQdqM.css"
   ],
   "src/pages/static/shop/Shop.vue?vue&type=style&index=0&scoped=9a291ad8&lang.scss": [
-    "/assets/Shop-DhbSayyu.js",
+    "/assets/Shop-emqUPecs.js",
     "/assets/Shop-tn0RQdqM.css"
   ],
   "src/router/index.ts": [

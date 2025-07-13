@@ -1,0 +1,1 @@
+import{d as o,c as a,o as t,g as e,_ as n}from"./app-CJXa9zXu.js";const c={class:"shop-page"},p=o({__name:"Shop",setup(_){return(d,s)=>(t(),a("div",c,s[0]||(s[0]=[e("div",{class:"cabinet-link"},null,-1),e("div",{class:"products"},null,-1)])))}}),r=n(p,[["__scopeId","data-v-9a291ad8"]]);export{r as default};
