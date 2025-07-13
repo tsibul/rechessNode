@@ -2,3 +2,9 @@
   border: solid 1px transparent;
   border-radius: 10px;
 }
+
+@mixin flex-center(){
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
