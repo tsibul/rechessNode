@@ -1,1 +1,0 @@
-import{d as t,c as e,o as c,g as a,_ as o}from"./app-YNXCYJFP.js";const r={class:"cart-page"},n=t({__name:"Cart",setup(_){return(l,s)=>(c(),e("div",r,s[0]||(s[0]=[a("div",{class:"cart-items"},null,-1),a("div",{class:"cart-summary"},null,-1)])))}}),p=o(n,[["__scopeId","data-v-22c5b178"]]);export{p as default};
