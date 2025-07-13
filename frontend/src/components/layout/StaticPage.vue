@@ -6,8 +6,8 @@
  */
 -->
 <script setup lang="ts">
-import Header from '@/components/shared/header/Header.vue'
-import Footer from '@/components/shared/footer/Footer.vue'
+import Header from '@/components/layout/Header.vue'
+import Footer from '@/components/layout/Footer.vue'
 
 // Props
 defineProps<{
@@ -19,7 +19,7 @@ defineProps<{
   <div class="static-page">
     <!-- SEO -->
     <component :is="seoComponent" v-if="seoComponent" />
-    
+
     <!-- Header -->
     <Header />
 
@@ -43,4 +43,4 @@ defineProps<{
 .content {
   flex: 1;
 }
-</style> 
+</style>
