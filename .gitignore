@@ -63,7 +63,6 @@ coverage
 
 # System files
 Thumbs.db
-.DS_Store
 *.pem
 
 # Debug files
@@ -77,4 +76,4 @@ debug.log
 # Optional: Backup files
 *.bak
 *.backup
-*~ 
+*~
