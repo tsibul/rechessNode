@@ -16,59 +16,64 @@
   </div>
 </template>
 
-<style>
-/* Global styles */
-.app {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+<style lang="scss">
+// Подключение переменных и миксинов
+@import './styles/vars';
+@import './styles/mixins';
+
+// Подключение шрифтов
+@font-face {
+  font-family: 'PragmaticaWebMedium';
+  src: url('./assets/fonts/pragmatica_medium.woff') format('woff'),
+  url('./assets/fonts/pragmatica_medium.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
 }
+
+/* Global styles */
 
 /* Reset default styles */
 * {
-  margin: 0;
+  font-family: 'PragmaticaWebMedium', sans-serif;
   padding: 0;
+  margin: 0;
+  font-size: 17px;
+  line-height: 19px;
   box-sizing: border-box;
-}
+  background-color: $colorNeutral100;
 
-/* Base typography */
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  line-height: 1.5;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  &::selection {
+    color: $colorNeutral100;
+    background-color: $colorPrimary900;
+  }
 }
 
 /* Responsive container */
 .container {
-  width: 100%;
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 0 1rem;
+  max-width: $displayWidth;
+  height: 100%;
 }
 
-/* Utility classes */
-.text-center {
-  text-align: center;
+a {
+  text-decoration: none;
+  color: $colorPrimary900;
+  border-color: transparent;
 }
 
-.flex {
-  display: flex;
+nav {
+  background-color: transparent;
 }
 
-.flex-col {
-  flex-direction: column;
+li {
+  list-style: none
 }
 
-.items-center {
-  align-items: center;
+
+@media(max-width: 660px) {
+  * {
+    font-size: 16px;
+    line-height: 18px;
+  }
 }
 
-.justify-center {
-  justify-content: center;
-}
-
-.gap-4 {
-  gap: 1rem;
-}
-</style> 
+</style>
