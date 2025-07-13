@@ -42,5 +42,7 @@ defineProps<{
 
 .content {
   flex: 1;
+  padding-top: 70px;
+  margin-bottom: 44px;
 }
 </style>
