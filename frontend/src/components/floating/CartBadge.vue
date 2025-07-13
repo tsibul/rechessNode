@@ -5,8 +5,8 @@
  */
 -->
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useCartStore } from '@/store/cart'
+import {computed} from 'vue'
+import {useCartStore} from '@/store/cart'
 
 const cartStore = useCartStore()
 const itemCount = computed(() => cartStore.totalItems())
@@ -14,27 +14,34 @@ const itemCount = computed(() => cartStore.totalItems())
 
 <template>
   <div class="cart-badge" data-testid="cart-badge">
-    {{ itemCount }}
+    ({{ itemCount }})
   </div>
 </template>
 
-<style scoped>
+<style lang="scss" scoped>
+@use '../../styles/vars' as *;
+@use '../../styles/mixins' as *;
+
+
 .cart-badge {
   position: fixed;
-  top: 1rem;
-  right: 1rem;
-  background-color: #e53e3e;
-  color: white;
-  border-radius: 9999px;
-  padding: 0.25rem 0.75rem;
-  font-size: 0.875rem;
-  font-weight: 600;
-  z-index: 50;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s;
-}
+  bottom: 30px;
+  right: 30px;
+  background-color: $colorPrimary500;
+  color: $colorPrimary900;
+  border-radius: 23px;
+  width: 46px;
+  height: 46px;
+  @include flex-center;
+  font-size: 17px;
+  line-height: 19px;
+  z-index: 1000;
+  transition: background-color 0.2s;
 
-.cart-badge:hover {
-  transform: scale(1.1);
+
+  &:hover {
+    background-color: $colorPrimary900;
+    color: white;
+  }
 }
-</style> 
+</style>

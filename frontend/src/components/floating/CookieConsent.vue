@@ -49,30 +49,30 @@ async function acceptCookies() {
       data-testid="cookie-consent"
   >
     <div class="cookie-consent__content">
-    <p class="cookie-consent__text">
-      Мы используем cookies для улучшения работы сайта и сохранения ваших предпочтений
-    </p>
-    <div class="cookie-consent__buttons">
-      <button
-          @click="acceptCookies"
-          class="accept-button"
-      >
-        Ок
-      </button>
-      <!--      <button-->
-      <!--        @click="rejectCookies"-->
-      <!--        class="reject-button"-->
-      <!--      >-->
-      <!--        Reject-->
-      <!--      </button>-->
-    </div>
+      <p class="cookie-consent__text">
+        Этот сайт использует файлы cookie
+      </p>
+      <div class="cookie-consent__buttons">
+        <button
+            @click="acceptCookies"
+            class="accept-button"
+        >
+          Ок
+        </button>
+        <!--      <button-->
+        <!--        @click="rejectCookies"-->
+        <!--        class="reject-button"-->
+        <!--      >-->
+        <!--        Reject-->
+        <!--      </button>-->
+      </div>
     </div>
   </div>
 </template>
 
 <style lang="scss" scoped>
 @use '../../styles/vars' as *;
-
+@use '../../styles/mixins' as *;
 
 .cookie-consent {
   position: fixed;
@@ -83,7 +83,7 @@ async function acceptCookies() {
   align-items: center;
   background-color: transparent;
   padding: 1rem;
-  z-index: 1000;
+  z-index: 100;
 
   &__content {
     background-color: transparent;
@@ -108,16 +108,20 @@ async function acceptCookies() {
 .reject-button {
   font-size: 14px;
   line-height: 19px;
-  padding: 0.2rem 0.5rem;
+  //padding: 0.2rem 0.5rem;
   background: $colorPrimary500;
-  color: white;
+  color: $colorPrimary900;
   border: none;
-  border-radius: 4px;
+  border-radius: 5px;
   cursor: pointer;
+  width: 43px;
+  height: 30px;
+  @include flex-center();
   transition: background 0.2s;
 
   &:hover {
     background: $colorPrimary900;
+    color: white;
   }
 }
 
