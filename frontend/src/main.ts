@@ -6,7 +6,6 @@
 
 import { ViteSSG } from 'vite-ssg'
 import type { RouteLocationNormalized, NavigationGuardNext } from 'vue-router'
-import type { UserModule } from 'vite-ssg'
 import App from './App.vue'
 import { routes } from './router'
 import { createPinia } from 'pinia'
@@ -22,9 +21,11 @@ import './clientComponents'
 export const createApp = ViteSSG(
   App,
   { routes },
-  async ({ app, router, isClient }: UserModule) => {
+  async ({ app, router, isClient }) => {
     const pinia = createPinia()
     app.use(pinia)
+
+
 
     const appStore = useAppStore()
     appStore.setIsClient(isClient)
