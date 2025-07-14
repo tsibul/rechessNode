@@ -9,7 +9,7 @@ export function validateAddress(address?: string): boolean {
   if (!address || address.trim() === '') {
     return false
   }
-  
-  const addressRegex = /^[а-яёА-ЯЁa-zA-Z0-9\s\-.,""'']+$/
+
+  const addressRegex = /^[а-яёА-ЯЁa-zA-Z0-9\s\-.,"']+$/
   return addressRegex.test(address)
-} 
+}
