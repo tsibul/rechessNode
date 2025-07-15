@@ -14,15 +14,21 @@ config()
 
 // Import knexfile configuration
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const knexConfig = require(path.join(process.cwd(), 'knexfile')) as { [key: string]: Knex.Config }
+const knexConfig = require(path.join(process.cwd(), 'knexfile')).default as { [key: string]: Knex.Config }
 
 // Determine current environment
 const environment = process.env.NODE_ENV || 'development'
+
+console.log('Environment:', environment)
+console.log('Available configs:', Object.keys(knexConfig))
 
 /**
  * Knex instance for database operations using environment-specific configuration
  */
 export const db = knex(knexConfig[environment])
+
+// Export knex for testing purposes
+export { knex }
 
 /**
  * Initialize database connection
