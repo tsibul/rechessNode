@@ -1,5 +1,5 @@
 import { BaseSettings } from './BaseSettings'
-import { ShopsRow } from '../types/shops.types'
+import { ShopsRow } from '../types'
 
 /**
  * Shops validation and business logic for Knex Shops model
@@ -33,7 +33,7 @@ export class Shops extends BaseSettings {
     if (!address || address.trim() === '') {
       return false
     }
-    
+
     const addressRegex = /^[а-яёА-ЯЁa-zA-Z0-9\s\-.,""'']+$/
     return addressRegex.test(address)
   }
@@ -45,7 +45,7 @@ export class Shops extends BaseSettings {
     if (!phone || phone.trim() === '') {
       return true // Empty is valid
     }
-    
+
     const phoneRegex = /^\+?[0-9\s\(\)]+$/
     return phoneRegex.test(phone)
   }
@@ -57,7 +57,7 @@ export class Shops extends BaseSettings {
     if (!website || website.trim() === '') {
       return true // Empty is valid
     }
-    
+
     const websiteRegex = /^https?:\/\/[^\s/$.?#].[^\s]*$/
     return websiteRegex.test(website)
   }
@@ -65,15 +65,15 @@ export class Shops extends BaseSettings {
   /**
    * Validate all shops data
    */
-  public validate(data: { 
-    name?: string; 
-    address?: string; 
-    phone?: string | null; 
-    web_site?: string | null 
+  public validate(data: {
+    name?: string;
+    address?: string;
+    phone?: string | null;
+    web_site?: string | null
   }): boolean {
-    return this.validateName(data.name) && 
-           this.validateAddress(data.address) && 
-           this.validatePhone(data.phone) && 
+    return this.validateName(data.name) &&
+           this.validateAddress(data.address) &&
+           this.validatePhone(data.phone) &&
            this.validateWebsite(data.web_site)
   }
 
@@ -83,4 +83,4 @@ export class Shops extends BaseSettings {
   public getVerboseName(): string {
     return `Магазин`
   }
-} 
+}
