@@ -53,6 +53,15 @@ export const routes: RouteRecordRaw[] = [
     meta: {
       title: 'ReChess - Cabinet'
     }
+  },
+  {
+    path: '/cms',
+    name: 'cms',
+    component: () => import('../pages/dynamic/CMS.vue'),
+    meta: {
+      title: 'ReChess - CMS',
+      isCMS: true
+    }
   }
 ]
 
