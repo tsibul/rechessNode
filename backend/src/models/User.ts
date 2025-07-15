@@ -1,5 +1,5 @@
 import { BaseSettings } from './BaseSettings'
-import { UserRow } from '../types/user.types'
+import { UserRow } from '../types'
 
 /**
  * User validation and business logic for Knex User model (CMS administrators)
@@ -25,7 +25,7 @@ export class User extends BaseSettings {
   /**
    * Validate name: not null and not empty
    */
-  private validateName(name?: string): boolean {
+  protected validateName(name?: string): boolean {
     if (!name || name.trim() === '') {
       return false
     }
@@ -39,7 +39,7 @@ export class User extends BaseSettings {
     if (!login || login.trim() === '') {
       return false
     }
-    
+
     const loginRegex = /^[a-zA-Z0-9_]+$/
     return loginRegex.test(login) && login.length >= 3
   }
@@ -57,13 +57,13 @@ export class User extends BaseSettings {
   /**
    * Validate all user data
    */
-  public validate(data: { 
-    name?: string; 
-    login?: string; 
-    password?: string 
+  public validate(data: {
+    name?: string;
+    login?: string;
+    password?: string
   }): boolean {
-    return this.validateName(data.name) && 
-           this.validateLogin(data.login) && 
+    return this.validateName(data.name) &&
+           this.validateLogin(data.login) &&
            this.validatePassword(data.password)
   }
 
@@ -73,4 +73,4 @@ export class User extends BaseSettings {
   public getVerboseName(): string {
     return `Администратор`
   }
-} 
+}
