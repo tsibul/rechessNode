@@ -1,17 +1,19 @@
 import type { Knex } from "knex";
 import dotenv from 'dotenv';
+import path from 'path';
 
-dotenv.config();
+// Загружаем .env файл из корневой папки проекта
+dotenv.config({ path: path.join(__dirname, '.env') });
 
 const config: { [key: string]: Knex.Config } = {
   development: {
     client: "mysql2",
     connection: {
-      host: process.env.DB_HOST || 'localhost',
-      port: Number(process.env.DB_PORT) || 3306,
-      database: process.env.DB_NAME || 'rechess_dev',
-      user: process.env.DB_USER || 'root',
-      password: process.env.DB_PASSWORD || '',
+      host: process.env.DB_HOST,
+      port: 3306,
+      database: process.env.DB_NAME,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
     },
     migrations: {
       directory: "./src/db/migrations",
@@ -24,11 +26,11 @@ const config: { [key: string]: Knex.Config } = {
   test: {
     client: "mysql2",
     connection: {
-      host: process.env.TEST_DB_HOST || 'localhost',
-      port: Number(process.env.TEST_DB_PORT) || 3306,
-      database: process.env.TEST_DB_NAME || 'rechess_test',
-      user: process.env.TEST_DB_USER || 'root',
-      password: process.env.TEST_DB_PASSWORD || '',
+      host: process.env.DB_HOST,
+      port: 3306,
+      database: process.env.DB_NAME,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
     },
     migrations: {
       directory: "./src/db/migrations",
@@ -42,7 +44,7 @@ const config: { [key: string]: Knex.Config } = {
     client: "mysql2",
     connection: {
       host: process.env.DB_HOST,
-      port: Number(process.env.DB_PORT),
+      port: 3306,
       database: process.env.DB_NAME,
       user: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
@@ -56,4 +58,4 @@ const config: { [key: string]: Knex.Config } = {
   },
 };
 
-export default config; 
+export default config;
