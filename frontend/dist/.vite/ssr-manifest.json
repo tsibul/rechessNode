@@ -44,15 +44,15 @@
     "/assets/pragmatica_medium-DPPWQ33b.woff2"
   ],
   "node_modules/@vueuse/head/node_modules/@unhead/vue/dist/shared/vue.-sixQ7xP.mjs": [
-    "/assets/Index-YoJTEkEX.js",
+    "/assets/Index-CxmEnuCk.js",
     "/assets/Index-crHgGhNg.css"
   ],
   "node_modules/@vueuse/head/node_modules/@unhead/vue/dist/shared/vue.ziyDaVMR.mjs": [
-    "/assets/Index-YoJTEkEX.js",
+    "/assets/Index-CxmEnuCk.js",
     "/assets/Index-crHgGhNg.css"
   ],
   "node_modules/@vueuse/head/node_modules/unhead/dist/index.mjs": [
-    "/assets/Index-YoJTEkEX.js",
+    "/assets/Index-CxmEnuCk.js",
     "/assets/Index-crHgGhNg.css"
   ],
   "node_modules/axios/index.js": [
@@ -314,6 +314,106 @@
     "/assets/pragmatica_medium-Bttpa7kS.woff",
     "/assets/pragmatica_medium-DPPWQ33b.woff2"
   ],
+  "src/components/cms/CMSettingsComponent.vue": [
+    "/assets/CMS-BkDRHgxP.js",
+    "/assets/CMS-Ce2yX-ip.css"
+  ],
+  "src/components/cms/CMSettingsComponent.vue?vue&type=script&setup=true&lang.ts": [
+    "/assets/CMS-BkDRHgxP.js",
+    "/assets/CMS-Ce2yX-ip.css"
+  ],
+  "src/components/cms/CMSettingsComponent.vue?vue&type=style&index=0&scoped=3af2d6d3&lang.scss": [
+    "/assets/CMS-BkDRHgxP.js",
+    "/assets/CMS-Ce2yX-ip.css"
+  ],
+  "src/components/cms/CartComponent.vue": [
+    "/assets/CMS-BkDRHgxP.js",
+    "/assets/CMS-Ce2yX-ip.css"
+  ],
+  "src/components/cms/CartComponent.vue?vue&type=script&setup=true&lang.ts": [
+    "/assets/CMS-BkDRHgxP.js",
+    "/assets/CMS-Ce2yX-ip.css"
+  ],
+  "src/components/cms/CartComponent.vue?vue&type=style&index=0&scoped=ed65b48c&lang.scss": [
+    "/assets/CMS-BkDRHgxP.js",
+    "/assets/CMS-Ce2yX-ip.css"
+  ],
+  "src/components/cms/ClientComponent.vue": [
+    "/assets/CMS-BkDRHgxP.js",
+    "/assets/CMS-Ce2yX-ip.css"
+  ],
+  "src/components/cms/ClientComponent.vue?vue&type=script&setup=true&lang.ts": [
+    "/assets/CMS-BkDRHgxP.js",
+    "/assets/CMS-Ce2yX-ip.css"
+  ],
+  "src/components/cms/ClientComponent.vue?vue&type=style&index=0&scoped=266ab239&lang.scss": [
+    "/assets/CMS-BkDRHgxP.js",
+    "/assets/CMS-Ce2yX-ip.css"
+  ],
+  "src/components/cms/OrderComponent.vue": [
+    "/assets/CMS-BkDRHgxP.js",
+    "/assets/CMS-Ce2yX-ip.css"
+  ],
+  "src/components/cms/OrderComponent.vue?vue&type=script&setup=true&lang.ts": [
+    "/assets/CMS-BkDRHgxP.js",
+    "/assets/CMS-Ce2yX-ip.css"
+  ],
+  "src/components/cms/OrderComponent.vue?vue&type=style&index=0&scoped=3f91e60d&lang.scss": [
+    "/assets/CMS-BkDRHgxP.js",
+    "/assets/CMS-Ce2yX-ip.css"
+  ],
+  "src/components/cms/modals/ColorsModal.vue?vue&type=script&setup=true&lang.ts": [
+    "/assets/CMS-BkDRHgxP.js",
+    "/assets/CMS-Ce2yX-ip.css"
+  ],
+  "src/components/cms/modals/ItemPhotosModal.vue?vue&type=script&setup=true&lang.ts": [
+    "/assets/CMS-BkDRHgxP.js",
+    "/assets/CMS-Ce2yX-ip.css"
+  ],
+  "src/components/cms/modals/ItemsModal.vue?vue&type=script&setup=true&lang.ts": [
+    "/assets/CMS-BkDRHgxP.js",
+    "/assets/CMS-Ce2yX-ip.css"
+  ],
+  "src/components/cms/modals/MainPhotosModal.vue?vue&type=script&setup=true&lang.ts": [
+    "/assets/CMS-BkDRHgxP.js",
+    "/assets/CMS-Ce2yX-ip.css"
+  ],
+  "src/components/cms/modals/ModalWindow.vue": [
+    "/assets/CMS-BkDRHgxP.js",
+    "/assets/CMS-Ce2yX-ip.css"
+  ],
+  "src/components/cms/modals/ModalWindow.vue?vue&type=script&setup=true&lang.ts": [
+    "/assets/CMS-BkDRHgxP.js",
+    "/assets/CMS-Ce2yX-ip.css"
+  ],
+  "src/components/cms/modals/ModalWindow.vue?vue&type=style&index=0&scoped=8e0cff04&lang.scss": [
+    "/assets/CMS-BkDRHgxP.js",
+    "/assets/CMS-Ce2yX-ip.css"
+  ],
+  "src/components/cms/modals/OrderStatesModal.vue?vue&type=script&setup=true&lang.ts": [
+    "/assets/CMS-BkDRHgxP.js",
+    "/assets/CMS-Ce2yX-ip.css"
+  ],
+  "src/components/cms/modals/PricesModal.vue?vue&type=script&setup=true&lang.ts": [
+    "/assets/CMS-BkDRHgxP.js",
+    "/assets/CMS-Ce2yX-ip.css"
+  ],
+  "src/components/cms/modals/SellersModal.vue?vue&type=script&setup=true&lang.ts": [
+    "/assets/CMS-BkDRHgxP.js",
+    "/assets/CMS-Ce2yX-ip.css"
+  ],
+  "src/components/cms/modals/ShopPhotosModal.vue?vue&type=script&setup=true&lang.ts": [
+    "/assets/CMS-BkDRHgxP.js",
+    "/assets/CMS-Ce2yX-ip.css"
+  ],
+  "src/components/cms/modals/ShopsModal.vue?vue&type=script&setup=true&lang.ts": [
+    "/assets/CMS-BkDRHgxP.js",
+    "/assets/CMS-Ce2yX-ip.css"
+  ],
+  "src/components/cms/modals/UsersModal.vue?vue&type=script&setup=true&lang.ts": [
+    "/assets/CMS-BkDRHgxP.js",
+    "/assets/CMS-Ce2yX-ip.css"
+  ],
   "src/components/floating/CartBadge.vue": [
     "/assets/pragmatica_medium-Bttpa7kS.woff",
     "/assets/pragmatica_medium-DPPWQ33b.woff2"
@@ -339,122 +439,138 @@
     "/assets/pragmatica_medium-DPPWQ33b.woff2"
   ],
   "src/components/layout/Footer.vue": [
-    "/assets/Index-YoJTEkEX.js",
+    "/assets/Index-CxmEnuCk.js",
     "/assets/Index-crHgGhNg.css"
   ],
   "src/components/layout/Footer.vue?vue&type=script&setup=true&lang.ts": [
-    "/assets/Index-YoJTEkEX.js",
+    "/assets/Index-CxmEnuCk.js",
     "/assets/Index-crHgGhNg.css"
   ],
   "src/components/layout/Footer.vue?vue&type=style&index=0&scoped=1b0a3a31&lang.scss": [
-    "/assets/Index-YoJTEkEX.js",
+    "/assets/Index-CxmEnuCk.js",
     "/assets/Index-crHgGhNg.css"
   ],
   "src/components/layout/Header.vue": [
-    "/assets/Index-YoJTEkEX.js",
+    "/assets/Index-CxmEnuCk.js",
     "/assets/Index-crHgGhNg.css"
   ],
   "src/components/layout/Header.vue?vue&type=script&setup=true&lang.ts": [
-    "/assets/Index-YoJTEkEX.js",
+    "/assets/Index-CxmEnuCk.js",
     "/assets/Index-crHgGhNg.css"
   ],
   "src/components/layout/Header.vue?vue&type=style&index=0&scoped=7ba2ab09&lang.scss": [
-    "/assets/Index-YoJTEkEX.js",
+    "/assets/Index-CxmEnuCk.js",
     "/assets/Index-crHgGhNg.css"
   ],
   "src/components/layout/StaticPage.vue": [
-    "/assets/Index-YoJTEkEX.js",
+    "/assets/Index-CxmEnuCk.js",
     "/assets/Index-crHgGhNg.css"
   ],
   "src/components/layout/StaticPage.vue?vue&type=script&setup=true&lang.ts": [
-    "/assets/Index-YoJTEkEX.js",
+    "/assets/Index-CxmEnuCk.js",
     "/assets/Index-crHgGhNg.css"
   ],
   "src/components/layout/StaticPage.vue?vue&type=style&index=0&scoped=c7a64347&lang.scss": [
-    "/assets/Index-YoJTEkEX.js",
+    "/assets/Index-CxmEnuCk.js",
     "/assets/Index-crHgGhNg.css"
   ],
   "src/main.ts": [
     "/assets/pragmatica_medium-Bttpa7kS.woff",
     "/assets/pragmatica_medium-DPPWQ33b.woff2"
   ],
+  "src/pages/dynamic/CMS.vue": [
+    "/assets/CMS-BkDRHgxP.js",
+    "/assets/CMS-Ce2yX-ip.css"
+  ],
+  "src/pages/dynamic/CMS.vue?vue&type=script&setup=true&lang.ts": [
+    "/assets/CMS-BkDRHgxP.js",
+    "/assets/CMS-Ce2yX-ip.css"
+  ],
+  "src/pages/dynamic/CMS.vue?vue&type=style&index=0&scoped=d05588db&lang.scss": [
+    "/assets/CMS-BkDRHgxP.js",
+    "/assets/CMS-Ce2yX-ip.css"
+  ],
   "src/pages/dynamic/Cabinet.vue": [
-    "/assets/Cabinet-DPhX0-WI.js",
+    "/assets/Cabinet-C90dAaBk.js",
     "/assets/Shop-tn0RQdqM.css"
   ],
   "src/pages/dynamic/Cabinet.vue?vue&type=script&setup=true&lang.ts": [
-    "/assets/Cabinet-DPhX0-WI.js",
+    "/assets/Cabinet-C90dAaBk.js",
     "/assets/Shop-tn0RQdqM.css"
   ],
   "src/pages/dynamic/Cabinet.vue?vue&type=style&index=0&scoped=8364fe0a&lang.scss": [
-    "/assets/Cabinet-DPhX0-WI.js",
+    "/assets/Cabinet-C90dAaBk.js",
     "/assets/Shop-tn0RQdqM.css"
   ],
   "src/pages/dynamic/Cart.vue": [
-    "/assets/Cart-Cs_T7csO.js",
+    "/assets/Cart-CwoZbkC3.js",
     "/assets/Shop-tn0RQdqM.css"
   ],
   "src/pages/dynamic/Cart.vue?vue&type=script&setup=true&lang.ts": [
-    "/assets/Cart-Cs_T7csO.js",
+    "/assets/Cart-CwoZbkC3.js",
     "/assets/Shop-tn0RQdqM.css"
   ],
   "src/pages/dynamic/Cart.vue?vue&type=style&index=0&scoped=22c5b178&lang.scss": [
-    "/assets/Cart-Cs_T7csO.js",
+    "/assets/Cart-CwoZbkC3.js",
     "/assets/Shop-tn0RQdqM.css"
   ],
   "src/pages/static/about/About.vue": [
-    "/assets/About-BFkO3CZi.js",
+    "/assets/About-DIH4HaOO.js",
     "/assets/Shop-tn0RQdqM.css"
   ],
   "src/pages/static/about/About.vue?vue&type=script&setup=true&lang.ts": [
-    "/assets/About-BFkO3CZi.js",
+    "/assets/About-DIH4HaOO.js",
     "/assets/Shop-tn0RQdqM.css"
   ],
   "src/pages/static/about/About.vue?vue&type=style&index=0&scoped=84149632&lang.scss": [
-    "/assets/About-BFkO3CZi.js",
+    "/assets/About-DIH4HaOO.js",
     "/assets/Shop-tn0RQdqM.css"
   ],
   "src/pages/static/index/Index.vue": [
-    "/assets/Index-YoJTEkEX.js",
+    "/assets/Index-CxmEnuCk.js",
     "/assets/Index-crHgGhNg.css"
   ],
   "src/pages/static/index/Index.vue?vue&type=script&setup=true&lang.ts": [
-    "/assets/Index-YoJTEkEX.js",
+    "/assets/Index-CxmEnuCk.js",
     "/assets/Index-crHgGhNg.css"
   ],
   "src/pages/static/index/Index.vue?vue&type=style&index=0&scoped=2be30cb4&lang.scss": [
-    "/assets/Index-YoJTEkEX.js",
+    "/assets/Index-CxmEnuCk.js",
     "/assets/Index-crHgGhNg.css"
   ],
   "src/pages/static/index/content/IndexContent.vue": [
-    "/assets/Index-YoJTEkEX.js",
+    "/assets/Index-CxmEnuCk.js",
     "/assets/Index-crHgGhNg.css"
   ],
   "src/pages/static/index/content/IndexContent.vue?vue&type=script&setup=true&lang.ts": [
-    "/assets/Index-YoJTEkEX.js",
+    "/assets/Index-CxmEnuCk.js",
     "/assets/Index-crHgGhNg.css"
   ],
   "src/pages/static/index/content/IndexContent.vue?vue&type=style&index=0&scoped=7b7d0e27&lang.scss": [
-    "/assets/Index-YoJTEkEX.js",
+    "/assets/Index-CxmEnuCk.js",
     "/assets/Index-crHgGhNg.css"
   ],
   "src/pages/static/index/seo/IndexSeo.vue?vue&type=script&setup=true&lang.ts": [
-    "/assets/Index-YoJTEkEX.js",
+    "/assets/Index-CxmEnuCk.js",
     "/assets/Index-crHgGhNg.css"
   ],
   "src/pages/static/shop/Shop.vue": [
-    "/assets/Shop-emqUPecs.js",
+    "/assets/Shop-DJFvFS-M.js",
     "/assets/Shop-tn0RQdqM.css"
   ],
   "src/pages/static/shop/Shop.vue?vue&type=script&setup=true&lang.ts": [
-    "/assets/Shop-emqUPecs.js",
+    "/assets/Shop-DJFvFS-M.js",
     "/assets/Shop-tn0RQdqM.css"
   ],
   "src/pages/static/shop/Shop.vue?vue&type=style&index=0&scoped=9a291ad8&lang.scss": [
-    "/assets/Shop-emqUPecs.js",
+    "/assets/Shop-DJFvFS-M.js",
     "/assets/Shop-tn0RQdqM.css"
   ],
   "src/router/index.ts": [
+    "/assets/pragmatica_medium-Bttpa7kS.woff",
+    "/assets/pragmatica_medium-DPPWQ33b.woff2"
+  ],
+  "src/services/clientToken.ts": [
     "/assets/pragmatica_medium-Bttpa7kS.woff",
     "/assets/pragmatica_medium-DPPWQ33b.woff2"
   ],
