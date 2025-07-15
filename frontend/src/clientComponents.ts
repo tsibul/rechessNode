@@ -4,6 +4,7 @@ import CookieConsent from './components/floating/CookieConsent.vue'
 import { createPinia } from 'pinia'
 import { useCartStore } from './store/cart'
 import { useAuthStore } from './store/auth'
+import { clientTokenService } from './services/clientToken'
 
 // Создаем отдельное приложение для клиентских компонентов
 const clientApp = createApp({
@@ -21,8 +22,10 @@ clientApp.use(pinia)
 
 // Монтируем только на клиенте
 if (typeof window !== 'undefined') {
-  // Ждем полной загрузки страницы
-  window.addEventListener('load', () => {
+  window.addEventListener('load', async () => {
+    // Не инициализируем на /cms
+    if (window.location.pathname.startsWith('/cms')) return;
+
     const container = document.getElementById('client-components')
     if (container) {
       clientApp.mount(container)
@@ -34,6 +37,9 @@ if (typeof window !== 'undefined') {
       // Загружаем начальные данные
       cartStore.initializeFromCookies()
       authStore.checkAuth()
+      
+      // Инициализируем клиентский токен
+      await clientTokenService.initialize()
     }
   })
 } 
