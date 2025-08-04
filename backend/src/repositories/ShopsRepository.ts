@@ -1,8 +1,10 @@
 import { db } from '../db'
 import { Shops } from '../models/Shops'
-import { ShopsRow } from '../types/shops.types'
+import { ShopsRow } from '../types'
+import {BaseSettingsRepository} from "./BaseSettingsRepository";
+// import {name} from "nodemon";
 
-export class ShopsRepository {
+export class ShopsRepository extends BaseSettingsRepository{
   static async findById(id: number): Promise<Shops | null> {
     const row = await db('shops').where({ id }).first()
     return row ? new Shops(row) : null
@@ -27,4 +29,8 @@ export class ShopsRepository {
     const rows = await db('shops').where({ deleted: false }).where('name', 'like', `%${name}%`)
     return rows.map(row => new Shops(row))
   }
-} 
+
+  async  getDataForCMS(): Promise<Shops[]> {
+    return await ShopsRepository.findAll();
+  }
+}
