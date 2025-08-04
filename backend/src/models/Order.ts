@@ -42,7 +42,7 @@ export class Order extends BaseSettings {
     if (number === null || number === undefined) {
       return false
     }
-    return typeof number === 'number' && number > 0
+    return number > 0
   }
 
   /**
@@ -52,7 +52,7 @@ export class Order extends BaseSettings {
     if (sum === null || sum === undefined) {
       return false
     }
-    return typeof sum === 'number' && sum > 0
+    return sum > 0
   }
 
   /**
@@ -62,7 +62,7 @@ export class Order extends BaseSettings {
     if (client_id === null || client_id === undefined) {
       return false
     }
-    return typeof client_id === 'number' && client_id > 0
+    return client_id > 0
   }
 
   /**
@@ -72,7 +72,7 @@ export class Order extends BaseSettings {
     if (order_state_id === null || order_state_id === undefined) {
       return false
     }
-    return typeof order_state_id === 'number' && order_state_id > 0
+    return order_state_id > 0
   }
 
   /**
@@ -82,24 +82,24 @@ export class Order extends BaseSettings {
     if (updated_by === null || updated_by === undefined) {
       return true // Null is valid
     }
-    return typeof updated_by === 'number' && updated_by > 0
+    return updated_by > 0
   }
 
   /**
    * Validate all order data
    */
-  public validate(data: { 
-    number?: number; 
-    client_id?: number; 
-    sum?: number; 
-    delivery_address?: string; 
+  public validate(data: {
+    number?: number;
+    client_id?: number;
+    sum?: number;
+    delivery_address?: string;
     order_state_id?: number;
     updated_by?: number | null
   }): boolean {
-    return this.validateNumber(data.number) && 
-           this.validateClientId(data.client_id) && 
-           this.validateSum(data.sum) && 
-           validateAddress(data.delivery_address) && 
+    return this.validateNumber(data.number) &&
+           this.validateClientId(data.client_id) &&
+           this.validateSum(data.sum) &&
+           validateAddress(data.delivery_address) &&
            this.validateOrderStateId(data.order_state_id) &&
            this.validateUpdatedBy(data.updated_by)
   }
@@ -110,4 +110,4 @@ export class Order extends BaseSettings {
   public getVerboseName(): string {
     return `Заказ`
   }
-} 
+}

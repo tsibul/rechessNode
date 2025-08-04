@@ -29,7 +29,7 @@ export class ItemPhoto extends BaseSettings {
     if (priority === null || priority === undefined) {
       return false
     }
-    return typeof priority === 'number' && priority > 0
+    return priority > 0
   }
 
   /**
@@ -39,7 +39,7 @@ export class ItemPhoto extends BaseSettings {
     if (!photo || photo.trim() === '') {
       return false
     }
-    
+
     const photoRegex = /^[a-zA-Z0-9_-]+\.(png|jpg|webp)$/
     return photoRegex.test(photo)
   }
@@ -51,7 +51,7 @@ export class ItemPhoto extends BaseSettings {
     if (item_id === null || item_id === undefined) {
       return false
     }
-    return typeof item_id === 'number' && item_id > 0
+    return item_id > 0
   }
 
   /**
@@ -67,4 +67,4 @@ export class ItemPhoto extends BaseSettings {
   public getVerboseName(): string {
     return `Фото продукта`
   }
-} 
+}

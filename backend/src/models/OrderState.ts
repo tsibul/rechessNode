@@ -25,7 +25,7 @@ export class OrderState extends BaseSettings {
     if (priority === null || priority === undefined) {
       return false
     }
-    return typeof priority === 'number' && priority > 0
+    return priority > 0
   }
 
   /**
@@ -41,4 +41,4 @@ export class OrderState extends BaseSettings {
   public getVerboseName(): string {
     return `Статус заказа`
   }
-} 
+}

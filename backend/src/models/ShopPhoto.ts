@@ -27,7 +27,7 @@ export class ShopPhoto extends BaseSettings {
     if (priority === null || priority === undefined) {
       return false
     }
-    return typeof priority === 'number' && priority > 0
+    return priority > 0
   }
 
   /**
@@ -37,7 +37,7 @@ export class ShopPhoto extends BaseSettings {
     if (!photo || photo.trim() === '') {
       return false
     }
-    
+
     const photoRegex = /^[a-zA-Z0-9_-]+\.(png|jpg|webp)$/
     return photoRegex.test(photo)
   }
@@ -53,7 +53,6 @@ export class ShopPhoto extends BaseSettings {
    * Return human-readable name
    */
   public getVerboseName(): string {
-    return `Фото магазина`
+    return `Фото для магазина`
   }
 }
- 

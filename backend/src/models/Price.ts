@@ -27,7 +27,7 @@ export class Price extends BaseSettings {
     if (price === null || price === undefined) {
       return false
     }
-    return typeof price === 'number' && Number.isInteger(price) && price > 0
+    return Number.isInteger(price) && price > 0
   }
 
   /**
@@ -43,4 +43,4 @@ export class Price extends BaseSettings {
   public getVerboseName(): string {
     return `Цена`
   }
-} 
+}

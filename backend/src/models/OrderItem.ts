@@ -27,7 +27,7 @@ export class OrderItem extends BaseSettings {
     if (item_id === null || item_id === undefined) {
       return false
     }
-    return typeof item_id === 'number' && item_id > 0
+    return item_id > 0
   }
 
   /**
@@ -37,7 +37,7 @@ export class OrderItem extends BaseSettings {
     if (quantity === null || quantity === undefined) {
       return false
     }
-    return typeof quantity === 'number' && quantity > 0
+    return quantity > 0
   }
 
   /**
@@ -47,19 +47,19 @@ export class OrderItem extends BaseSettings {
     if (order_id === null || order_id === undefined) {
       return false
     }
-    return typeof order_id === 'number' && order_id > 0
+    return order_id > 0
   }
 
   /**
    * Validate all order item data
    */
-  public validate(data: { 
-    item_id?: number; 
-    quantity?: number; 
-    order_id?: number 
+  public validate(data: {
+    item_id?: number;
+    quantity?: number;
+    order_id?: number
   }): boolean {
-    return this.validateItemId(data.item_id) && 
-           this.validateQuantity(data.quantity) && 
+    return this.validateItemId(data.item_id) &&
+           this.validateQuantity(data.quantity) &&
            this.validateOrderId(data.order_id)
   }
 
@@ -69,4 +69,4 @@ export class OrderItem extends BaseSettings {
   public getVerboseName(): string {
     return `Позиция заказа`
   }
-} 
+}
