@@ -77,3 +77,8 @@ debug.log
 *.bak
 *.backup
 *~
+/frontend/dist/
+/frontend/dist/.vite/
+/frontend/dist/assets/
+/frontend/dist/*.html
+/frontend/dist/*.xml
