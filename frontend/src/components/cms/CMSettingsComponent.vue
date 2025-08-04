@@ -8,7 +8,7 @@
             Фото главной страницы
           </button>
           <button @click="openModal('shop-photos')" class="cms-settings__item">
-            Фото магазина
+            Фото для магазина
           </button>
           <button @click="openModal('item-photos')" class="cms-settings__item">
             Фото товаров
