@@ -1,60 +1,63 @@
 <template>
-  <div class="cms-container">
-    <header class="site-header">
-      <div class="container">
-        <div class="menu-frame">
-          <nav>
-            <ul class="menu">
-              <li class="menu__item" id="home">
-                <a href="/" class="pt-sans-regular">главная</a>
-              </li>
-              <li class="menu__item" id="orders">
-                <a href="#" @click.prevent="currentComponent = 'orders'" class="pt-sans-regular">заказы</a>
-              </li>
-              <li class="menu__item" id="clients">
-                <a href="#" @click.prevent="currentComponent = 'clients'" class="pt-sans-regular">клиенты</a>
-              </li>
-              <li class="menu__item" id="settings">
-                <a href="#" @click.prevent="currentComponent = 'settings'" class="pt-sans-regular">настройки</a>
-              </li>
-              <li class="menu__item" id="cart">
-                <a href="#" @click.prevent="currentComponent = 'cart'" class="pt-sans-regular">корзина</a>
-              </li>
-            </ul>
-          </nav>
+  <ClientOnly>
+    <div class="cms-container">
+      <header class="site-header">
+        <div class="container">
+          <div class="menu-frame">
+            <nav>
+              <ul class="menu">
+                <li class="menu__item" id="home">
+                  <a href="/" class="pt-sans-regular">главная</a>
+                </li>
+                <li class="menu__item" id="orders">
+                  <a href="#" @click.prevent="currentComponent = 'orders'" class="pt-sans-regular">заказы</a>
+                </li>
+                <li class="menu__item" id="clients">
+                  <a href="#" @click.prevent="currentComponent = 'clients'" class="pt-sans-regular">клиенты</a>
+                </li>
+                <li class="menu__item" id="settings">
+                  <a href="#" @click.prevent="currentComponent = 'settings'" class="pt-sans-regular">настройки</a>
+                </li>
+                <li class="menu__item" id="cart">
+                  <a href="#" @click.prevent="currentComponent = 'cart'" class="pt-sans-regular">корзина</a>
+                </li>
+              </ul>
+            </nav>
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
 
-    <!-- CMS Content -->
-    <main class="cms-content">
-      <div class="cms-content-wrapper">
-        <!-- Settings Component -->
-        <CMSettingsComponent
-          v-if="currentComponent === 'settings'"
-        />
+      <!-- CMS Content -->
+      <main class="cms-content">
+        <div class="cms-content-wrapper">
+          <!-- Settings Component -->
+          <CMSettingsComponent
+            v-if="currentComponent === 'settings'"
+          />
 
-        <!-- Clients Component -->
-        <ClientComponent
-          v-if="currentComponent === 'clients'"
-        />
+          <!-- Clients Component -->
+          <ClientComponent
+            v-if="currentComponent === 'clients'"
+          />
 
-        <!-- Orders Component -->
-        <OrderComponent
-          v-if="currentComponent === 'orders'"
-        />
+          <!-- Orders Component -->
+          <OrderComponent
+            v-if="currentComponent === 'orders'"
+          />
 
-        <!-- Cart Component -->
-        <CartComponent
-          v-if="currentComponent === 'cart'"
-        />
-      </div>
-    </main>
-  </div>
+          <!-- Cart Component -->
+          <CartComponent
+            v-if="currentComponent === 'cart'"
+          />
+        </div>
+      </main>
+    </div>
+  </ClientOnly>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import ClientOnly from '../../components/utils/ClientOnly.vue'
 import CMSettingsComponent from '../../components/cms/CMSettingsComponent.vue'
 import ClientComponent from '../../components/cms/ClientComponent.vue'
 import OrderComponent from '../../components/cms/OrderComponent.vue'
@@ -67,6 +70,8 @@ const currentComponent = ref('settings')
 onMounted(() => {
   currentComponent.value = 'settings'
 })
+console.log('CMS component loaded')
+
 </script>
 
 <style lang="scss" scoped>
