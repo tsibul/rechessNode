@@ -1,16 +1,4 @@
-import { createSSRApp } from 'vue'
-import { createRouter } from './router'
-import { createPinia } from 'pinia'
-import App from './App.vue'
+import { createApp as _createApp } from './main'
 
-// SSG entry point
-export async function createApp() {
-  const app = createSSRApp(App)
-  const router = createRouter()
-  const pinia = createPinia()
-
-  app.use(router)
-  app.use(pinia)
-
-  return { app, router, pinia }
-} 
+// Re-export createApp from main
+export const createApp = _createApp
