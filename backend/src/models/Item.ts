@@ -34,7 +34,6 @@ export class Item extends BaseSettings {
    * Return human-readable name
    */
   public getVerboseName(): string {
-    return `Предмет`
+    return `Товар`
   }
 }
- 
