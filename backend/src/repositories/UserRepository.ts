@@ -1,6 +1,6 @@
 import { db } from '../db'
 import { User } from '../models/User'
-import { UserRow } from '../types/user.types'
+import { UserRow } from '../types'
 
 export class UserRepository {
   static async findById(id: number): Promise<User | null> {
@@ -37,4 +37,4 @@ export class UserRepository {
     const rows = await db('user').where({ deleted: false }).where('name', 'like', `%${name}%`)
     return rows.map(row => new User(row))
   }
-} 
+}
