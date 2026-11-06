@@ -293,7 +293,7 @@ export const SECTIONS: Section[] = [
   },
   {
     key: 'clients', title: 'Клиенты', group: 'Продажи', permission: 'clients', kind: 'table', table: 'client',
-    ops: { update: true, remove: true }, sort: 'id', dir: 'desc', search: true,
+    ops: { update: true, remove: true }, sort: 'id', dir: 'desc', search: true, details: 'client',
     columns: [
       { key: 'id', label: '№', sortable: true }, nameCol, { key: 'family_name', label: 'Фамилия' },
       { key: 'phone', label: 'Телефон' }, { key: 'e_mail', label: 'Почта' }, { key: 'city', label: 'Город' }

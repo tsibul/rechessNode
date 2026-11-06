@@ -72,5 +72,19 @@ const payment = (v: string) => PAYMENT_STATES.find((p) => p.value === v)?.label 
         <tbody><tr v-for="i in row.items" :key="i.item_id"><td>{{ i.name }}</td><td>{{ i.quantity }}</td></tr></tbody>
       </table>
     </template>
+    <template v-else-if="kind === 'client'">
+      <p data-testid="client-summary">
+        Заказов: {{ row.orders?.length ?? 0 }}, на сумму {{ formatMoney(row.orders_sum ?? 0) }}; неоформленных корзин: {{ row.open_carts ?? 0 }}
+      </p>
+      <table v-if="row.orders?.length" class="cms-table cms-table--compact" data-testid="client-orders">
+        <thead><tr><th>№</th><th>Дата</th><th>Сумма</th><th>Статус</th><th>Оплата</th></tr></thead>
+        <tbody>
+          <tr v-for="o in row.orders" :key="o.id">
+            <td>{{ o.number }}</td><td>{{ formatDate(o.date) }}</td><td>{{ formatMoney(o.sum) }}</td><td>{{ o.state }}</td><td>{{ payment(o.payment_state) }}</td>
+          </tr>
+        </tbody>
+      </table>
+      <p v-else>Заказов нет</p>
+    </template>
   </section>
 </template>

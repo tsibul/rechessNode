@@ -311,6 +311,10 @@ describe('orders and carts', () => {
     const clients = await a.get(`/api/cms/tables/client?e_mail=${prefix}%40example.com`).expect(200)
     expect(clients.body.rows.length).toBeGreaterThan(0)
     expect(JSON.stringify(clients.body)).not.toMatch(/tokenHash|ip_address/)
+    // Customer card: order history with sum and state.
+    expect(clients.body.rows[0].orders).toEqual([expect.objectContaining({ number: order.number, sum: expect.any(Number), state: newState.name, payment_state: 'paid' })])
+    expect(clients.body.rows[0].orders_sum).toBe(clients.body.rows[0].orders[0].sum)
+    expect(clients.body.rows[0].open_carts).toBe(0)
   })
 
   it('lists abandoned carts', async () => {

@@ -25,6 +25,29 @@ describe('public pages', () => {
     expect(w.find('a[href="/privacy"]').exists()).toBe(true)
   })
 
+  it('footer links open a pop-up and keep the address; Esc closes it', async () => {
+    const w = await render('index')
+    expect(w.find('[data-testid="footer-privacy"]').attributes('href')).toBe('/privacy')
+    expect(w.find('[data-testid="footer-company"]').attributes('href')).toBe('/privacy#company')
+    await w.find('[data-testid="footer-company"]').trigger('click')
+    const dialog = document.querySelector('[data-testid="info-dialog"]')
+    expect(dialog).not.toBeNull()
+    expect(dialog!.textContent).toContain('ИНН')
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))
+    await w.vm.$nextTick()
+    expect(document.querySelector('[data-testid="info-dialog"]')).toBeNull()
+    w.unmount()
+  })
+
+  it('colours show one photo per pair and no stray arrow', async () => {
+    const w = await render('colors')
+    const cards = w.findAll('.card')
+    expect(cards.length).toBeGreaterThan(0)
+    for (const c of cards) expect(c.findAll('img').length).toBe(1)
+    expect(w.find('.card__arrow').exists()).toBe(false)
+    expect(w.text()).not.toContain('→')
+  })
+
   it('about renders text', async () => {
     const w = await render('about')
     expect(w.find('h1').text()).toBe('О проекте')

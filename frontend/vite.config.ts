@@ -6,6 +6,8 @@ import type {ViteSSGOptions} from 'vite-ssg'
 
 /** Pages that are built to static HTML. `/app-shell` is the empty page for the dynamic routes. */
 const BUILT_ROUTES = ['/', '/about', '/shop', '/colors', '/privacy', '/personal-data', '/app-shell']
+const API_TARGET = `http://localhost:${process.env.DEV_API_PORT || 3001}`
+const DEV_PORT = Number(process.env.DEV_SITE_PORT) || 3000
 const OUT_DIR = process.env.BUILD_OUT_DIR || 'dist'
 
 // https://vitejs.dev/config/
@@ -20,14 +22,14 @@ export default defineConfig({
         },
     },
     server: {
-        port: 3000,
+        port: DEV_PORT,
         proxy: {
             '/api': {
-                target: 'http://localhost:3001',
+                target: API_TARGET,
                 changeOrigin: true
             },
             '/uploads': {
-                target: 'http://localhost:3001',
+                target: API_TARGET,
                 changeOrigin: true
             }
         },

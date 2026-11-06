@@ -43,6 +43,7 @@ async function change(fn: () => Promise<void>) {
         <li v-for="line in cart.items" :key="line.item_id" class="line" data-testid="cart-line">
           <img v-if="line.photo" :src="uploadUrl(line.photo)" :alt="line.name" class="line__photo">
           <div class="line__info">
+            <p v-if="line.product_name" class="line__product" data-testid="cart-product">{{ line.product_name }}</p>
             <p>{{ line.name }}</p>
             <p class="line__muted">Артикул {{ line.article }}, {{ rub(line.price) }}</p>
           </div>
@@ -81,6 +82,10 @@ async function change(fn: () => Promise<void>) {
     width: 70px;
     height: 70px;
     object-fit: cover;
+  }
+
+  &__product {
+    font-weight: bold;
   }
 
   &__muted {

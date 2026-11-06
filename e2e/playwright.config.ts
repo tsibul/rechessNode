@@ -30,7 +30,7 @@ export default defineConfig({
     {
       name: 'mobile',
       use: { ...devices['Pixel 7'], channel: 'chrome' },
-      testMatch: /(purchase|routes)\.spec\.ts/
+      testMatch: /(purchase|routes|footer-dialog)\.spec\.ts/
     }
   ],
   webServer: [

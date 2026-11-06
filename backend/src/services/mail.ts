@@ -7,11 +7,17 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import nodemailer, { Transporter } from 'nodemailer'
+import sharp from 'sharp'
 import { db } from '../db'
+import { shortProductName } from '../utils/productName'
+import { uploadDir } from '../routes/cms/uploads'
 
 export type MailKind = 'confirmation' | 'track'
 
-export interface MailMessage { to: string; subject: string; html: string; text: string; from: string }
+/** Picture embedded in the mail (`<img src="cid:…">`): shown without any public site. */
+export interface MailImage { cid: string; filename: string; content: Buffer }
+
+export interface MailMessage { to: string; subject: string; html: string; text: string; from: string; attachments?: MailImage[] }
 
 type Sender = (message: MailMessage) => Promise<void>
 
@@ -40,6 +46,22 @@ function smtpTransport(): Transporter {
   return smtp.transport
 }
 
+const mailOptions = (m: MailMessage) => ({
+  from: m.from, to: m.to, subject: m.subject, html: m.html, text: m.text,
+  attachments: (m.attachments ?? []).map((a) => ({ cid: a.cid, filename: a.filename, content: a.content, contentType: 'image/jpeg', contentDisposition: 'inline' as const }))
+})
+
+/** Small JPEG of an item photo for the mail (mail clients do not show WebP/AVIF reliably). Null when the file is missing. */
+export async function mailThumbnail(photo: string | null | undefined, size = 160): Promise<Buffer | null> {
+  if (!photo || photo !== path.basename(photo)) return null
+  try {
+    return await sharp(path.join(uploadDir(), photo), { failOn: 'none' }).rotate()
+      .resize(size, size, { fit: 'cover' }).jpeg({ quality: 82 }).toBuffer()
+  } catch {
+    return null
+  }
+}
+
 async function sendToFile(m: MailMessage): Promise<void> {
   const dir = outboxDir()
   await fs.promises.mkdir(dir, { recursive: true })
@@ -47,14 +69,14 @@ async function sendToFile(m: MailMessage): Promise<void> {
   const safe = m.to.replace(/[^A-Za-z0-9@._-]/g, '_')
   const file = path.join(dir, `${stamp}-${safe}.eml`)
   const info = await nodemailer.createTransport({ streamTransport: true, buffer: true, newline: 'unix' })
-    .sendMail({ from: m.from, to: m.to, subject: m.subject, html: m.html, text: m.text })
+    .sendMail(mailOptions(m))
   await fs.promises.writeFile(file, info.message as Buffer)
 }
 
 async function deliver(m: MailMessage): Promise<void> {
   if (senderOverride) return senderOverride(m)
   if (!process.env.SMTP_HOST) return sendToFile(m)
-  await smtpTransport().sendMail({ from: m.from, to: m.to, subject: m.subject, html: m.html, text: m.text })
+  await smtpTransport().sendMail(mailOptions(m))
 }
 
 export const escapeHtml = (s: string) =>
@@ -99,11 +121,24 @@ async function build(orderId: number, kind: MailKind): Promise<MailMessage> {
   const order = await db('order').where({ id: orderId }).first()
   if (!order) throw new Error('Order not found')
   const s = await settings()
-  const items = await db('order_item as oi').join('item as i', 'i.id', 'oi.item_id')
+  const items = await db('order_item as oi').join('item as i', 'i.id', 'oi.item_id').join('product as p', 'p.id', 'i.product_id')
     .where('oi.order_id', orderId).where((b) => b.where('oi.deleted', 0).orWhereNull('oi.deleted'))
-    .select('i.name', 'oi.quantity', 'oi.price').orderBy('oi.id')
-  const rows = items.map((i) =>
-    `<tr><td style="padding:4px 0">${escapeHtml(i.name)} × ${i.quantity}</td><td align="right" style="padding:4px 0">${rub(i.price * i.quantity)}</td></tr>`).join('')
+    .select('oi.item_id', 'i.name', 'p.name as product_name', 'oi.quantity', 'oi.price').orderBy('oi.id')
+  const attachments: MailImage[] = []
+  const rowHtml: string[] = []
+  for (const i of items) {
+    const photo = await db('item_photo').where({ item_id: i.item_id }).where((b) => b.where('deleted', 0).orWhereNull('deleted'))
+      .orderBy('priority').orderBy('id').first('photo')
+    const thumb = await mailThumbnail(photo?.photo)
+    const cid = `item-${i.item_id}@rechess`
+    if (thumb) attachments.push({ cid, filename: `item-${i.item_id}.jpg`, content: thumb })
+    const product = shortProductName(i.product_name)
+    const img = thumb ? `<img src="cid:${cid}" width="80" height="80" alt="${escapeHtml(i.name)}" style="display:block;width:80px;height:80px;object-fit:cover">` : ''
+    rowHtml.push(`<tr><td width="96" style="padding:8px 16px 8px 0;vertical-align:top">${img}</td>`
+      + `<td style="padding:8px 0;vertical-align:top">${product ? `${escapeHtml(product)}<br>` : ''}${escapeHtml(i.name)} × ${i.quantity}</td>`
+      + `<td align="right" style="padding:8px 0;vertical-align:top">${rub(i.price * i.quantity)}</td></tr>`)
+  }
+  const rows = rowHtml.join('')
   const url = trackingUrl(s['delivery.tracking_url'], order.delivery_reference)
   const cost = order.delivery_cost === null ? 'стоимость будет сообщена отдельно' : rub(order.delivery_cost)
   const where = order.address_delivery
@@ -127,7 +162,7 @@ async function build(orderId: number, kind: MailKind): Promise<MailMessage> {
   return {
     to: order.e_mail,
     subject: fill(subjectTpl, { ...values, name: order.name }).replace(/&amp;/g, '&'),
-    html, text: htmlToText(body),
+    html, text: htmlToText(body), attachments,
     from: `"${fromName.replace(/"/g, '')}" <${fromAddr}>`
   }
 }

@@ -165,6 +165,24 @@ const REGISTRY: Record<string, Spec> = {
     fields: {
       name: req(255), family_name: opt(255), city: opt(255), phone: opt(20), e_mail: opt(255),
       address_delivery: z.boolean(), delivery_address: opt(500), delivery_point_code: opt(50)
+    },
+    // Customer card: order history and carts of the client (the manager sees what and when was ordered).
+    decorate: async (rows) => {
+      if (!rows.length) return
+      const ids = rows.map((r) => r.id)
+      const orders = await notDeleted(db('order').whereIn('client_id', ids))
+        .select('id', 'client_id', 'number', 'date', 'sum', 'order_state_id', 'payment_state').orderBy('date', 'desc').orderBy('id', 'desc')
+      const states = await db('order_state').select('id', 'name')
+      const carts = await notDeleted(db('cart').whereIn('client_id', ids)).select('client_id', 'ordered')
+      for (const r of rows) {
+        const mine = orders.filter((o) => o.client_id === r.id)
+        r.orders = mine.map((o) => ({
+          id: o.id, number: o.number, date: o.date, sum: o.sum, payment_state: o.payment_state,
+          state: states.find((s) => s.id === o.order_state_id)?.name ?? null
+        }))
+        r.orders_sum = mine.reduce((a, o) => a + o.sum, 0)
+        r.open_carts = carts.filter((c) => c.client_id === r.id && !c.ordered).length
+      }
     }
   },
   cart: {
