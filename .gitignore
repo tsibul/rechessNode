@@ -82,3 +82,7 @@ debug.log
 /frontend/dist/assets/
 /frontend/dist/*.html
 /frontend/dist/*.xml
+
+# Local tooling
+.claude/settings.local.json*
+.serena/
