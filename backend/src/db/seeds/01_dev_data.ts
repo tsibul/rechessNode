@@ -1,18 +1,13 @@
 import type { Knex } from 'knex'
-import { randomBytes, scryptSync } from 'crypto'
+import { hashPassword } from '../../utils/password'
 
 /**
  * Development data only. Refuses to run in production.
  * Reference data (roles, order states, pages, settings) comes from the migration.
- * Passwords are hashed with scrypt from node:crypto; stage 4 picks the final scheme.
+ * Passwords use the final scheme from utils/password.
  */
 
 const TEST_PASSWORD = 'dev-password-1'
-
-function hashPassword(password: string): string {
-  const salt = randomBytes(16).toString('hex')
-  return `scrypt$${salt}$${scryptSync(password, salt, 64).toString('hex')}`
-}
 
 // Tables cleared in child-first order. Reference tables are not touched.
 const CLEARED = [
@@ -101,9 +96,9 @@ export async function seed(knex: Knex): Promise<void> {
   const roles = await knex('role').select('id', 'code')
   const roleId = (code: string) => roles.find((r) => r.code === code)!.id
   await knex('user').insert([
-    { name: 'Администратор', login: 'admin', password: hashPassword(TEST_PASSWORD), role_id: roleId('admin') },
-    { name: 'Менеджер', login: 'manager', password: hashPassword(TEST_PASSWORD), role_id: roleId('manager') },
-    { name: 'Старший менеджер', login: 'senior', password: hashPassword(TEST_PASSWORD), role_id: roleId('senior_manager') }
+    { name: 'Администратор', login: 'admin', password: await hashPassword(TEST_PASSWORD), role_id: roleId('admin') },
+    { name: 'Менеджер', login: 'manager', password: await hashPassword(TEST_PASSWORD), role_id: roleId('manager') },
+    { name: 'Старший менеджер', login: 'senior', password: await hashPassword(TEST_PASSWORD), role_id: roleId('senior_manager') }
   ])
 
   // ---- pages, SEO -------------------------------------------------------
