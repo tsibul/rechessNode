@@ -39,7 +39,7 @@
     "id": 1, "name": "Чёрный и белый", "article": "0102",
     "main_color": { "id": 1, "name": "Чёрный", "code": "01", "hex": "1A1A1A" },
     "second_color": { "id": 2, "name": "Белый", "code": "02", "hex": "F2F2F2" },
-    "photos": [{ "name": "Фото пары 1", "photo": "item-1.jpg" }]
+    "photos": [{ "name": "Фото пары 1", "photo": "item-1.jpg", "slot": "side" }]
   }]
 }] }
 ```
@@ -146,7 +146,7 @@
 | `color` | references | список, чтение, создание, правка, удаление | `name`, `code` (2 символа), `hex` (6 hex) |
 | `product` | references | то же | `name`, `description` |
 | `item` | references | то же | `name`, `product_id`, `main_color`, `second_color` |
-| `item_photo` | references | то же | `name`, `priority`, `photo`, `item_id` |
+| `item_photo` | references | то же | `name`, `priority`, `photo`, `slot` (`side` / `top` / `board`, по умолчанию `side`), `item_id` |
 | `index_photo` | references | то же | `name`, `priority`, `photo` |
 | `shops` | references | то же | `name`, `address`, `working_hours`, `phone`, `web_site` |
 | `shop_photo` | references | то же | `name`, `priority`, `photo`, `shop_id` |

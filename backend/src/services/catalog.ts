@@ -35,7 +35,7 @@ export async function getProducts(onlyId?: number) {
       .orderBy('i.id')
     const photos = items.length
       ? await notDeleted(db('item_photo').whereIn('item_id', items.map((i) => i.id)))
-          .orderBy('priority').orderBy('id').select('item_id', 'name', 'photo')
+          .orderBy('priority').orderBy('id').select('item_id', 'name', 'photo', 'slot')
       : []
     result.push({
       id: p.id,
@@ -48,7 +48,7 @@ export async function getProducts(onlyId?: number) {
         article: `${i.m_code}${i.s_code}`,
         main_color: { id: i.m_id, name: i.m_name, code: i.m_code, hex: i.m_hex },
         second_color: { id: i.s_id, name: i.s_name, code: i.s_code, hex: i.s_hex },
-        photos: photos.filter((ph) => ph.item_id === i.id).map((ph) => ({ name: ph.name, photo: ph.photo }))
+        photos: photos.filter((ph) => ph.item_id === i.id).map((ph) => ({ name: ph.name, photo: ph.photo, slot: ph.slot }))
       }))
     })
   }
