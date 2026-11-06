@@ -29,3 +29,13 @@ describe('mapSite', () => {
     expect(c.product).toEqual(devContent.product)
   })
 })
+
+describe('contacts come from the CMS only', () => {
+  it('an emptied contact does not return the demo value; shops are not invented', () => {
+    const c = mapSite({ settings: { 'contact.phone': '', 'contact.email': 'a@b.c', 'contact.instagram': null }, pages: [], products: [], shops: [], index_photos: [], seller: null } as any)
+    expect(c.settings['contact.phone']).toBe('')
+    expect(c.settings['contact.email']).toBe('a@b.c')
+    expect(c.settings['contact.instagram']).toBe('')
+    expect(c.shops).toEqual([])
+  })
+})
