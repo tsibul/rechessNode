@@ -6,17 +6,17 @@
         <div class="modal__header-left">
           <h3 class="modal__title">{{ schema?.title || '' }}</h3>
           <label class="modal__checkbox">
-            <input type="checkbox" v-model="hideDeleted" />
+            <input type="checkbox" v-model="hideDeleted"/>
             <span>Скрыть удаленные</span>
           </label>
         </div>
         <div class="modal__header-right">
           <div class="modal__search">
-            <input 
-              type="text" 
-              v-model="searchQuery" 
-              placeholder="Поиск..."
-              class="modal__search-input"
+            <input
+                type="text"
+                v-model="searchQuery"
+                placeholder="Поиск..."
+                class="modal__search-input"
             />
             <button @click="performSearch" class="modal__button">
               Поиск
@@ -30,67 +30,67 @@
       </div>
 
       <!-- Шапка таблицы -->
-      <div 
-        class="modal__table-header"
-        :style="{ 
-          gridTemplateColumns: schema ? 
-            schema.columns.map(col => col.width).join(' ') + ' 200px' : 
-            '1fr 1fr 1fr 1fr 200px' 
+      <div
+          class="modal__table-header"
+          :style="{
+          gridTemplateColumns: schema ?
+            schema.columns.map(col => col.width).join(' ') + ' 200px' :
+            '1fr 1fr 1fr 1fr 200px'
         }"
       >
-        <div 
-          v-for="column in schema?.columns || []" 
-          :key="column.key"
-          class="modal__table-column"
+        <div
+            v-for="column in schema?.columns || []"
+            :key="column.key"
+            class="modal__table-column"
         >
           {{ column.label }}
         </div>
-        <div class="modal__table-actions">Действия</div>
+        <div class="modal__table-column">Действия</div>
       </div>
 
       <!-- Контент таблицы -->
       <div class="modal__body">
         <div class="modal__table-content">
-          <div 
-            v-for="item in filteredItems" 
-            :key="item.id"
-            class="modal__table-row"
-            :style="{ 
-              gridTemplateColumns: schema ? 
-                schema.columns.map(col => col.width).join(' ') + ' 200px' : 
-                '1fr 1fr 1fr 1fr 200px' 
+          <div
+              v-for="item in filteredItems"
+              :key="item.id"
+              class="modal__table-row"
+              :style="{
+              gridTemplateColumns: schema ?
+                schema.columns.map(col => col.width).join(' ') + ' 200px' :
+                '1fr 1fr 1fr 1fr 200px'
             }"
           >
-            <div 
-              v-for="column in schema?.columns || []" 
-              :key="column.key"
-              class="modal__table-cell"
+            <div
+                v-for="column in schema?.columns || []"
+                :key="column.key"
+                class="modal__table-cell"
             >
               <!-- Boolean поле -->
-              <input 
-                v-if="column.type === 'boolean'"
-                type="checkbox" 
-                :checked="item[column.key]" 
-                disabled
-                class="modal__checkbox-display"
+              <input
+                  v-if="column.type === 'boolean'"
+                  type="checkbox"
+                  :checked="item[column.key]"
+                  disabled
+                  class="modal__checkbox-display"
               />
-              
+
               <!-- Photo поле -->
               <div v-else-if="column.type === 'photo'" class="modal__photo-cell">
-                <img 
-                  v-if="item[column.key]" 
-                  :src="item[column.key]" 
-                  :alt="item[column.key]"
-                  class="modal__photo-thumbnail"
+                <img
+                    v-if="item[column.key]"
+                    :src="item[column.key]"
+                    :alt="item[column.key]"
+                    class="modal__photo-thumbnail"
                 />
                 <span class="modal__photo-filename">{{ item[column.key] }}</span>
               </div>
-              
+
               <!-- Foreign key поле -->
               <span v-else-if="column.type === 'foreign'">
                 {{ item[column.key] }}
               </span>
-              
+
               <!-- Обычное текстовое поле -->
               <span v-else>{{ item[column.key] }}</span>
             </div>
@@ -110,11 +110,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { tableSchemas, type TableSchema } from '../data/tableSchemas'
+import {ref, computed, onMounted} from 'vue'
+import {tableSchemas, type TableSchema} from '../data/tableSchemas'
 
 interface TableItem {
   id: number
+
   [key: string]: any
 }
 
@@ -139,21 +140,21 @@ const schema = computed(() => {
 
 const filteredItems = computed(() => {
   let filtered = items.value
-  
+
   // Фильтрация по поиску
   if (searchQuery.value) {
-    filtered = filtered.filter(item => 
-      Object.values(item).some(value => 
-        String(value).toLowerCase().includes(searchQuery.value.toLowerCase())
-      )
+    filtered = filtered.filter(item =>
+        Object.values(item).some(value =>
+            String(value).toLowerCase().includes(searchQuery.value.toLowerCase())
+        )
     )
   }
-  
+
   // Фильтрация удаленных
   if (hideDeleted.value) {
     filtered = filtered.filter(item => !item.deleted)
   }
-  
+
   return filtered
 })
 
@@ -187,29 +188,29 @@ const loadData = async () => {
     // Здесь будет запрос к бэкенду
     // const response = await fetch(`/api/${props.referenceName}`)
     // items.value = await response.json()
-    
+
     // Временные моковые данные
     items.value = [
-      { 
-        id: 1, 
-        name: 'Тестовый элемент 1', 
+      {
+        id: 1,
+        name: 'Тестовый элемент 1',
         priority: 1,
         photo: '/images/test1.jpg',
-        deleted: false 
+        deleted: false
       },
-      { 
-        id: 2, 
-        name: 'Тестовый элемент 2', 
+      {
+        id: 2,
+        name: 'Тестовый элемент 2',
         priority: 2,
         photo: '/images/test2.jpg',
-        deleted: false 
+        deleted: false
       },
-      { 
-        id: 3, 
-        name: 'Удаленный элемент', 
+      {
+        id: 3,
+        name: 'Удаленный элемент',
         priority: 3,
         photo: '/images/deleted.jpg',
-        deleted: true 
+        deleted: true
       }
     ]
   } catch (error) {
@@ -245,9 +246,9 @@ onMounted(() => {
   &__content {
     background: $colorNeutral100;
     border-radius: 8px;
-    width: 90vw;
-    max-width: 1200px;
-    height: 80vh;
+    width: 95vw;
+    //max-width: 1200px;
+    height: 95vh;
     display: flex;
     flex-direction: column;
   }
@@ -337,11 +338,13 @@ onMounted(() => {
 
   &__table-header {
     display: grid;
-    background: $colorPrimary500;
-    color: $colorNeutral100;
-    font-weight: 600;
+    background-color: $colorNeutral100;
+    color: $colorPrimary900;
+    //font-weight: 600;
     padding: 0.75rem 1rem;
-    border-bottom: 1px solid $colorPrimary900;
+    //border-bottom: 1px solid $colorPrimary900;
+    font-size: 14px;
+    line-height: 17px;
   }
 
   &__body {
@@ -354,6 +357,17 @@ onMounted(() => {
     flex-direction: column;
   }
 
+  &__table-column {
+    font-size: 14px;
+    line-height: 17px;
+  }
+
+  &__table-cell * {
+    font-size: 14px;
+    line-height: 17px;
+  }
+
+
   &__table-row {
     display: grid;
     padding: 0.75rem 1rem;
@@ -361,12 +375,17 @@ onMounted(() => {
     align-items: center;
 
     &:hover {
+      background: rgba($colorPrimary500, 0.05);
+    }
+
+    &:hover  .modal__table-cell * {
       background: rgba($colorPrimary500, 0.1);
     }
 
-    &:nth-child(even) {
-      background: rgba($colorPrimary500, 0.05);
-    }
+
+    //&:nth-child(even) {
+    //  background: rgba($colorPrimary500, 0.05);
+    //}
   }
 
   &__action-button {
@@ -397,4 +416,4 @@ onMounted(() => {
     }
   }
 }
-</style> 
+</style>

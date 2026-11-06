@@ -41,6 +41,7 @@
   line-height: 19px;
   box-sizing: border-box;
   background-color: $colorNeutral100;
+  accent-color: $colorPrimary500;
 
   &::selection {
     color: $colorNeutral100;
