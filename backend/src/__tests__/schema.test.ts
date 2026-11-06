@@ -51,6 +51,17 @@ describe('new tables', () => {
   })
 })
 
+describe('stage 8 delivery', () => {
+  it('has tariffs, product size and order delivery and mail marks', async () => {
+    expect(await columns('delivery_tariff')).toEqual(expect.arrayContaining(['name', 'address_delivery', 'city', 'weight_to', 'price', 'priority', 'deleted']))
+    expect(await columns('product')).toEqual(expect.arrayContaining(['weight_g', 'length_mm', 'width_mm', 'height_mm']))
+    expect(await columns('order')).toEqual(expect.arrayContaining([
+      'weight_g', 'delivery_tariff_id', 'confirmation_sent_at', 'confirmation_error', 'track_sent_at', 'track_sent_ref', 'track_error'
+    ]))
+    expect(await db('setting').where({ code: 'delivery.tracking_url' }).first()).toBeTruthy()
+  })
+})
+
 describe('changed tables', () => {
   it('item and price are linked to product, price.item is gone', async () => {
     expect(await columns('item')).toContain('product_id')

@@ -5,12 +5,13 @@ dotenv.config({ path: path.join(__dirname, '../../.env') })
 import request from 'supertest'
 import { createApp } from '../app'
 import { db } from '../db'
-import { Catalog, createCatalog, dropCatalog, dropClients, tag } from '../testing/fixtures'
+import { Catalog, createCatalog, createTariffs, dropCatalog, dropClients, dropTariffs, tag, Tariffs } from '../testing/fixtures'
 import { hashToken } from '../utils/visitor'
 
 const app = createApp()
 const prefix = tag()
 let cat: Catalog
+let tariffs: Tariffs
 const tokens: string[] = []
 
 function tokenOf(res: request.Response): string | null {
@@ -24,19 +25,21 @@ function visitor() {
 }
 
 const contact = (over: Record<string, unknown> = {}) => ({
-  name: 'Иван', family_name: 'Тестов', city: 'Москва', phone: '8 (999) 000-00-01',
+  name: 'Иван', family_name: 'Тестов', city: `${prefix}-city`, phone: '8 (999) 000-00-01',
   e_mail: `${prefix}@example.com`, address_delivery: true, delivery_address: 'Москва, ул. Тестовая, 1',
   comment: 'позвонить', consent: true, ...over
 })
 
 beforeAll(async () => {
   cat = await createCatalog(prefix)
+  tariffs = await createTariffs(prefix)
 })
 
 afterAll(async () => {
   const ids = tokens.length ? await db('client').whereIn('tokenHash', tokens.map(hashToken)).pluck('id') : []
   await dropClients(ids)
   await dropCatalog(cat)
+  await dropTariffs(tariffs)
   await db.destroy()
 })
 
@@ -156,7 +159,7 @@ describe('orders', () => {
     await db('setting').where({ code: 'legal.consent_version' }).update({ value: null })
     const o = res.body.order
     expect(o).toMatchObject({
-      sum: 600, delivery_cost: null, payment_state: 'not_paid', phone: '+79990000001',
+      sum: 850, delivery_cost: 250, payment_state: 'not_paid', phone: '+79990000001',
       address_delivery: true, delivery_point_code: null, comment: 'позвонить', delivery_reference: null
     })
     expect(o.number).toBeGreaterThan(1000)

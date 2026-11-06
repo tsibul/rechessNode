@@ -10,7 +10,7 @@ import { db } from '../db'
 import { PERMISSIONS } from '../middleware/cmsAuth'
 import { resetLoginThrottle } from '../routes/cms/auth'
 import { setPublishRunner, shellRunner, waitForIdle } from '../services/publish'
-import { Catalog, createCatalog, createUser, dropCatalog, dropClients, tag, TEST_PASSWORD } from '../testing/fixtures'
+import { Catalog, createCatalog, createTariffs, createUser, dropCatalog, dropClients, dropTariffs, tag, TEST_PASSWORD, Tariffs } from '../testing/fixtures'
 import { hashToken } from '../utils/visitor'
 
 const uploadRoot = fsSync.mkdtempSync(path.join(os.tmpdir(), 'rc-up-'))
@@ -18,6 +18,7 @@ process.env.UPLOAD_DIR = uploadRoot
 const app = createApp()
 const prefix = tag()
 let cat: Catalog
+let tariffs: Tariffs
 const roleIds: number[] = []
 const userIds: number[] = []
 const extraIds: Record<string, number[]> = { page: [], page_block: [], setting: [], color: [], role: [], user: [] }
@@ -39,6 +40,7 @@ async function login(roleSuffix: string, expected = 200) {
 
 beforeAll(async () => {
   cat = await createCatalog(prefix)
+  tariffs = await createTariffs(prefix)
   for (const [suffix, perms] of [
     ['none', []], ['orders', ['orders']], ['refs', ['references']], ['pub', ['publish']],
     ['all', [...PERMISSIONS]], ['seo', ['seo']], ['prices', ['prices']]
@@ -62,6 +64,7 @@ afterAll(async () => {
   await db('role_permission').whereIn('role_id', roleIds).delete()
   await db('role').whereIn('id', roleIds).delete()
   await dropCatalog(cat)
+  await dropTariffs(tariffs)
   await fs.rm(uploadRoot, { recursive: true, force: true })
   setPublishRunner(shellRunner)
   await db.destroy()
@@ -288,7 +291,7 @@ describe('orders and carts', () => {
     const r1 = await v.post('/api/cart/items').send({ item_id: cat.itemIds[0], quantity: 2 }).expect(200)
     clientTokens.push(([] as string[]).concat(r1.headers['set-cookie']).find((c) => c.startsWith('rc_client='))!.split(';')[0].slice(10))
     const order = (await v.post('/api/orders').send({
-      name: 'Иван', city: 'М', phone: '89990000002', e_mail: `${prefix}@example.com`,
+      name: 'Иван', city: tariffs.city, phone: '89990000002', e_mail: `${prefix}@example.com`,
       address_delivery: true, delivery_address: 'адрес', consent: true
     }).expect(201)).body.order
 
@@ -297,9 +300,9 @@ describe('orders and carts', () => {
     expect(row.items).toEqual([expect.objectContaining({ item_id: cat.itemIds[0], quantity: 2, price: 200 })])
     const newState = await db('order_state').where('deleted', 0).orderBy('priority', 'desc').first()
     const patched = await a.patch(`/api/cms/tables/order/${row.id}`).send({
-      order_state_id: newState.id, payment_state: 'paid', delivery_cost: 300, delivery_reference: 'TRK1'
+      order_state_id: newState.id, payment_state: 'paid', delivery_reference: 'TRK1'
     }).expect(200)
-    expect(patched.body.row).toMatchObject({ payment_state: 'paid', delivery_cost: 300, delivery_reference: 'TRK1', state: newState.name })
+    expect(patched.body.row).toMatchObject({ payment_state: 'paid', delivery_cost: 250, delivery_reference: 'TRK1', state: newState.name })
     const me = (await a.get('/api/cms/me')).body.user
     expect((await db('order').where({ id: row.id }).first()).updated_by).toBe(me.id)
     await a.patch(`/api/cms/tables/order/${row.id}`).send({ payment_state: 'weird' }).expect(400)

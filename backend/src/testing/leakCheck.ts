@@ -9,7 +9,7 @@ import dotenv from 'dotenv'
 
 const TABLES = [
   'client', 'cart', 'cart_item', 'order', 'order_item', 'product', 'color', 'item', 'item_photo',
-  'price', 'user', 'page', 'page_block', 'seo', 'setting', 'shops', 'shop_photo', 'index_photo', 'seller', 'publication'
+  'price', 'user', 'page', 'page_block', 'seo', 'setting', 'shops', 'shop_photo', 'index_photo', 'seller', 'publication', 'delivery_tariff'
 ]
 const FILE = path.join(os.tmpdir(), 'rechess-jest-row-counts.json')
 
