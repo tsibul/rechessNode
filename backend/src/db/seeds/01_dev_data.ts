@@ -1,5 +1,8 @@
 import type { Knex } from 'knex'
+import * as fs from 'fs'
+import * as path from 'path'
 import { hashPassword } from '../../utils/password'
+import { uploadDir } from '../../routes/cms/uploads'
 
 /**
  * Development data only. Refuses to run in production.
@@ -8,6 +11,29 @@ import { hashPassword } from '../../utils/password'
  */
 
 const TEST_PASSWORD = 'dev-password-1'
+
+// Site photos and texts from the Figma file live in the frontend package.
+const FRONTEND = path.resolve(__dirname, '../../../../frontend')
+const MEDIA = path.join(FRONTEND, 'public/media')
+const figma = JSON.parse(fs.readFileSync(path.join(FRONTEND, 'src/data/content.json'), 'utf8'))
+
+/** Copies the site photos (jpg, webp, avif) to the upload folder, so `/uploads/<name>` serves them. */
+function copyMedia(): void {
+  fs.mkdirSync(uploadDir(), { recursive: true })
+  for (const file of fs.readdirSync(MEDIA)) fs.copyFileSync(path.join(MEDIA, file), path.join(uploadDir(), file))
+}
+
+const pad = (n: number) => String(n).padStart(2, '0')
+
+const PAIRS: Array<[string, [string, string, string], [string, string, string]]> = [
+  ['01 пепельный / 02 антрацитовый', ['пепельный', '01', 'A9ABAA'], ['антрацитовый', '02', '2E2F31']],
+  ['01 пепельный / 04 терракотовый', ['пепельный', '01', 'A9ABAA'], ['терракотовый', '04', 'C4527A']],
+  ['01 пепельный / 10 бирюзовый', ['пепельный', '01', 'A9ABAA'], ['бирюзовый', '10', '1E9C8E']],
+  ['09 изумрудный / 02 антрацитовый', ['изумрудный', '09', '3DC27E'], ['антрацитовый', '02', '2E2F31']],
+  ['03 охристый / 19 карминовый', ['охристый', '03', 'D4B63A'], ['карминовый', '19', 'B8393B']],
+  ['01 пепельный / 19 карминовый', ['пепельный', '01', 'A9ABAA'], ['карминовый', '19', 'B8393B']],
+  ['01 пепельный / 06 аквамариновый', ['пепельный', '01', 'A9ABAA'], ['аквамариновый', '06', '2A97C2']]
+]
 
 // Tables cleared in child-first order. Reference tables are not touched.
 const CLEARED = [
@@ -21,6 +47,7 @@ export async function seed(knex: Knex): Promise<void> {
     throw new Error('Development seed must not run in production')
   }
 
+  copyMedia()
   await knex.raw('SET FOREIGN_KEY_CHECKS = 0')
   for (const table of CLEARED) {
     await knex(table).delete()
@@ -30,66 +57,50 @@ export async function seed(knex: Knex): Promise<void> {
 
   // ---- catalogue --------------------------------------------------------
   const [productId] = await knex('product').insert({
-    name: 'Шахматы reChess',
-    description: 'Авторские шахматы из переработанных материалов'
+    name: figma.product.name,
+    description: figma.product.description
   })
 
-  const colors = [
-    { name: 'Чёрный', code: '01', hex: '1A1A1A' },
-    { name: 'Белый', code: '02', hex: 'F2F2F2' },
-    { name: 'Красный', code: '03', hex: 'C0392B' },
-    { name: 'Синий', code: '04', hex: '2C5DA8' }
-  ]
-  const colorIds: number[] = []
-  for (const color of colors) {
-    const [id] = await knex('color').insert(color)
-    colorIds.push(id)
+  const colorIds = new Map<string, number>()
+  for (const [, main, second] of PAIRS) {
+    for (const [name, code, hex] of [main, second]) {
+      if (colorIds.has(code)) continue
+      const [id] = await knex('color').insert({ name, code, hex })
+      colorIds.set(code, id)
+    }
   }
 
-  const pairs = [
-    { name: 'Чёрный и белый', main_color: colorIds[0], second_color: colorIds[1] },
-    { name: 'Красный и синий', main_color: colorIds[2], second_color: colorIds[3] },
-    { name: 'Чёрный и красный', main_color: colorIds[0], second_color: colorIds[2] }
-  ]
   const itemIds: number[] = []
-  for (const pair of pairs) {
-    const [id] = await knex('item').insert({ ...pair, product_id: productId })
+  for (const [name, main, second] of PAIRS) {
+    const [id] = await knex('item').insert({
+      name, product_id: productId, main_color: colorIds.get(main[1]), second_color: colorIds.get(second[1])
+    })
     itemIds.push(id)
   }
 
   await knex('price').insert([
-    { product_id: productId, price: 9000, price_date: '2025-01-01 00:00:00' },
-    { product_id: productId, price: 9900, price_date: '2025-09-01 00:00:00' }
+    { product_id: productId, price: 5000, price_date: '2025-01-01 00:00:00' },
+    { product_id: productId, price: figma.product.price, price_date: '2025-09-01 00:00:00' }
   ])
 
   await knex('item_photo').insert(
     itemIds.map((itemId, i) => ({
-      name: `Фото пары ${i + 1}`, priority: 10, photo: `item-${i + 1}.jpg`, item_id: itemId
+      name: PAIRS[i][0], priority: 10, photo: `pair-${i + 1}.jpg`, item_id: itemId
     }))
   )
-  await knex('index_photo').insert([
-    { name: 'Главная 1', priority: 10, photo: 'index-1.jpg' },
-    { name: 'Главная 2', priority: 20, photo: 'index-2.jpg' }
-  ])
+  await knex('index_photo').insert(
+    Array.from({ length: 32 }, (_, i) => ({ name: `Фото ${i + 1}`, priority: (i + 1) * 10, photo: `index-${pad(i + 1)}.jpg` }))
+  )
 
   // ---- shops and seller -------------------------------------------------
-  const [shopA] = await knex('shops').insert({
-    name: 'Магазин настольных игр', address: 'Москва, ул. Тестовая, 1',
-    working_hours: 'Пн–Пт 10–20, Сб 11–18', phone: '+74950000001', web_site: 'https://example.com'
+  await knex('shops').insert({
+    name: 'ГЭС-2', address: 'Болотная набережная, вл. 15, к. 1',
+    working_hours: '11:00–23:00, ежедневно', web_site: 'https://ges-2.org'
   })
-  const [shopB] = await knex('shops').insert({
-    name: 'Подарки и сувениры', address: 'Казань, ул. Образцовая, 5',
-    working_hours: 'Ежедневно 10–19', phone: '+78430000002'
-  })
-  await knex('shop_photo').insert([
-    { name: 'Витрина', priority: 10, photo: 'shop-1.jpg', shop_id: shopA },
-    { name: 'Зал', priority: 20, photo: 'shop-2.jpg', shop_id: shopA },
-    { name: 'Витрина', priority: 10, photo: 'shop-3.jpg', shop_id: shopB }
-  ])
 
   await knex('seller').insert({
-    name: 'ООО «Тестовый продавец»', ogrn: '1000000000000', inn: '7700000000',
-    kpp: '770001001', address: 'Москва, ул. Тестовая, 1', phone: '+74950000000'
+    name: 'ООО «Вики Восток Сувенир»', ogrn: '1000000000000', inn: '5001021228',
+    kpp: '770001001', address: 'Московская область, Балашиха, деревня Полтево, владение 115', phone: figma.footer.phone
   })
 
   // ---- users ------------------------------------------------------------
@@ -102,13 +113,17 @@ export async function seed(knex: Knex): Promise<void> {
   ])
 
   // ---- pages, SEO -------------------------------------------------------
-  const pages = await knex('page').select('id', 'slug', 'name')
+  const pages = await knex('page').where({ deleted: false }).select('id', 'slug', 'name')
   const pageId = (slug: string) => pages.find((p) => p.slug === slug)!.id
+  const shopPhotos = [1, 2, 3, 4, 5, 6].map((k) => ({ name: `Шахматы ReChess ${k}`, photo: `shop-${k}.jpg`, ratio: k === 5 ? 1080 / 860 : 860 / 1080 }))
   await knex('page_block').insert([
-    { page_id: pageId('index'), code: 'hero', priority: 10, content: JSON.stringify({ title: 'reChess', text: 'Дизайнерские шахматы' }) },
-    { page_id: pageId('index'), code: 'gallery', priority: 20, content: JSON.stringify({ title: 'Галерея' }) },
-    { page_id: pageId('about'), code: 'text', priority: 10, content: JSON.stringify({ html: '<p>О проекте</p>' }) },
-    { page_id: pageId('privacy'), code: 'text', priority: 10, content: JSON.stringify({ html: '<p>Политика</p>' }) }
+    { page_id: pageId('index'), code: 'gallery', priority: 10, content: JSON.stringify({}) },
+    { page_id: pageId('about'), code: 'text', priority: 10, content: JSON.stringify({ title: 'О проекте', hide_title: true, html: figma.about_html }) },
+    { page_id: pageId('shop'), code: 'product', priority: 10, content: JSON.stringify({}) },
+    { page_id: pageId('shop'), code: 'gallery', priority: 20, content: JSON.stringify({ photos: shopPhotos }) },
+    { page_id: pageId('colors'), code: 'text', priority: 10, content: JSON.stringify({ title: 'Цвета', hide_title: true, html: `<p>${figma.colors_intro.name.replace('\n', '<br>')}</p><p>${figma.colors_intro.description}</p>` }) },
+    { page_id: pageId('colors'), code: 'colors', priority: 20, content: JSON.stringify({}) },
+    { page_id: pageId('privacy'), code: 'columns', priority: 10, content: JSON.stringify({ title: 'Политика конфиденциальности', columns: figma.legal }) }
   ])
   await knex('seo').insert(
     pages.map((p) => ({
