@@ -8,5 +8,5 @@
     "target": "ES2020",
     "types": ["node"]
   },
-  "include": ["vite.config.ts", "vitest.config.ts", "src/types/*.d.ts"]
+  "include": ["vite.config.ts", "build/*.ts", "vitest.config.ts", "src/types/*.d.ts"]
 } 

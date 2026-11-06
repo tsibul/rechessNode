@@ -399,7 +399,7 @@ order_state ← order ──→ client ←─ cart
 | `findByName` в `OrderRepository` | В20: колонки нет |
 | Лишний `knexfile.ts` в корне и скрипты с `src/index.ts` | В20. Перед удалением проверить, что корневой `package.json` ничего не собирает |
 | Разделы README о SSR, кабинете, GDPR и CSRF | В18, ответ 6. Переписать по факту |
-| `frontend/dist/robots.txt` в git | Результат сборки с адресом `localhost`, этап 9 заменит |
+| `frontend/dist/robots.txt` в git | Удалён на этапе 9, файл создаётся сборкой |
 
 Сюда же технические правки без последствий: `adress_delivery` в типах и проверки адреса из В20.
 

@@ -1,0 +1,54 @@
+/**
+ * Modern image formats. Every uploaded JPEG/PNG gets WebP and AVIF copies next to it
+ * (`<name>.webp`, `<name>.avif`); the pages use them through `<picture>` and keep the
+ * original as the fallback. `ensureVariants` is also run before every publication,
+ * so a page never points at a variant that does not exist.
+ * @module services/images
+ */
+import { promises as fs } from 'fs'
+import path from 'path'
+import sharp from 'sharp'
+
+export const VARIANT_FORMATS = ['webp', 'avif'] as const
+const ORIGINALS = /\.(jpe?g|png|webp|avif)$/i
+
+/** Creates the missing variants of one file; returns the formats written. Never throws on one bad file. */
+export async function makeVariants(file: string): Promise<string[]> {
+  const ext = path.extname(file).slice(1).toLowerCase()
+  const base = file.slice(0, -(ext.length + 1))
+  const written: string[] = []
+  for (const format of VARIANT_FORMATS) {
+    if (format === ext) continue
+    const target = `${base}.${format}`
+    try {
+      await fs.access(target)
+      continue
+    } catch { /* missing: create */ }
+    const tmp = `${target}.tmp`
+    try {
+      const image = sharp(file, { failOn: 'none' }).rotate()
+      await (format === 'webp' ? image.webp({ quality: 82 }) : image.avif({ quality: 55, effort: 4 })).toFile(tmp)
+      await fs.rename(tmp, target)
+      written.push(format)
+    } catch (e) {
+      await fs.rm(tmp, { force: true })
+      console.warn(`Cannot make ${format} of ${path.basename(file)}: ${(e as Error).message}`)
+    }
+  }
+  return written
+}
+
+/** Brings every original in the directory to the full set of variants. */
+export async function ensureVariants(dir: string): Promise<number> {
+  let names: string[]
+  try {
+    names = await fs.readdir(dir)
+  } catch {
+    return 0
+  }
+  let made = 0
+  for (const name of names.filter((n) => ORIGINALS.test(n))) {
+    made += (await makeVariants(path.join(dir, name))).length
+  }
+  return made
+}

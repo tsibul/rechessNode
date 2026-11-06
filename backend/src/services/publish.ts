@@ -5,6 +5,8 @@
 import { spawn } from 'child_process'
 import { db } from '../db'
 import { ApiError } from '../middleware/error'
+import { uploadDir } from '../routes/cms/uploads'
+import { ensureVariants } from './images'
 
 const LOG_LIMIT = 4000
 
@@ -14,13 +16,25 @@ export type PublishRunner = () => Promise<{ ok: boolean; log: string }>
 export const shellRunner: PublishRunner = () => new Promise((resolve) => {
   const command = process.env.PUBLISH_COMMAND
   if (!command) return resolve({ ok: false, log: 'PUBLISH_COMMAND is not set' })
+  const timeoutMs = Number(process.env.PUBLISH_TIMEOUT_MS) || 15 * 60 * 1000
   let out = ''
-  const child = spawn(command, { shell: true, cwd: process.env.PUBLISH_CWD || process.cwd() })
+  let timedOut = false
+  // Own process group, so a timeout stops the build tool and its children, not only the shell.
+  const child = spawn(command, { shell: true, cwd: process.env.PUBLISH_CWD || process.cwd(), detached: true })
   const keep = (d: Buffer) => { out = (out + d.toString()).slice(-LOG_LIMIT) }
   child.stdout.on('data', keep)
   child.stderr.on('data', keep)
-  child.on('error', (e) => resolve({ ok: false, log: String(e.message) }))
-  child.on('close', (code) => resolve({ ok: code === 0, log: out }))
+  const timer = setTimeout(() => {
+    timedOut = true
+    try { process.kill(-child.pid!, 'SIGKILL') } catch { child.kill('SIGKILL') }
+  }, timeoutMs)
+  child.on('error', (e) => { clearTimeout(timer); resolve({ ok: false, log: String(e.message) }) })
+  child.on('close', (code) => {
+    clearTimeout(timer)
+    resolve(timedOut
+      ? { ok: false, log: `Build stopped after ${timeoutMs} ms\n${out}`.slice(-LOG_LIMIT) }
+      : { ok: code === 0, log: out })
+  })
 })
 
 let runner: PublishRunner = shellRunner
@@ -51,9 +65,13 @@ export async function startPublication(userId: number) {
 async function run(id: number): Promise<void> {
   try {
     await db('publication').where({ id }).update({ state: 'running' })
+    // Pages point at WebP/AVIF copies: make sure every original has them before the build.
+    await ensureVariants(uploadDir())
     const result = await runner()
+    // A failed build leaves the published site untouched (the build command swaps it in only
+    // when it succeeds); the journal keeps the output tail either way.
     await db('publication').where({ id }).update({
-      state: result.ok ? 'done' : 'failed', finished_at: db.fn.now(), log: result.ok ? null : result.log.slice(-LOG_LIMIT)
+      state: result.ok ? 'done' : 'failed', finished_at: db.fn.now(), log: result.log.slice(-LOG_LIMIT) || null
     })
   } catch (e) {
     await db('publication').where({ id }).update({
