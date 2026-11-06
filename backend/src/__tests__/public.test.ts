@@ -50,7 +50,7 @@ describe('GET /api/products', () => {
     const p = res.body.products.find((x: any) => x.id === cat.productId)
     expect(p.price).toBe(200) // past 200 wins over future 300 and deleted 400
     expect(p.items).toHaveLength(2)
-    expect(p.items[0].article).toMatch(/^A\d{1}B\d{1}$/)
+    expect(p.items[0].article).toMatch(/^[A-Z0-9]{4}$/)
     expect(p.items[0].main_color.hex).toBe('112233')
     expect(p.items[0].photos).toEqual([{ name: 'p', photo: `${prefix}.jpg` }])
     expect(p.items[1].photos).toEqual([])

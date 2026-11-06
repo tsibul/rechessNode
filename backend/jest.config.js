@@ -4,9 +4,13 @@ module.exports = {
   // Suites share one database; run them one at a time.
   maxWorkers: 1,
   roots: ['<rootDir>/src'],
+  // `roots` is limited to src, so tests of git worktrees (.claude/worktrees) are never picked up.
+  testPathIgnorePatterns: ['/node_modules/', '/dist/'],
+  // Fails the run when a suite leaves rows in the shared database.
+  globalSetup: '<rootDir>/src/testing/globalSetup.ts',
+  globalTeardown: '<rootDir>/src/testing/globalTeardown.ts',
   testMatch: [
-    '**/__tests__/**/*.+(ts|tsx|js)',
-    '**/?(*.)+(spec|test).+(ts|tsx|js)'
+    '**/__tests__/**/*.test.ts'
   ],
   transform: {
     '^.+\\.(ts|tsx)$': 'ts-jest'
@@ -20,6 +24,5 @@ module.exports = {
     '!src/**/*.d.ts',
     '!src/__tests__/**/*',
     '!src/types/**/*'
-  ],
-  verbose: true
+  ]
 } 
