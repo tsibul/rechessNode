@@ -16,7 +16,7 @@ const FILE = path.join(os.tmpdir(), 'rechess-jest-row-counts.json')
 async function counts(): Promise<Record<string, number>> {
   dotenv.config({ path: path.join(__dirname, '../../.env') })
   // Own connection: the suites' `db` must not be shared with the global hooks.
-  const knexConfig = (await import('../../knexfile')).default
+  const knexConfig = (require(path.join(__dirname, '../../knexfile')) as { default: Record<string, import('knex').Knex.Config> }).default
   const db = (await import('knex')).default(knexConfig[process.env.NODE_ENV || 'development'])
   const out: Record<string, number> = {}
   try {
