@@ -91,6 +91,7 @@
 ### Заказ
 
 - `GET /api/checkout/prefill` → `{ "contact": { "name", "family_name", "city", "phone", "e_mail", "address_delivery", "delivery_address", "delivery_point_code" } | null }`. Данные последнего оформления этого посетителя для подстановки. Без токена — `null`.
+- `GET /api/checkout/delivery?city=` → `{ "weight_g": 1200, "door": { "cost": 500, "name": "…" } | null, "pickup": { … } | null }`. Стоимость доставки корзины по тарифам; `null` — способ недоступен. Это подсказка, окончательно сумму считает сервер.
 - `POST /api/orders` — создать заказ из текущей корзины. Тело:
 
 ```json
@@ -100,9 +101,9 @@
   "delivery_point_code": null, "comment": "…", "consent": true }
 ```
 
-Обязательны `name`, `phone`, `e_mail`, `delivery_address`, `consent` (строго `true`). `address_delivery`: `true` — доставка до двери, `false` — пункт выдачи (тогда нужен `delivery_point_code`). Телефон нормализуется к `+7XXXXXXXXXX` (принимаются 10–11 цифр, РФ).
+Обязательны `name`, `phone`, `e_mail`, `city`, `delivery_address`, `consent` (строго `true`). `address_delivery`: `true` — доставка до двери, `false` — пункт выдачи (тогда нужен `delivery_point_code`). Телефон нормализуется к `+7XXXXXXXXXX` (принимаются 10–11 цифр, РФ).
 
-Сервер: считает цены и сумму из корзины (поля цены в теле игнорируются), присваивает следующий `number`, статус с наименьшим `priority`, `payment_state = not_paid`, `delivery_cost = null`, `consent_at` — сейчас, `consent_version` — настройка `legal.consent_version`. Контакты записываются в заказ снимком и в `client` для подстановки. Корзина закрывается (`ordered`). Ответ 201:
+Сервер: считает цены и сумму из корзины (поля цены в теле игнорируются), присваивает следующий `number`, статус с наименьшим `priority`, `payment_state = not_paid`, `delivery_cost` по тарифу (вес корзины = сумма `quantity × product.weight_g`), `sum` = товары + доставка, `consent_at` — сейчас, `consent_version` — настройка `legal.consent_version`. Контакты записываются в заказ снимком и в `client` для подстановки. Корзина закрывается (`ordered`). Ответ 201:
 
 ```json
 { "order": { "number": 1002, "date": "…", "sum": 19800, "delivery_cost": null,
@@ -112,7 +113,7 @@
   "items": [{ "item_id": 1, "name": "…", "article": "0102", "quantity": 2, "price": 9900, "sum": 19800 }] } }
 ```
 
-Пустая корзина — 400 `Cart is empty`. Письмо подтверждения и трек — этап 8.
+Пустая корзина — 400 `Cart is empty`. Нет подходящего тарифа — 422 `Delivery is not available`. После создания уходит письмо подтверждения; сбой почты заказ не отменяет, ошибка пишется в заказ. В `order` добавлены `tracking_url` (ссылка отслеживания по `delivery_reference`, иначе `null`).
 
 - `GET /api/orders/:number` → тот же `{ "order": … }`, только для заказа этого посетителя (по токену). Чужой или несуществующий — 404 (не различаются).
 
@@ -173,6 +174,12 @@
 - `user`: нельзя удалить или перевести в другую роль самого себя (400).
 - `role`: роль с пользователями удалить нельзя (409).
 
+### Доставка и письма
+
+- Таблица `delivery_tariff` (право `prices`): `name`, `address_delivery`, `city` (пусто — любой), `weight_to` (г, пусто — без предела), `price`, `priority`.
+- `POST /api/cms/tables/order/:id/send-mail` с `{ "kind": "confirmation" | "track" }` — повторная отправка письма, ответ `{ ok, row }`. Письмо с треком уходит само при смене `delivery_reference`.
+- `delivery_cost` в заказе из CMS не правится: сумму считает сервер.
+
 ### Права роли
 
 - `GET /api/cms/roles` (право `users`) → `{ "roles": [{ "id", "code", "name", "permissions": […] }] }`.
@@ -192,7 +199,7 @@
 
 ## Окружение
 
-`JWT_SECRET` (обязателен для CMS), `FRONTEND_URL`, `PUBLISH_COMMAND`, `PUBLISH_CWD`, `UPLOAD_DIR` (по умолчанию `backend/uploads`), `PORT`, `NODE_ENV`, параметры БД.
+`JWT_SECRET` (обязателен для CMS), `FRONTEND_URL`, `PUBLISH_COMMAND`, `PUBLISH_CWD`, `UPLOAD_DIR` (по умолчанию `backend/uploads`), `PORT`, `NODE_ENV`, параметры БД, почта: `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASSWORD`, `MAIL_FROM`, `MAIL_OUTBOX_DIR`. Без `SMTP_HOST` письма пишутся файлами `.eml` в `MAIL_OUTBOX_DIR` (по умолчанию `backend/outbox`). См. `backend/.env.example`.
 
 ## Решения этапа
 
