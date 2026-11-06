@@ -19,8 +19,7 @@ test.describe('public routes, direct entry', () => {
       await page.waitForLoadState('networkidle')
       await expect(page.locator('body')).not.toBeEmpty()
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)
-      // /colors is a fixed-width grid of three 540 px columns: it scrolls sideways by design.
-      if (path !== '/colors') expect(overflow, 'horizontal overflow, px').toBeLessThanOrEqual(0)
+      expect(overflow, 'horizontal overflow, px').toBeLessThanOrEqual(0)
       expect(errors).toEqual([])
     })
   }

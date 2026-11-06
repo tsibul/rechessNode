@@ -4,9 +4,21 @@ import path from 'node:path'
 import { connect, hashPassword } from './db'
 import { STATE_FILE, TMP, State } from './state'
 import { randomBytes } from 'node:crypto'
+import { acquireLock, releaseLock } from '../../backend/src/testing/leakCheck'
 
 /** Creates the test CMS users (one per role, random passwords kept only in .tmp) and publishes the first site. */
 export default async function globalSetup() {
+  // The database is shared with jest runs of every session: its row-count check would see the test users.
+  await acquireLock()
+  try {
+    await setup()
+  } catch (e) {
+    releaseLock()
+    throw e
+  }
+}
+
+async function setup() {
   fs.rmSync(TMP, { recursive: true, force: true })
   fs.mkdirSync(TMP, { recursive: true })
   const tag = randomBytes(3).toString('hex')

@@ -1,9 +1,18 @@
 import fs from 'node:fs'
 import { connect } from './db'
 import { STATE_FILE, TMP } from './state'
+import { releaseLock } from '../../backend/src/testing/leakCheck'
 
 /** Removes everything the run created in the shared database: users, orders and carts of the test e-mails. */
 export default async function globalTeardown() {
+  try {
+    await clean()
+  } finally {
+    releaseLock()
+  }
+}
+
+async function clean() {
   if (!fs.existsSync(STATE_FILE)) return
   const state = JSON.parse(fs.readFileSync(STATE_FILE, 'utf8'))
   const db = connect()

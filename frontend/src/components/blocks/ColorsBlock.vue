@@ -36,6 +36,7 @@ async function change(id: number, delta: 1 | -1) {
 <template>
   <section class="colors" data-testid="colors">
     <article v-for="pair in pairs" :key="pair.id" class="card">
+      <span v-if="pair.id === 2" class="card__arrow" aria-hidden="true">→</span>
       <PhotoItem v-for="(p, i) in pair.photos" :key="i" :photo="p" />
       <p class="card__name">
         <span v-for="(l, i) in lines(pair.name)" :key="i" class="card__line">{{ l }}</span>
@@ -54,7 +55,7 @@ async function change(id: number, delta: 1 | -1) {
 <style lang="scss" scoped>
 .colors {
   display: grid;
-  grid-template-columns: repeat(3, 540px);
+  grid-template-columns: repeat(3, minmax(0, 540px));
   column-gap: 30px;
   row-gap: 30px;
   padding: 0 15px;
@@ -62,6 +63,16 @@ async function change(id: number, delta: 1 | -1) {
 }
 
 .card {
+  position: relative;
+
+  // Figma 2724:75: one small arrow on the right edge of the second photo, 8 px from the edge.
+  &__arrow {
+    position: absolute;
+    top: 189px;
+    right: 8px;
+    line-height: 19px;
+  }
+
   &__line {
     display: block;
   }
@@ -92,6 +103,10 @@ async function change(id: number, delta: 1 | -1) {
 }
 
 @media (max-width: 1160px) {
+  .card__arrow {
+    display: none;
+  }
+
   .colors {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     padding: 0 20px;

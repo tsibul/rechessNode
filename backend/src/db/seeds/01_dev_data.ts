@@ -10,6 +10,9 @@ import { uploadDir } from '../../routes/cms/uploads'
  * Passwords use the final scheme from utils/password.
  */
 
+// Obviously fake registration numbers (all zeros, no valid check digit): they must not pass for real ones.
+const TEST_OGRN = '0000000000000'
+const TEST_KPP = '000000000'
 const TEST_PASSWORD = 'dev-password-1'
 
 // Site photos and texts from the Figma file live in the frontend package.
@@ -25,14 +28,15 @@ function copyMedia(): void {
 
 const pad = (n: number) => String(n).padStart(2, '0')
 
+// Hex values are measured on the pair photos of the Figma file (frame 2724:75), median of the piece pixels.
 const PAIRS: Array<[string, [string, string, string], [string, string, string]]> = [
-  ['01 пепельный / 02 антрацитовый', ['пепельный', '01', 'A9ABAA'], ['антрацитовый', '02', '2E2F31']],
-  ['01 пепельный / 04 терракотовый', ['пепельный', '01', 'A9ABAA'], ['терракотовый', '04', 'C4527A']],
-  ['01 пепельный / 10 бирюзовый', ['пепельный', '01', 'A9ABAA'], ['бирюзовый', '10', '1E9C8E']],
-  ['09 изумрудный / 02 антрацитовый', ['изумрудный', '09', '3DC27E'], ['антрацитовый', '02', '2E2F31']],
-  ['03 охристый / 19 карминовый', ['охристый', '03', 'D4B63A'], ['карминовый', '19', 'B8393B']],
-  ['01 пепельный / 19 карминовый', ['пепельный', '01', 'A9ABAA'], ['карминовый', '19', 'B8393B']],
-  ['01 пепельный / 06 аквамариновый', ['пепельный', '01', 'A9ABAA'], ['аквамариновый', '06', '2A97C2']]
+  ['01 пепельный / 02 антрацитовый', ['пепельный', '01', 'A5AAA9'], ['антрацитовый', '02', '535454']],
+  ['01 пепельный / 04 терракотовый', ['пепельный', '01', 'A5AAA9'], ['терракотовый', '04', 'CA5C78']],
+  ['01 пепельный / 10 бирюзовый', ['пепельный', '01', 'A5AAA9'], ['бирюзовый', '10', '46988F']],
+  ['09 изумрудный / 02 антрацитовый', ['изумрудный', '09', '64BE86'], ['антрацитовый', '02', '535454']],
+  ['03 охристый / 19 карминовый', ['охристый', '03', 'BBAB50'], ['карминовый', '19', 'B45656']],
+  ['01 пепельный / 19 карминовый', ['пепельный', '01', 'A5AAA9'], ['карминовый', '19', 'B45656']],
+  ['01 пепельный / 06 аквамариновый', ['пепельный', '01', 'A5AAA9'], ['аквамариновый', '06', '5D9DB8']]
 ]
 
 // Tables cleared in child-first order. Reference tables are not touched.
@@ -99,8 +103,8 @@ export async function seed(knex: Knex): Promise<void> {
   })
 
   await knex('seller').insert({
-    name: 'ООО «Вики Восток Сувенир»', ogrn: '1000000000000', inn: '5001021228',
-    kpp: '770001001', address: 'Московская область, Балашиха, деревня Полтево, владение 115', phone: figma.footer.phone
+    name: 'ООО «Вики Восток Сувенир»', ogrn: TEST_OGRN, inn: '5001021228',
+    kpp: TEST_KPP, address: 'Московская область, Балашиха, деревня Полтево, владение 115', phone: figma.footer.phone
   })
 
   // ---- users ------------------------------------------------------------
@@ -123,6 +127,7 @@ export async function seed(knex: Knex): Promise<void> {
     { page_id: pageId('shop'), code: 'gallery', priority: 20, content: JSON.stringify({ photos: shopPhotos }) },
     { page_id: pageId('colors'), code: 'text', priority: 10, content: JSON.stringify({ title: 'Цвета', hide_title: true, html: `<p>${figma.colors_intro.name.replace('\n', '<br>')}</p><p>${figma.colors_intro.description}</p>` }) },
     { page_id: pageId('colors'), code: 'colors', priority: 20, content: JSON.stringify({}) },
+    { page_id: pageId('personal-data'), code: 'text', priority: 10, content: JSON.stringify({ title: figma.personal_data.title, html: figma.personal_data.html }) },
     { page_id: pageId('privacy'), code: 'columns', priority: 10, content: JSON.stringify({ title: 'Политика конфиденциальности', columns: figma.legal }) }
   ])
   await knex('seo').insert(
