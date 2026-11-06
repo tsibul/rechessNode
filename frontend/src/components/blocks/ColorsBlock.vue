@@ -11,6 +11,26 @@ const failed = ref<string | null>(null)
 
 onMounted(() => { cart.load().catch(() => {}) })
 
+// Mouse drag for the slide strip (touch and trackpad scroll natively).
+let drag: { el: HTMLElement; x: number; left: number } | null = null
+function dragStart(e: PointerEvent) {
+  if (e.pointerType !== 'mouse' || e.button !== 0) return
+  const el = e.currentTarget as HTMLElement
+  drag = { el, x: e.clientX, left: el.scrollLeft }
+  el.classList.add('is-dragging')
+  el.setPointerCapture(e.pointerId)
+}
+function dragMove(e: PointerEvent) {
+  if (drag) drag.el.scrollLeft = drag.left - (e.clientX - drag.x)
+}
+function dragEnd(e: PointerEvent) {
+  if (!drag) return
+  const el = drag.el
+  drag = null
+  el.releasePointerCapture(e.pointerId)
+  el.classList.remove('is-dragging')
+}
+
 const lines = (name: string) => name.split(' / ')
 const inCart = (id: number) => cart.items.find((l) => l.item_id === id)?.quantity ?? 0
 
@@ -36,7 +56,11 @@ async function change(id: number, delta: 1 | -1) {
 <template>
   <section class="colors" data-testid="colors">
     <article v-for="pair in pairs" :key="pair.id" class="card">
-      <PhotoItem v-for="(p, i) in pair.photos" :key="i" :photo="p" />
+      <div class="card__slides" :class="{ 'card__slides--single': pair.photos.length < 2 }" data-testid="pair-slides" tabindex="0" @pointerdown="dragStart" @pointermove="dragMove" @pointerup="dragEnd" @pointercancel="dragEnd" :aria-label="`Фото: ${pair.name}`">
+        <div v-for="(p, i) in pair.photos" :key="i" class="card__slide">
+          <PhotoItem :photo="p" />
+        </div>
+      </div>
       <p class="card__name">
         <span v-for="(l, i) in lines(pair.name)" :key="i" class="card__line">{{ l }}</span>
       </p>
@@ -63,6 +87,29 @@ async function change(id: number, delta: 1 | -1) {
 
 .card {
   position: relative;
+
+  &__slides {
+    display: flex;
+    gap: 15px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+
+    &::-webkit-scrollbar { display: none; }
+    &.is-dragging { scroll-snap-type: none; cursor: grabbing; user-select: none; }
+  }
+
+  &__slide :deep(img) { -webkit-user-drag: none; user-select: none; }
+
+  &__slide {
+    flex: 0 0 88%;
+    min-width: 0;
+    scroll-snap-align: start;
+  }
+
+  &__slides--single &__slide { flex-basis: 100%; }
 
   &__line {
     display: block;
