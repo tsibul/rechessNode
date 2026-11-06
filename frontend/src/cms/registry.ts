@@ -102,6 +102,12 @@ const nameCol: Column = { key: 'name', label: 'Название', sortable: true
 const prioCol: Column = { key: 'priority', label: 'Порядок', sortable: true }
 const photoCol: Column = { key: 'photo', label: 'Фото', kind: 'photo' }
 
+export const PHOTO_SLOTS = [
+  { value: 'side', label: 'Сбоку' },
+  { value: 'top', label: 'Сверху' },
+  { value: 'board', label: 'Доска' }
+]
+
 export const PAYMENT_STATES = [
   { value: 'not_paid', label: 'Не оплачен' },
   { value: 'pending', label: 'Ожидает оплаты' },
@@ -173,8 +179,8 @@ export const SECTIONS: Section[] = [
   {
     key: 'item-photos', title: 'Фото пар', group: 'Каталог', permission: 'references', kind: 'table', table: 'item_photo', ops: ALL,
     sort: 'priority', hidden: true,
-    columns: [nameCol, prioCol, photoCol],
-    fields: [nameField, priorityField, photoField, { key: 'item_id', label: 'Пара', type: 'select', ref: 'item', required: true }]
+    columns: [nameCol, { key: 'slot', label: 'Слайд' }, prioCol, photoCol],
+    fields: [nameField, priorityField, photoField, { key: 'slot', label: 'Слайд', type: 'enum', options: PHOTO_SLOTS, required: true }, { key: 'item_id', label: 'Пара', type: 'select', ref: 'item', required: true }]
   },
   {
     key: 'prices', title: 'Цены', group: 'Каталог', permission: 'prices', kind: 'table', table: 'price', ops: ALL,

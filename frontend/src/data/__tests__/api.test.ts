@@ -24,6 +24,16 @@ describe('mapSite', () => {
     expect(c.product.pairs[0].main.hex).toBe('#ffffff')
   })
 
+  it('orders pair slides side, top, board and keeps only the ones that exist', () => {
+    const item = (photos: any[]) => ({
+      ...empty,
+      products: [{ id: 5, name: 'Набор', description: 'd', price: 1, items: [{ id: 9, name: 'п', main_color: { name: 'a', hex: 'fff' }, second_color: { name: 'b', hex: '000' }, photos }] }]
+    })
+    const ph = (slot: string) => ({ name: slot, photo: `${slot}.jpg`, slot })
+    expect(mapSite(item([ph('board'), ph('side')])).product.pairs[0].photos.map((p) => p.alt)).toEqual(['side', 'board'])
+    expect(mapSite(item([ph('side')])).product.pairs[0].photos).toHaveLength(1)
+  })
+
   it('skips products without a price', () => {
     const c = mapSite({ ...empty, products: [{ id: 5, name: 'x', description: null, price: null, items: [] }] })
     expect(c.product).toEqual(devContent.product)
