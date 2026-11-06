@@ -1,63 +1,33 @@
 /**
- * Router configuration for the ReChess frontend application.
- * Defines all routes and their corresponding components.
+ * Routes of the ReChess frontend. Public content pages share one component
+ * (`PageView`) and differ by the page slug from the content layer.
  * @module router
  */
 
 import { RouteRecordRaw } from 'vue-router'
 
-/**
- * Route definitions for the application.
- * Each route maps a URL path to a component and includes metadata.
- */
+const page = (path: string, name: string, slug: string): RouteRecordRaw => ({
+  path,
+  name,
+  component: () => import('../pages/static/PageView.vue'),
+  props: { slug }
+})
+
 export const routes: RouteRecordRaw[] = [
-  {
-    path: '/',
-    name: 'home',
-    component: () => import('../pages/static/index/Index.vue'),
-    meta: {
-      title: 'ReChess - Home',
-    }
-  },
-  {
-    path: '/shop',
-    name: 'shop',
-    component: () => import('../pages/static/shop/Shop.vue'),
-    meta: {
-      title: 'ReChess - Shop',
-    }
-  },
-  {
-    path: '/about',
-    name: 'about',
-    component: () => import('../pages/static/about/About.vue'),
-    meta: {
-      title: 'ReChess - About',
-    }
-  },
+  page('/', 'home', 'index'),
+  page('/about', 'about', 'about'),
+  page('/shop', 'shop', 'shop'),
+  page('/where-to-buy', 'where-to-buy', 'where-to-buy'),
+  page('/privacy', 'privacy', 'privacy'),
+  page('/personal-data', 'personal-data', 'personal-data'),
   {
     path: '/cart',
     name: 'cart',
-    component: () => import('../pages/dynamic/Cart.vue'),
-    meta: {
-      title: 'ReChess - Cart'
-    }
-  },
-  {
-    path: '/cabinet',
-    name: 'cabinet',
-    component: () => import('../pages/dynamic/Cabinet.vue'),
-    meta: {
-      title: 'ReChess - Cabinet'
-    }
+    component: () => import('../pages/dynamic/Cart.vue')
   },
   {
     path: '/cms',
     name: 'cms',
-    component: () => import('../pages/dynamic/CMS.vue'),
-    meta: {
-      title: 'ReChess - cms',
-    }
-  },
-
+    component: () => import('../pages/dynamic/CMS.vue')
+  }
 ]

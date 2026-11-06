@@ -1,77 +1,55 @@
+<script setup lang="ts">
+defineOptions({ name: 'SiteHeader' })
+</script>
+
 <template>
   <header class="site-header">
-    <div class="container">
-      <div class="menu-frame">
-        <nav>
-          <ul class="menu">
-            <li class="menu__item" id="rechess">
-              <a href="/" class="pt-sans-regular">rechess</a>
-            </li>
-            <li class="menu__item" id="about">
-              <a href="/about" class="pt-sans-regular">о проекте</a>
-            </li>
-            <li class="menu__item" id="shop">
-              <a href="/shop" class="pt-sans-regular">магазин</a>
-            </li>
-          </ul>
-        </nav>
-      </div>
-    </div>
+    <nav class="menu-frame" aria-label="Основное меню">
+      <ul class="menu">
+        <li class="menu__item"><router-link to="/">ReChess</router-link></li>
+        <li class="menu__item"><router-link to="/about">О проекте</router-link></li>
+        <li class="menu__item"><router-link to="/shop">Магазин</router-link></li>
+        <li class="menu__item"><router-link to="/where-to-buy">Где купить</router-link></li>
+      </ul>
+    </nav>
   </header>
 </template>
 
-<script setup lang="ts">
-defineOptions({
-  name: 'Header',
-  ssg: true
-})
-</script>
-
 <style lang="scss" scoped>
-@use '../../styles/vars' as *;
-
 .menu-frame {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
-  background-color: transparent;
+  z-index: 10;
+  background-color: #fff;
 }
 
 .menu {
   display: flex;
-  margin-left: 15px;
-  justify-content: space-between;
   align-items: center;
   height: 70px;
   gap: 60px;
-  max-width: 1110px;
-  background-color: transparent;
+  padding: 0 15px;
 
   &__item {
     padding: 2px 0;
-    cursor: pointer;
-    background-color: transparent;
 
-    & * {
-      background-color: transparent;
+    a.router-link-exact-active {
+      text-decoration: underline;
     }
   }
 }
 
-
-@media(max-width: 1160px) {
+@media (max-width: 1160px) {
   .menu {
-    margin-right: 15px;
+    gap: 40px;
   }
 }
 
-
-@media(max-width: 660px) {
+@media (max-width: 660px) {
   .menu {
-    gap: 8px;
+    gap: 14px;
   }
 }
-
-
 </style>
