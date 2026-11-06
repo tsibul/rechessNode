@@ -23,9 +23,10 @@ export interface Seo {
 
 export type PageBlock =
   | { code: 'gallery'; photos: Photo[] }
-  | { code: 'text'; title?: string; html: string }
+  | { code: 'text'; title?: string; hideTitle?: boolean; html: string }
+  | { code: 'columns'; title?: string; columns: string[] }
   | { code: 'product' }
-  | { code: 'shops' }
+  | { code: 'colors' }
 
 export interface PageContent {
   slug: string

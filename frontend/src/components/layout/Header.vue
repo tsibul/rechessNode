@@ -6,10 +6,9 @@ defineOptions({ name: 'SiteHeader' })
   <header class="site-header">
     <nav class="menu-frame" aria-label="Основное меню">
       <ul class="menu">
-        <li class="menu__item"><router-link to="/">ReChess</router-link></li>
-        <li class="menu__item"><router-link to="/about">О проекте</router-link></li>
-        <li class="menu__item"><router-link to="/shop">Магазин</router-link></li>
-        <li class="menu__item"><router-link to="/where-to-buy">Где купить</router-link></li>
+        <li class="menu__item"><router-link to="/">rechess</router-link></li>
+        <li class="menu__item"><router-link to="/about">о проекте</router-link></li>
+        <li class="menu__item"><router-link to="/shop">магазин</router-link></li>
       </ul>
     </nav>
   </header>
@@ -29,7 +28,8 @@ defineOptions({ name: 'SiteHeader' })
   display: flex;
   align-items: center;
   height: 70px;
-  gap: 60px;
+  justify-content: space-between;
+  max-width: 1140px;
   padding: 0 15px;
 
   &__item {
@@ -43,13 +43,18 @@ defineOptions({ name: 'SiteHeader' })
 
 @media (max-width: 1160px) {
   .menu {
-    gap: 40px;
+    justify-content: flex-start;
+    gap: 48px;
+    padding: 0 20px;
   }
 }
 
 @media (max-width: 660px) {
   .menu {
-    gap: 14px;
+    justify-content: space-between;
+    max-width: none;
+    gap: 0;
+    padding: 0 15px;
   }
 }
 </style>

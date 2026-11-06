@@ -53,7 +53,9 @@ function mapBlock(b: ApiSite['pages'][number]['blocks'][number], site: ApiSite, 
   const c = b.content ?? {}
   switch (b.code) {
     case 'text':
-      return typeof c.html === 'string' && c.html ? { code: 'text', title: c.title, html: c.html } : null
+      return typeof c.html === 'string' && c.html ? { code: 'text', title: c.title, hideTitle: c.hide_title === true, html: c.html } : null
+    case 'columns':
+      return Array.isArray(c.columns) && c.columns.length ? { code: 'columns', title: c.title, columns: c.columns.map(String) } : null
     case 'gallery': {
       const own: Photo[] = Array.isArray(c.photos)
         ? c.photos.filter((p: any) => p && p.photo).map((p: any) => photo({ name: p.name ?? '', photo: p.photo }, p.ratio ?? 1))
@@ -62,8 +64,8 @@ function mapBlock(b: ApiSite['pages'][number]['blocks'][number], site: ApiSite, 
       return photos.length ? { code: 'gallery', photos } : null
     }
     case 'product': return { code: 'product' }
-    case 'shops': return { code: 'shops' }
-    default: return null // hero etc.: no component yet
+    case 'colors': return { code: 'colors' }
+    default: return null // hero, shops etc.: no component yet
   }
 }
 

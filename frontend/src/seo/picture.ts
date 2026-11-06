@@ -1,5 +1,5 @@
 /**
- * Modern-format sources for a CMS photo. The backend writes `<name>.webp` and `<name>.avif`
+ * Modern-format sources for a CMS photo. The site photos in /media and the backend uploads have them: the backend writes `<name>.webp` and `<name>.avif`
  * next to every uploaded original (and before every build), so the sources always exist.
  * @module seo/picture
  */
@@ -8,7 +8,7 @@ export interface PictureSource {
   srcset: string
 }
 
-const UPLOAD = /^(\/uploads\/[0-9a-f]{32})\.(jpe?g|png|webp|avif)$/i
+const UPLOAD = /^(\/(?:uploads|media)\/[\w-]+)\.(jpe?g|png|webp|avif)$/i
 
 /** AVIF first, then WebP; the original stays the `<img>` fallback. Other images get no sources. */
 export function pictureSources(src: string | null): PictureSource[] {

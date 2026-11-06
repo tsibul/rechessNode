@@ -20,7 +20,8 @@ describe('public pages', () => {
   it('home renders header, gallery and footer links', async () => {
     const w = await render('index')
     expect(w.find('[data-testid="photo-grid"]').exists()).toBe(true)
-    expect(w.text()).toContain('О проекте')
+    expect(w.text()).toContain('о проекте')
+    expect(w.findAll('.menu__item').length).toBe(3)
     expect(w.find('a[href="/privacy"]').exists()).toBe(true)
   })
 
@@ -29,19 +30,29 @@ describe('public pages', () => {
     expect(w.find('h1').text()).toBe('О проекте')
   })
 
-  it('product shows the price and pairs', async () => {
+  it('shop shows the price, the colours link, where to buy and photos', async () => {
     const w = await render('shop')
     expect(w.find('[data-testid="price"]').text()).toContain('₽')
-    expect(w.findAll('input[type="radio"]').length).toBeGreaterThan(1)
+    expect(w.find('a[href="/colors"]').exists()).toBe(true)
+    expect(w.findAll('.shop').length).toBeGreaterThan(0)
+    expect(w.find('[data-testid="photo-grid"]').exists()).toBe(true)
   })
 
-  it('where to buy lists shops', async () => {
-    const w = await render('where-to-buy')
-    expect(w.findAll('.shop').length).toBeGreaterThan(0)
+  it('colours page lists the pairs with add buttons', async () => {
+    const w = await render('colors')
+    expect(w.findAll('.card').length).toBe(7)
+    expect(w.find('.card button').text()).toContain('добавить')
+  })
+
+  it('has no where-to-buy page, the route redirects to the shop', () => {
+    expect(routes.find((r) => r.path === '/where-to-buy')).toMatchObject({ redirect: '/shop' })
   })
 
   it('policies render', async () => {
-    expect((await render('privacy')).find('h1').text()).toContain('Политика')
+    const privacy = await render('privacy')
+    expect(privacy.find('h1').text()).toContain('Политика')
+    expect(privacy.findAll('[data-testid="columns"] > div').length).toBe(3)
+    expect(privacy.find('#company').text()).toContain('ИНН')
     expect((await render('personal-data')).find('h1').text()).toContain('Согласие')
   })
 
