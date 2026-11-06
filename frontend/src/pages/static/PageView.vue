@@ -23,11 +23,15 @@ const photos = computed(() => [
   ...page.value.blocks.flatMap((b) => (b.code === 'gallery' ? b.photos : [])),
   ...(withProduct.value || page.value.blocks.some((b) => b.code === 'colors') ? getProduct().pairs.flatMap((p) => p.photos) : [])
 ])
+// Every page needs one h1 for search engines and screen readers; when no block brings it, the page name is added (hidden).
+const needsH1 = computed(() => !page.value.blocks.some((b) =>
+  b.code === 'product' || b.code === 'shops' || (b.code === 'text' && (b.title || /<h1[\s>]/i.test(b.html)))))
 const path = computed(() => (props.slug === 'index' ? '/' : `/${props.slug}`))
 </script>
 
 <template>
   <StaticPage :seo="page.seo" :path="path" :with-product="withProduct" :photos="photos">
+    <h1 v-if="needsH1" class="visually-hidden">{{ page.name }}</h1>
     <div :class="{ 'two-columns': withProduct }">
       <template v-for="(block, i) in page.blocks" :key="i">
         <PhotoGrid v-if="block.code === 'gallery'" :photos="block.photos" :column="withProduct" />
@@ -62,5 +66,20 @@ const path = computed(() => (props.slug === 'index' ? '/' : `/${props.slug}`))
     grid-template-columns: minmax(0, 1fr);
     padding: 0 15px;
   }
+}
+</style>
+
+
+<style lang="scss">
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
 }
 </style>
