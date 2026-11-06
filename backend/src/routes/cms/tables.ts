@@ -41,7 +41,7 @@ const opt = (max: number) => str(max).nullish().transform((v) => (v === '' ? nul
 const priority = z.number().int().min(-32768).max(32767)
 const fk = z.number().int().positive()
 
-export const PAYMENT_STATES = ['not_paid', 'paid', 'refunded'] as const
+export const PAYMENT_STATES = ['not_paid', 'pending', 'paid', 'failed', 'refunded'] as const
 const photoName = req(255).regex(/^[A-Za-z0-9._-]+$/, 'Invalid file name')
 
 const REGISTRY: Record<string, Spec> = {

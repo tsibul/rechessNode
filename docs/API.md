@@ -68,6 +68,15 @@
 - `GET /api/seller` → `{ "seller": { "name", "ogrn", "inn", "kpp", "address", "phone" } | null }`.
 - `GET /api/site` — всё для сборки одним запросом: `{ "settings", "pages" (с блоками и seo), "products", "shops", "index_photos", "seller" }`, формы те же.
 
+### Оплата
+
+Провайдер выбирается `PAYMENT_PROVIDER` (`none` | `stub`), решения в `docs/PLAN.md` (этап 11). Ответ `POST /api/orders` и `GET /api/orders/:number` содержат `order.payment`: `{ provider, state, amount, url, ref, stub }` или `null` без провайдера. `url` — куда идти платить (заглушка: `/order/:number/pay`), `ref` отдаётся только заглушке и только для ожидающего платежа.
+
+- `GET /api/orders/:number/payment` → `{ payment }`, только владельцу (иначе 404).
+- `POST /api/orders/:number/payment` — повтор после отказа: новый платёж, старый `ref` перестаёт действовать; ожидающий платёж не дублируется, оплаченный не открывается заново.
+- `POST /api/payments/:provider/notify` — уведомление провайдера. Заглушка: `{ "ref", "result": "paid" | "failed" }`. Ответ `{ state, changed }`; повтор и неизвестный `ref` дают `changed: false`. Сумма, если провайдер её сообщает, сверяется с заказом (иначе 409).
+- Production без настоящего провайдера: `POST /api/orders` → 503, заказ не создаётся; уведомления заглушки → 403.
+
 ### Корзина
 
 Корзина одна на посетителя: последняя с `ordered = NULL`.
@@ -103,7 +112,7 @@
 
 Обязательны `name`, `phone`, `e_mail`, `city`, `delivery_address`, `consent` (строго `true`). `address_delivery`: `true` — доставка до двери, `false` — пункт выдачи (тогда нужен `delivery_point_code`). Телефон нормализуется к `+7XXXXXXXXXX` (принимаются 10–11 цифр, РФ).
 
-Сервер: считает цены и сумму из корзины (поля цены в теле игнорируются), присваивает следующий `number`, статус с наименьшим `priority`, `payment_state = not_paid`, `delivery_cost` по тарифу (вес корзины = сумма `quantity × product.weight_g`), `sum` = товары + доставка, `consent_at` — сейчас, `consent_version` — настройка `legal.consent_version`. Контакты записываются в заказ снимком и в `client` для подстановки. Корзина закрывается (`ordered`). Ответ 201:
+Сервер: считает цены и сумму из корзины (поля цены в теле игнорируются), присваивает следующий `number`, статус с наименьшим `priority`, `payment_state = not_paid` (при включённом провайдере сразу `pending`, см. «Оплата»), `delivery_cost` по тарифу (вес корзины = сумма `quantity × product.weight_g`), `sum` = товары + доставка, `consent_at` — сейчас, `consent_version` — настройка `legal.consent_version`. Контакты записываются в заказ снимком и в `client` для подстановки. Корзина закрывается (`ordered`). Ответ 201:
 
 ```json
 { "order": { "number": 1002, "date": "…", "sum": 19800, "delivery_cost": null,
@@ -151,7 +160,7 @@
 | `role` | users | то же | `code`, `name` |
 | `client` | clients | список, чтение, правка, удаление | `name`, `family_name`, `city`, `phone`, `e_mail`, `address_delivery`, `delivery_address`, `delivery_point_code` |
 | `cart` | carts | список, чтение, удаление | — |
-| `order` | orders | список, чтение, правка | `order_state_id`, `delivery_reference`, `delivery_cost`, `payment_state`, `comment` |
+| `order` | orders | список, чтение, правка | `order_state_id`, `delivery_reference`, `delivery_cost`, `payment_state` (`not_paid`, `pending`, `paid`, `failed`, `refunded`), `comment`; в чтении также `payment_provider`, `payment_ref`, `paid_at` |
 
 Чтение (GET) трёх таблиц открыто и смежным правам, запись только основному: `product` читают также с правом `prices` (выбор товара в цене), `order_state` — с `orders` (статус в заказе), `page` — с `seo` (страница в SEO). Иначе простой менеджер не смог бы выбрать статус заказа, а редактор SEO или цен — страницу или товар.
 
@@ -199,7 +208,7 @@
 
 ## Окружение
 
-`JWT_SECRET` (обязателен для CMS), `FRONTEND_URL`, `PUBLISH_COMMAND`, `PUBLISH_CWD`, `UPLOAD_DIR` (по умолчанию `backend/uploads`), `PORT`, `NODE_ENV`, параметры БД, почта: `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASSWORD`, `MAIL_FROM`, `MAIL_OUTBOX_DIR`. Без `SMTP_HOST` письма пишутся файлами `.eml` в `MAIL_OUTBOX_DIR` (по умолчанию `backend/outbox`). См. `backend/.env.example`.
+`JWT_SECRET` (обязателен для CMS), `FRONTEND_URL`, `PUBLISH_COMMAND`, `PUBLISH_CWD`, `UPLOAD_DIR` (по умолчанию `backend/uploads`), `PORT`, `NODE_ENV`, параметры БД, почта: `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASSWORD`, `MAIL_FROM`, `MAIL_OUTBOX_DIR`, `PAYMENT_PROVIDER`. Без `SMTP_HOST` письма пишутся файлами `.eml` в `MAIL_OUTBOX_DIR` (по умолчанию `backend/outbox`). См. `backend/.env.example`.
 
 ## Решения этапа
 

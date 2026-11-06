@@ -2,14 +2,16 @@
  * Anonymous shopping routes: cart, checkout prefill, orders.
  * @module routes/shop
  */
-import { Router } from 'express'
+import { Request, Router } from 'express'
 import { z } from 'zod'
 import { db } from '../db'
 import { ApiError } from '../middleware/error'
 import {
-  addItem, createOrder, getCartView, getDeliveryOptions, getOrderView, getPrefill, MAX_QUANTITY, removeItem, setQuantity
+  addItem, createOrder, findClient, getCartView, getDeliveryOptions, getOrderView, getPrefill, MAX_QUANTITY, removeItem, setQuantity
 } from '../services/cart'
 import { sendOrderMail } from '../services/mail'
+import { assertPaymentAvailable } from '../services/payment'
+import { getPaymentView, handleNotification, retryPayment, startPayment } from '../services/payments'
 import { wrap } from '../utils/async'
 import { normalizePhone } from '../utils/phone'
 import { readToken, setClientCookie, setCountCookie } from '../utils/visitor'
@@ -86,19 +88,53 @@ const orderSchema = z.object({
 shopRouter.post('/orders', wrap(async (req, res) => {
   const { consent: _consent, ...input } = orderSchema.parse(req.body)
   const token = readToken(req)
+  // Production without a real payment provider: no order is created, the buyer gets a clear error.
+  assertPaymentAvailable()
   const number = await createOrder(token, input)
   setCountCookie(res, 0)
+  const payment = await startPayment(await orderId(number))
   // A mail failure is stored in the order and does not fail it.
   await sendOrderMail(await orderId(number), 'confirmation')
-  res.status(201).json({ order: await getOrderView(token, number) })
+  res.status(201).json({ order: { ...(await getOrderView(token, number)), payment } })
 }))
 
 shopRouter.get('/orders/:number', wrap(async (req, res) => {
   const n = Number(req.params.number)
   const order = Number.isInteger(n) ? await getOrderView(readToken(req), n) : null
   if (!order) throw new ApiError(404, 'Not found')
-  res.json({ order })
+  res.json({ order: { ...order, payment: await getPaymentView((await ownerId(req))!, n) } })
 }))
+
+shopRouter.get('/orders/:number/payment', wrap(async (req, res) => {
+  res.json({ payment: await getPaymentView(await requireOwner(req), orderNumber(req.params.number)) })
+}))
+
+shopRouter.post('/orders/:number/payment', wrap(async (req, res) => {
+  res.json({ payment: await retryPayment(await requireOwner(req), orderNumber(req.params.number)) })
+}))
+
+/** Notification from the provider (the stub page sends it too). Repeats are harmless. */
+shopRouter.post('/payments/:provider/notify', wrap(async (req, res) => {
+  const result = await handleNotification(req.params.provider, req)
+  res.json({ state: result.state, changed: result.changed })
+}))
+
+function orderNumber(v: string): number {
+  const n = Number(v)
+  if (!Number.isInteger(n) || n < 1) throw new ApiError(404, 'Not found')
+  return n
+}
+
+async function ownerId(req: Request): Promise<number | null> {
+  const client = await findClient(readToken(req))
+  return client ? client.id : null
+}
+
+async function requireOwner(req: Request): Promise<number> {
+  const id = await ownerId(req)
+  if (!id) throw new ApiError(404, 'Not found')
+  return id
+}
 
 async function orderId(number: number): Promise<number> {
   const row = await db('order').where({ number }).first('id')

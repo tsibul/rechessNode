@@ -19,7 +19,7 @@ router.get('/health', (_req, res) => {
 })
 
 // Rate limits of the public routes (the CMS has its own login limit).
-const publicPaths = ['/products', '/pages', '/settings', '/shops', '/index-photos', '/seller', '/site', '/cart', '/checkout', '/orders']
+const publicPaths = ['/products', '/pages', '/settings', '/shops', '/index-photos', '/seller', '/site', '/cart', '/checkout', '/orders', '/payments']
 router.use(publicPaths, publicReadLimit)
 router.post(['/cart/items'], cartWriteLimit)
 router.patch('/cart/items/:itemId', cartWriteLimit)

@@ -30,6 +30,12 @@ const payment = (v: string) => PAYMENT_STATES.find((p) => p.value === v)?.label 
         <dd>
           {{ row.address_delivery ? 'До двери' : `Пункт выдачи ${row.delivery_point_code ?? ''}` }}: {{ row.city }} {{ row.delivery_address }}
         </dd>
+        <dt>Оплата</dt>
+        <dd data-testid="order-payment">
+          {{ payment(row.payment_state) }}<template v-if="row.payment_provider">, провайдер {{ row.payment_provider }}<template v-if="row.paid_at">, оплачен {{ formatDate(row.paid_at) }}</template></template>
+          <template v-if="row.payment_provider === 'stub'"> (заглушка, деньги не списывались)</template>
+        </dd>
+        <dt>Чек 54-ФЗ</dt><dd data-testid="order-receipt">не формируется (будет после подключения платёжного сервиса)</dd>
         <dt>Стоимость</dt><dd>доставка {{ formatMoney(row.delivery_cost ?? 0) }}, вес {{ row.weight_g ?? 0 }} г</dd>
         <dt>Трек</dt><dd>{{ row.delivery_reference || '—' }}</dd>
         <dt>Письмо заказа</dt>

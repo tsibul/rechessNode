@@ -46,6 +46,7 @@ export default defineConfig({
         MAIL_OUTBOX_DIR: path.join(tmp, 'outbox'),
         UPLOAD_DIR: path.join(tmp, 'uploads'),
         SMTP_HOST: '',
+        PAYMENT_PROVIDER: 'stub',
         PUBLISH_COMMAND: 'node ../frontend/scripts/publish.mjs',
         PUBLISH_TARGET: path.join(tmp, 'site'),
         API_URL: `http://localhost:${API_PORT}`,

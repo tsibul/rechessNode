@@ -37,6 +37,11 @@ export const routes: RouteRecordRaw[] = [
     component: () => import('../pages/dynamic/OrderDone.vue')
   },
   {
+    path: '/order/:number/pay',
+    name: 'order-pay',
+    component: () => import('../pages/dynamic/OrderPay.vue')
+  },
+  {
     path: '/app-shell',
     name: 'app-shell',
     component: () => import('../pages/dynamic/AppShell.vue')

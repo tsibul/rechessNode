@@ -65,7 +65,8 @@ export default defineConfig({
             '/cms',
             '/cart',
             '/order',
-            '/order/:number'
+            '/order/:number',
+            '/order/:number/pay'
         ]
     } as ViteSSGOptions,
     ssr: {
