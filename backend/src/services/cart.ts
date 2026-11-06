@@ -10,6 +10,8 @@ import { hashToken, newToken } from '../utils/visitor'
 import { currentPrice } from './catalog'
 
 export const MAX_QUANTITY = 99
+/** Recorded when the setting `legal.consent_version` is empty. */
+export const DEFAULT_CONSENT_VERSION = 'v1'
 
 export interface CartView {
   items: { item_id: number; name: string; article: string; photo: string | null; quantity: number; price: number; sum: number }[]
@@ -170,7 +172,7 @@ export async function createOrder(token: string | null, input: OrderInput) {
           delivery_address: input.delivery_address, address_delivery: input.address_delivery,
           delivery_point_code: input.address_delivery ? null : input.delivery_point_code ?? null,
           order_state_id: state.id, payment_state: 'not_paid', comment: input.comment ?? null,
-          consent_at: trx.fn.now(), consent_version: consent?.value || null, deleted: false
+          consent_at: trx.fn.now(), consent_version: consent?.value || DEFAULT_CONSENT_VERSION, deleted: false
         })
         await trx('order_item').insert(view.items.map((i) => ({
           order_id: orderId, item_id: i.item_id, quantity: i.quantity, price: i.price, deleted: false
