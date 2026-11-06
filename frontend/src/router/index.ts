@@ -17,7 +17,8 @@ export const routes: RouteRecordRaw[] = [
   page('/', 'home', 'index'),
   page('/about', 'about', 'about'),
   page('/shop', 'shop', 'shop'),
-  page('/where-to-buy', 'where-to-buy', 'where-to-buy'),
+  page('/colors', 'colors', 'colors'),
+  { path: '/where-to-buy', redirect: '/shop' },
   page('/privacy', 'privacy', 'privacy'),
   page('/personal-data', 'personal-data', 'personal-data'),
   {

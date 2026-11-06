@@ -16,10 +16,8 @@ const email = getSetting('contact.email')
       <p>{{ getSetting('contact.instagram') }}</p>
     </div>
     <div class="footer__col">
-      <p><router-link to="/about">О проекте</router-link></p>
-      <p><router-link to="/where-to-buy">Где купить</router-link></p>
+      <p><router-link to="/privacy#company">О компании</router-link></p>
       <p><router-link to="/privacy">Политика конфиденциальности</router-link></p>
-      <p><router-link to="/personal-data">Обработка персональных данных</router-link></p>
     </div>
   </footer>
 </template>
@@ -33,6 +31,7 @@ const email = getSetting('contact.email')
 
   &__col {
     width: 540px;
+    flex-shrink: 0;
     display: flex;
     flex-direction: column;
   }
@@ -47,6 +46,7 @@ const email = getSetting('contact.email')
   .footer {
     flex-direction: column;
     gap: 15px;
+    padding: 0 20px;
 
     &__col {
       width: auto;
@@ -57,6 +57,12 @@ const email = getSetting('contact.email')
 @media (max-width: 660px) {
   .footer {
     margin-bottom: 15px;
+    padding: 0 15px;
+
+    p, a {
+      font-size: 12px;
+      line-height: 14px;
+    }
   }
 }
 </style>

@@ -206,7 +206,7 @@ export const SECTIONS: Section[] = [
     columns: [{ key: 'code', label: 'Код', sortable: true }, prioCol],
     fields: [
       { key: 'page_id', label: 'Страница', type: 'select', ref: 'page', refLabel: 'name', required: true },
-      { key: 'code', label: 'Код блока', type: 'text', required: true, hint: 'hero, gallery, text, product, shops' },
+      { key: 'code', label: 'Код блока', type: 'text', required: true, hint: 'gallery, text, columns, product, colors' },
       priorityField,
       { key: 'content', label: 'Содержимое (JSON)', type: 'json', required: true, default: {} }
     ]

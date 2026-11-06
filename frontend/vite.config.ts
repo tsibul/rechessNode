@@ -5,7 +5,7 @@ import {writeSeoFiles} from './build/seoFiles'
 import type {ViteSSGOptions} from 'vite-ssg'
 
 /** Pages that are built to static HTML. `/app-shell` is the empty page for the dynamic routes. */
-const BUILT_ROUTES = ['/', '/about', '/shop', '/where-to-buy', '/privacy', '/personal-data', '/app-shell']
+const BUILT_ROUTES = ['/', '/about', '/shop', '/colors', '/privacy', '/personal-data', '/app-shell']
 const OUT_DIR = process.env.BUILD_OUT_DIR || 'dist'
 
 // https://vitejs.dev/config/

@@ -3,7 +3,7 @@ import { getPage, getProduct, getSetting, getShops, pageSlugs } from '../content
 
 describe('content layer', () => {
   it('has every public page with SEO and blocks', () => {
-    for (const slug of ['index', 'about', 'shop', 'where-to-buy', 'privacy', 'personal-data']) {
+    for (const slug of ['index', 'about', 'shop', 'colors', 'privacy', 'personal-data']) {
       expect(pageSlugs()).toContain(slug)
       const page = getPage(slug)
       expect(page.seo.title.length).toBeGreaterThan(10)
