@@ -1,9 +1,22 @@
 <script setup lang="ts">
-import type { Row } from '../api'
+import { ref } from 'vue'
+import { cmsApi, type Row } from '../api'
 import { formatDate, formatMoney } from '../logic'
 import { PAYMENT_STATES } from '../registry'
 
-defineProps<{ kind: 'order' | 'cart' | 'client'; row: Row }>()
+const props = defineProps<{ kind: 'order' | 'cart' | 'client'; row: Row }>()
+const mail = ref<Row | null>(null)
+const mailError = ref('')
+const m = (k: string) => (mail.value ?? props.row)[k]
+async function resend(kind: 'confirmation' | 'track') {
+  mailError.value = ''
+  try {
+    mail.value = await cmsApi.sendOrderMail(props.row.id, kind)
+  } catch {
+    mailError.value = 'Не удалось отправить письмо'
+  }
+}
+const sent = (at: unknown, err: unknown) => (err ? `ошибка: ${err}` : at ? formatDate(at as string) : 'не отправлялось')
 const payment = (v: string) => PAYMENT_STATES.find((p) => p.value === v)?.label ?? v
 </script>
 
@@ -17,6 +30,19 @@ const payment = (v: string) => PAYMENT_STATES.find((p) => p.value === v)?.label 
         <dd>
           {{ row.address_delivery ? 'До двери' : `Пункт выдачи ${row.delivery_point_code ?? ''}` }}: {{ row.city }} {{ row.delivery_address }}
         </dd>
+        <dt>Стоимость</dt><dd>доставка {{ formatMoney(row.delivery_cost ?? 0) }}, вес {{ row.weight_g ?? 0 }} г</dd>
+        <dt>Трек</dt><dd>{{ row.delivery_reference || '—' }}</dd>
+        <dt>Письмо заказа</dt>
+        <dd>
+          {{ sent(m('confirmation_sent_at'), m('confirmation_error')) }}
+          <button type="button" class="cms-btn" @click="resend('confirmation')">Отправить ещё раз</button>
+        </dd>
+        <dt>Письмо с треком</dt>
+        <dd>
+          {{ sent(m('track_sent_at'), m('track_error')) }}
+          <button v-if="row.delivery_reference" type="button" class="cms-btn" @click="resend('track')">Отправить ещё раз</button>
+        </dd>
+        <dt v-if="mailError">Ошибка</dt><dd v-if="mailError">{{ mailError }}</dd>
         <dt>Согласие</dt><dd>{{ row.consent_at ? formatDate(row.consent_at) : '—' }}</dd>
       </dl>
       <table class="cms-table cms-table--compact">

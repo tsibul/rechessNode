@@ -131,7 +131,13 @@ export const SECTIONS: Section[] = [
     key: 'products', title: 'Товары', group: 'Каталог', permission: 'references', kind: 'table', table: 'product', ops: ALL,
     sort: 'id', search: true,
     columns: [{ key: 'id', label: '№', sortable: true }, nameCol, { key: 'description', label: 'Описание' }],
-    fields: [nameField, { key: 'description', label: 'Описание', type: 'textarea' }]
+    fields: [
+      nameField, { key: 'description', label: 'Описание', type: 'textarea' },
+      { key: 'weight_g', label: 'Вес, г', type: 'number', nullable: true, hint: 'Нужен для расчёта доставки' },
+      { key: 'length_mm', label: 'Длина, мм', type: 'number', nullable: true },
+      { key: 'width_mm', label: 'Ширина, мм', type: 'number', nullable: true },
+      { key: 'height_mm', label: 'Высота, мм', type: 'number', nullable: true }
+    ]
   },
   {
     key: 'pairs', title: 'Пары цветов', group: 'Каталог', permission: 'references', kind: 'table', table: 'item', ops: ALL,
@@ -279,8 +285,7 @@ export const SECTIONS: Section[] = [
     fields: [
       { key: 'order_state_id', label: 'Статус', type: 'select', ref: 'order_state', required: true },
       { key: 'payment_state', label: 'Оплата', type: 'enum', options: PAYMENT_STATES, required: true },
-      { key: 'delivery_reference', label: 'Трек-номер', type: 'text' },
-      { key: 'delivery_cost', label: 'Стоимость доставки, ₽', type: 'number', nullable: true, hint: 'Пусто — доставка не считалась' },
+      { key: 'delivery_reference', label: 'Трек-номер', type: 'text', hint: 'При сохранении нового номера покупателю уходит письмо со ссылкой на отслеживание' },
       { key: 'comment', label: 'Комментарий', type: 'textarea' }
     ]
   },
@@ -317,6 +322,22 @@ export const SECTIONS: Section[] = [
       { key: 'ordered', label: 'Не оформленные', type: 'checkbox', params: { ordered: '0' } }
     ],
     fields: []
+  },
+  {
+    key: 'delivery-tariffs', title: 'Тарифы доставки', group: 'Продажи', permission: 'prices', kind: 'table', table: 'delivery_tariff', ops: ALL,
+    sort: 'priority', search: true,
+    columns: [
+      nameCol, { key: 'city', label: 'Город' }, { key: 'weight_to', label: 'Вес до, г' },
+      { key: 'price', label: 'Цена', kind: 'money' }, prioCol
+    ],
+    fields: [
+      nameField,
+      { key: 'address_delivery', label: 'До двери (иначе — пункт выдачи)', type: 'boolean' },
+      { key: 'city', label: 'Город', type: 'text', nullable: true, hint: 'Пусто — любой город; тариф города выбирается раньше общего' },
+      { key: 'weight_to', label: 'Вес до, г', type: 'number', nullable: true, hint: 'Пусто — без ограничения' },
+      { key: 'price', label: 'Цена, ₽', type: 'number', required: true },
+      { ...priorityField, hint: 'Меньше — раньше, при прочих равных' }
+    ]
   },
   {
     key: 'order-states', title: 'Статусы заказа', group: 'Продажи', permission: 'references', kind: 'table', table: 'order_state', ops: ALL,
