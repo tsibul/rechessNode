@@ -338,6 +338,18 @@ describe('uploads', () => {
     expect(served.status).toBe(200)
   })
 
+  it('writes WebP and AVIF copies of a real image', async () => {
+    const sharp = (await import('sharp')).default
+    const jpg = await sharp({ create: { width: 32, height: 24, channels: 3, background: '#c0392b' } }).jpeg().toBuffer()
+    const a = await login('refs')
+    const res = await a.post('/api/cms/uploads').attach('file', jpg, 'a.jpg').expect(201)
+    const base = res.body.photo.replace(/\.jpg$/, '')
+    for (const ext of ['webp', 'avif']) {
+      const served = await request(app).get(`/uploads/${base}.${ext}`)
+      expect(served.status).toBe(200)
+    }
+  })
+
   it('refuses non-images, missing files, and users without rights', async () => {
     const a = await login('refs')
     await a.post('/api/cms/uploads').attach('file', Buffer.from('<?php echo 1;'), { filename: 'a.png', contentType: 'image/png' }).expect(400)
@@ -357,11 +369,17 @@ describe('uploads', () => {
 describe('publish', () => {
   it('runs a build, records the result, blocks a parallel start', async () => {
     let release: () => void = () => undefined
-    setPublishRunner(() => new Promise((resolve) => { release = () => resolve({ ok: true, log: 'ok' }) }))
+    let started: () => void = () => undefined
+    const runnerStarted = new Promise<void>((resolve) => { started = resolve })
+    setPublishRunner(() => new Promise((resolve) => {
+      release = () => resolve({ ok: true, log: 'ok' })
+      started()
+    }))
     const a = await login('pub')
     const start = await a.post('/api/cms/publish').expect(202)
     expect(['queued', 'running']).toContain(start.body.publication.state)
     await a.post('/api/cms/publish').expect(409)
+    await runnerStarted
     release()
     await waitForIdle()
     const one = await a.get(`/api/cms/publications/${start.body.publication.id}`).expect(200)
@@ -389,6 +407,19 @@ describe('publish', () => {
     expect(row2.state).toBe('failed')
     expect(row2.log).toMatch(/PUBLISH_COMMAND/)
     if (saved) process.env.PUBLISH_COMMAND = saved
+  })
+
+  it('shell runner keeps the output of a successful build and stops a hung one', async () => {
+    const saved = { c: process.env.PUBLISH_COMMAND, t: process.env.PUBLISH_TIMEOUT_MS }
+    process.env.PUBLISH_COMMAND = 'echo built-ok'
+    expect(await shellRunner()).toEqual({ ok: true, log: 'built-ok\n' })
+    process.env.PUBLISH_COMMAND = 'echo oops >&2; exit 3'
+    expect(await shellRunner()).toMatchObject({ ok: false, log: expect.stringContaining('oops') })
+    process.env.PUBLISH_COMMAND = 'sleep 30'
+    process.env.PUBLISH_TIMEOUT_MS = '200'
+    expect(await shellRunner()).toMatchObject({ ok: false, log: expect.stringContaining('stopped after') })
+    if (saved.c === undefined) delete process.env.PUBLISH_COMMAND; else process.env.PUBLISH_COMMAND = saved.c
+    if (saved.t === undefined) delete process.env.PUBLISH_TIMEOUT_MS; else process.env.PUBLISH_TIMEOUT_MS = saved.t
   })
 
   it('needs the publish permission', async () => {

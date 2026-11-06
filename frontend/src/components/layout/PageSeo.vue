@@ -1,34 +1,26 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useHead } from '@unhead/vue'
-import type { Seo } from '@/data/types'
-import { getSetting } from '@/data/content'
+import type { Photo, Seo } from '@/data/types'
+import { getProduct, getSeller, getSettings } from '@/data/content'
+import { livePrice } from '@/data/livePrice'
+import { buildHead } from '@/seo/head'
 
-const props = defineProps<{ seo: Seo; path: string }>()
+const props = defineProps<{ seo: Seo; path: string; withProduct?: boolean; photos?: Photo[] }>()
 
-const site = getSetting('site.url')
-const image = props.seo.ogImage ? `${site}${props.seo.ogImage}` : undefined
-const title = props.seo.ogTitle || props.seo.title
-const description = props.seo.ogDescription || props.seo.description
+const fallbackImage = computed(() => props.photos?.find((p) => p.src)?.src ?? null)
 
-// Basic tags. JSON-LD, canonical rules and counters are stage 9.
-useHead({
-  title: props.seo.title,
-  meta: [
-    { name: 'description', content: props.seo.description },
-    { name: 'robots', content: props.seo.robotsIndex ? 'index, follow' : 'noindex, nofollow' },
-    { property: 'og:title', content: title },
-    { property: 'og:description', content: description },
-    { property: 'og:type', content: 'website' },
-    { property: 'og:url', content: `${site}${props.path}` },
-    { property: 'og:site_name', content: getSetting('site.name') },
-    { property: 'og:locale', content: 'ru_RU' },
-    { name: 'twitter:card', content: 'summary_large_image' },
-    { name: 'twitter:title', content: title },
-    { name: 'twitter:description', content: description },
-    { name: 'twitter:site', content: getSetting('social.twitter') },
-    ...(image ? [{ property: 'og:image', content: image }, { name: 'twitter:image', content: image }] : [])
-  ],
-  link: [{ rel: 'canonical', href: `${site}${props.path}` }]
+// Reactive: the JSON-LD price follows the one the backend answered in the browser.
+useHead(() => {
+  const product = getProduct()
+  return buildHead({
+    seo: props.seo,
+    path: props.path,
+    settings: getSettings(),
+    seller: getSeller(),
+    fallbackImage: fallbackImage.value,
+    product: props.withProduct ? { data: product, price: livePrice.value ?? product.price } : null
+  })
 })
 </script>
 

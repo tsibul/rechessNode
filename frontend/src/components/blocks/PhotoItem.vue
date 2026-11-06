@@ -1,18 +1,23 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { Photo } from '@/data/types'
+import { pictureSources } from '@/seo/picture'
 
-defineProps<{ photo: Photo }>()
+const props = defineProps<{ photo: Photo }>()
+const sources = computed(() => pictureSources(props.photo.src))
 </script>
 
 <template>
-  <img
-    v-if="photo.src"
-    class="photo"
-    :src="photo.src"
-    :alt="photo.alt"
-    :style="{ aspectRatio: String(photo.ratio) }"
-    loading="lazy"
-  >
+  <picture v-if="photo.src">
+    <source v-for="s in sources" :key="s.type" :type="s.type" :srcset="s.srcset">
+    <img
+      class="photo"
+      :src="photo.src"
+      :alt="photo.alt"
+      :style="{ aspectRatio: String(photo.ratio) }"
+      loading="lazy"
+    >
+  </picture>
   <div
     v-else
     class="photo photo--placeholder"

@@ -10,6 +10,7 @@ import path from 'path'
 import { requireAuth, requirePermission } from '../../middleware/cmsAuth'
 import { ApiError } from '../../middleware/error'
 import { wrap } from '../../utils/async'
+import { makeVariants } from '../../services/images'
 
 export const MAX_UPLOAD_BYTES = 10 * 1024 * 1024
 
@@ -50,7 +51,9 @@ cmsUploadsRouter.post(
     if (!ext) throw new ApiError(400, 'Unsupported image type')
     const name = `${randomBytes(16).toString('hex')}.${ext}`
     await fs.mkdir(uploadDir(), { recursive: true })
-    await fs.writeFile(path.join(uploadDir(), name), req.file.buffer, { flag: 'wx' })
+    const target = path.join(uploadDir(), name)
+    await fs.writeFile(target, req.file.buffer, { flag: 'wx' })
+    await makeVariants(target)
     res.status(201).json({ photo: name })
   })
 )

@@ -5,17 +5,17 @@
  */
 -->
 <script setup lang="ts">
-import type { Seo } from '@/data/types'
+import type { Photo, Seo } from '@/data/types'
 import Header from '@/components/layout/Header.vue'
 import Footer from '@/components/layout/Footer.vue'
 import PageSeo from '@/components/layout/PageSeo.vue'
 
-defineProps<{ seo: Seo; path: string }>()
+defineProps<{ seo: Seo; path: string; withProduct?: boolean; photos?: Photo[] }>()
 </script>
 
 <template>
   <div class="static-page">
-    <PageSeo :seo="seo" :path="path" />
+    <PageSeo :seo="seo" :path="path" :with-product="withProduct" :photos="photos" />
     <Header />
     <main class="content">
       <slot />
