@@ -6,6 +6,7 @@ import type { Knex } from 'knex'
 import { db } from '../db'
 import { ApiError } from '../middleware/error'
 import { notDeleted } from '../utils/db'
+import { shortProductName } from '../utils/productName'
 import { hashToken, newToken } from '../utils/visitor'
 import { currentPrice } from './catalog'
 import { cartWeight, quoteDelivery } from './delivery'
@@ -16,7 +17,7 @@ export const MAX_QUANTITY = 99
 export const DEFAULT_CONSENT_VERSION = 'v1'
 
 export interface CartView {
-  items: { item_id: number; name: string; article: string; photo: string | null; quantity: number; price: number; sum: number }[]
+  items: { item_id: number; name: string; product_name: string; article: string; photo: string | null; quantity: number; price: number; sum: number }[]
   count: number
   total: number
 }
@@ -45,7 +46,8 @@ async function lines(cartId: number, k: Knex | Knex.Transaction) {
       .where('ci.cart_id', cartId),
     'ci.deleted'
   )
-    .select('ci.item_id', 'ci.quantity', 'i.name', 'i.product_id', 'm.code as m_code', 's.code as s_code')
+    .join('product as p', 'p.id', 'i.product_id')
+    .select('ci.item_id', 'ci.quantity', 'i.name', 'i.product_id', 'p.name as product_name', 'm.code as m_code', 's.code as s_code')
     .orderBy('ci.id')
 }
 
@@ -60,7 +62,7 @@ export async function buildCartView(cartId: number, k: Knex | Knex.Transaction =
     const photo = await notDeleted(k('item_photo').where({ item_id: r.item_id }))
       .orderBy('priority').orderBy('id').first('photo')
     items.push({
-      item_id: r.item_id, name: r.name, article: `${r.m_code}${r.s_code}`, photo: photo?.photo ?? null,
+      item_id: r.item_id, name: r.name, product_name: shortProductName(r.product_name), article: `${r.m_code}${r.s_code}`, photo: photo?.photo ?? null,
       quantity: r.quantity, price, sum: price * r.quantity
     })
   }
@@ -212,11 +214,12 @@ export async function getOrderView(token: string | null, number: number) {
   const rows = await notDeleted(
     db('order_item as oi')
       .join('item as i', 'i.id', 'oi.item_id')
+      .join('product as p', 'p.id', 'i.product_id')
       .join('color as m', 'm.id', 'i.main_color')
       .join('color as s', 's.id', 'i.second_color')
       .where('oi.order_id', order.id),
     'oi.deleted'
-  ).select('oi.item_id', 'oi.quantity', 'oi.price', 'i.name', 'm.code as m_code', 's.code as s_code').orderBy('oi.id')
+  ).select('oi.item_id', 'oi.quantity', 'oi.price', 'i.name', 'p.name as product_name', 'm.code as m_code', 's.code as s_code').orderBy('oi.id')
   return {
     number: order.number, date: order.date, sum: order.sum, delivery_cost: order.delivery_cost ?? null,
     state: state?.name ?? null, payment_state: order.payment_state,
@@ -226,10 +229,12 @@ export async function getOrderView(token: string | null, number: number) {
     phone: order.phone, e_mail: order.e_mail,
     address_delivery: Boolean(order.address_delivery), delivery_address: order.delivery_address,
     delivery_point_code: order.delivery_point_code ?? null, comment: order.comment ?? null,
-    items: rows.map((r) => ({
-      item_id: r.item_id, name: r.name, article: `${r.m_code}${r.s_code}`,
+    items: await Promise.all(rows.map(async (r) => ({
+      item_id: r.item_id, name: r.name, product_name: shortProductName(r.product_name),
+      photo: (await notDeleted(db('item_photo').where({ item_id: r.item_id })).orderBy('priority').orderBy('id').first('photo'))?.photo ?? null,
+      article: `${r.m_code}${r.s_code}`,
       quantity: r.quantity, price: r.price, sum: r.price * r.quantity
-    }))
+    })))
   }
 }
 

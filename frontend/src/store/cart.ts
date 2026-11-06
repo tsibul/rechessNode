@@ -9,6 +9,7 @@ import { api } from '@/services/api'
 export interface CartLine {
   item_id: number
   name: string
+  product_name: string
   article: string
   photo: string | null
   quantity: number

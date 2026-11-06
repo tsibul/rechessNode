@@ -4,6 +4,7 @@ import path from 'node:path'
 import { connect, hashPassword } from './db'
 import { STATE_FILE, TMP, State } from './state'
 import { randomBytes } from 'node:crypto'
+import { createRequire } from 'node:module'
 import { acquireLock, releaseLock } from '../../backend/src/testing/leakCheck'
 
 /** Creates the test CMS users (one per role, random passwords kept only in .tmp) and publishes the first site. */
@@ -40,6 +41,15 @@ async function setup() {
       await db('user').insert({
         name: `E2E ${key}`, login: u.login, password: await hashPassword(u.password), role_id: role.id, deleted: false
       })
+    }
+    // The API of the test run has its own empty upload folder: put a plain picture under every photo name,
+    // so thumbnails in the cart and in the mail can be checked.
+    const sharp = createRequire(path.resolve(__dirname, '..', '..', 'backend', 'package.json'))('sharp')
+    fs.mkdirSync(path.join(TMP, 'uploads'), { recursive: true })
+    for (const { photo: file } of await db('item_photo').where({ deleted: false }).select('photo')) {
+      if (typeof file !== 'string' || file.includes('/') || file.includes('\\')) continue
+      const img = await sharp({ create: { width: 320, height: 320, channels: 3, background: '#b08a6a' } }).jpeg().toBuffer()
+      fs.writeFileSync(path.join(TMP, 'uploads', file), img)
     }
     for (const code of ['counter.metrika', 'counter.vk']) {
       const row = await db('setting').where({ code }).first('value')

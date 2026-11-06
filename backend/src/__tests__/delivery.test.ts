@@ -13,6 +13,11 @@ import {
 } from '../testing/fixtures'
 import { hashToken } from '../utils/visitor'
 
+import os from 'os'
+import sharp from 'sharp'
+
+const uploadRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'rechess-mail-'))
+process.env.UPLOAD_DIR = uploadRoot
 const app = createApp()
 const prefix = tag()
 let cat: Catalog
@@ -43,6 +48,7 @@ beforeAll(async () => {
   tariffs = await createTariffs(prefix)
   await db('product').where({ id: cat.productId }).update({ weight_g: 600 })
   userId = (await createUser(prefix, 'admin')).id
+  await sharp({ create: { width: 400, height: 300, channels: 3, background: '#a00' } }).jpeg().toFile(path.join(uploadRoot, `${prefix}.jpg`))
 })
 
 beforeEach(() => {
@@ -52,6 +58,7 @@ beforeEach(() => {
 
 afterAll(async () => {
   setMailSender(null)
+  fs.rmSync(uploadRoot, { recursive: true, force: true })
   const ids = tokens.length ? await db('client').whereIn('tokenHash', tokens.map(hashToken)).pluck('id') : []
   await dropClients(ids)
   await db('user').where({ id: userId }).delete()
@@ -155,6 +162,32 @@ describe('mail', () => {
     const eml = fs.readFileSync(path.join(outboxDir(), files[0]), 'utf8')
     expect(eml).toMatch(/^From: /m)
     expect(eml).toMatch(/Subject: /)
+  })
+
+  it('shows the product name and embeds the item photo in the mail without a public site', async () => {
+    const v = await buyer(1)
+    await v.post('/api/orders').send(contact()).expect(201)
+    const html = sent[0].html
+    expect(html).toContain('cid:item-')
+    expect(html).not.toMatch(/src="https?:/)
+    expect(sent[0].attachments).toHaveLength(1)
+    const thumb = sent[0].attachments![0]
+    expect(html).toContain(`cid:${thumb.cid}`)
+    expect(thumb.content.subarray(0, 3).equals(Buffer.from([0xff, 0xd8, 0xff]))).toBe(true)
+    expect((await sharp(thumb.content).metadata()).width).toBe(160)
+    const name = (await db('product').where({ id: cat.productId }).first('name')).name.split('\n')[0]
+    expect(html).toContain(name.replace(/&/g, '&amp;'))
+  })
+
+  it('writes the photo into the .eml as an inline part', async () => {
+    setMailSender(null)
+    const v = await buyer(1)
+    await v.post('/api/orders').send(contact({ e_mail: `${prefix}-img@example.com` })).expect(201)
+    const file = fs.readdirSync(outboxDir()).find((f) => f.includes(`${prefix}-img@example.com`))!
+    const eml = fs.readFileSync(path.join(outboxDir(), file), 'utf8')
+    expect(eml).toMatch(/Content-Type: multipart\/related/)
+    expect(eml).toMatch(/Content-ID: <item-\d+@rechess>/)
+    expect(eml).toMatch(/Content-Type: image\/jpeg/)
   })
 
   it('fills templates and builds the tracking link', () => {

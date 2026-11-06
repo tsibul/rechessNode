@@ -9,13 +9,14 @@ import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import ShopPage from '@/components/layout/ShopPage.vue'
 import { api } from '@/services/api'
+import { uploadUrl } from '@/data/api'
 
 interface Order {
   number: number; sum: number; delivery_cost: number | null; state: string | null
   tracking_url?: string | null; delivery_reference?: string | null
   payment_state?: string; payment?: { url: string | null; state: string } | null
   name: string; e_mail: string; phone: string; address_delivery: boolean; delivery_address: string
-  items: Array<{ item_id: number; name: string; article: string; quantity: number; price: number; sum: number }>
+  items: Array<{ item_id: number; name: string; product_name: string; photo: string | null; article: string; quantity: number; price: number; sum: number }>
 }
 
 const route = useRoute()
@@ -41,7 +42,10 @@ onMounted(async () => {
       <h1>Заказ № {{ order.number }} оформлен</h1>
       <p>Спасибо! Мы подтвердим заказ на {{ order.e_mail }} и сообщим номер для отслеживания посылки.</p>
       <ul class="items">
-        <li v-for="i in order.items" :key="i.item_id">{{ i.name }} × {{ i.quantity }} — {{ rub(i.sum) }}</li>
+        <li v-for="i in order.items" :key="i.item_id" class="items__line">
+          <img v-if="i.photo" :src="uploadUrl(i.photo)" :alt="i.name" class="items__photo">
+          <span><template v-if="i.product_name">{{ i.product_name }}, </template>{{ i.name }} × {{ i.quantity }} — {{ rub(i.sum) }}</span>
+        </li>
       </ul>
       <p v-if="order.delivery_cost !== null">Доставка: {{ rub(order.delivery_cost) }}</p>
       <p>Итого: {{ rub(order.sum) }}</p>
@@ -76,8 +80,18 @@ onMounted(async () => {
 .items {
   margin: 20px 0;
 
-  li {
+  &__line {
+    display: flex;
+    align-items: center;
+    gap: 12px;
     padding: 4px 0;
+  }
+
+  &__photo {
+    width: 56px;
+    height: 56px;
+    flex-shrink: 0;
+    object-fit: cover;
   }
 }
 
