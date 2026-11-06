@@ -77,9 +77,9 @@ describe('CMS Page', () => {
       
       expect(menuItems).toHaveLength(5)
       expect(menuItems[0].text()).toBe('главная')
-      expect(menuItems[1].text()).toBe('настройки')
+      expect(menuItems[1].text()).toBe('заказы')
       expect(menuItems[2].text()).toBe('клиенты')
-      expect(menuItems[3].text()).toBe('заказы')
+      expect(menuItems[3].text()).toBe('настройки')
       expect(menuItems[4].text()).toBe('корзина')
     })
 

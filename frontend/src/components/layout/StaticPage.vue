@@ -1,34 +1,25 @@
 <!--
 /**
- * Base layout component for static pages.
- * Includes shared header, footer and client-side components.
+ * Base layout of the public pages: SEO tags, header, content, footer.
  * @component StaticPage
  */
 -->
 <script setup lang="ts">
+import type { Seo } from '@/data/types'
 import Header from '@/components/layout/Header.vue'
 import Footer from '@/components/layout/Footer.vue'
+import PageSeo from '@/components/layout/PageSeo.vue'
 
-// Props
-defineProps<{
-  seoComponent?: any
-}>()
+defineProps<{ seo: Seo; path: string }>()
 </script>
 
 <template>
   <div class="static-page">
-    <!-- SEO -->
-    <component :is="seoComponent" v-if="seoComponent" />
-
-    <!-- Header -->
+    <PageSeo :seo="seo" :path="path" />
     <Header />
-
-    <!-- Page Content -->
     <main class="content">
       <slot />
     </main>
-
-    <!-- Footer -->
     <Footer />
   </div>
 </template>

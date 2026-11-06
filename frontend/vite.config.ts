@@ -40,12 +40,11 @@ export default defineConfig({
             generateSitemap()
         },
         includedRoutes(routes) {
-            return ['/', '/about', '/shop']
+            return ['/', '/about', '/shop', '/where-to-buy', '/privacy', '/personal-data']
         },
         excludedRoutes: [
             '/cms',
-            '/cart',
-            '/cabinet'
+            '/cart'
         ]
     } as ViteSSGOptions,
     ssr: {
