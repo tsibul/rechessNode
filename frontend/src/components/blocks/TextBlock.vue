@@ -39,12 +39,15 @@ defineProps<{ title?: string; hideTitle?: boolean; html: string }>()
 @media (max-width: 1160px) {
   .text {
     padding: 0 20px;
+    // content-box: the padding must not push the block out of the screen
+    max-width: calc(100% - 40px);
   }
 }
 
 @media (max-width: 660px) {
   .text {
     padding: 0 15px;
+    max-width: calc(100% - 30px);
 
     &__body :deep(p) {
       margin-bottom: 18px;

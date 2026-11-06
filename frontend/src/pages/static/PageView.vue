@@ -25,7 +25,7 @@ const photos = computed(() => [
 ])
 // Every page needs one h1 for search engines and screen readers; when no block brings it, the page name is added (hidden).
 const needsH1 = computed(() => !page.value.blocks.some((b) =>
-  b.code === 'product' || b.code === 'shops' || (b.code === 'text' && (b.title || /<h1[\s>]/i.test(b.html)))))
+  b.code === 'product' || b.code === 'columns' && !!b.title || (b.code === 'text' && (b.title || /<h1[\s>]/i.test(b.html)))))
 const path = computed(() => (props.slug === 'index' ? '/' : `/${props.slug}`))
 </script>
 
