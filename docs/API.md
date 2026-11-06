@@ -180,11 +180,11 @@
 
 ### Фото
 
-`POST /api/cms/uploads` (`multipart/form-data`, поле `file`; право — любое из `references`, `pages`, `seo`, `settings`) → 201 `{ "photo": "a1b2….jpg" }`. Только JPEG, PNG, WebP, AVIF (по содержимому, не по расширению), до 10 МБ. Имя случайное, исходное не сохраняется. Полученное имя записывается в поле `photo` нужной таблицы. Конвертация в WebP/AVIF — этап 9.
+`POST /api/cms/uploads` (`multipart/form-data`, поле `file`; право — любое из `references`, `pages`, `seo`, `settings`) → 201 `{ "photo": "a1b2….jpg" }`. Только JPEG, PNG, WebP, AVIF (по содержимому, не по расширению), до 10 МБ. Имя случайное, исходное не сохраняется. Полученное имя записывается в поле `photo` нужной таблицы. Рядом с JPEG/PNG сохраняются копии `<имя>.webp` и `<имя>.avif` (sharp); перед каждой публикацией и при старте сервера недостающие копии досоздаются.
 
 ### Публикация
 
-- `POST /api/cms/publish` (право `publish`) → 202 `{ "publication": { "id", "state": "queued", … } }`. Запускает пересборку командой из `PUBLISH_COMMAND` (окружение). Если сборка уже идёт — 409. Если команда не задана — запись завершается `failed` с пояснением в `log`.
+- `POST /api/cms/publish` (право `publish`) → 202 `{ "publication": { "id", "state": "queued", … } }`. Запускает пересборку командой из `PUBLISH_COMMAND` (окружение; в `backend/.env.example` — `node ../frontend/scripts/publish.mjs`). Скрипт собирает сайт в `PUBLISH_TARGET/releases/<метка>` (по умолчанию `<репозиторий>/site`) с `API_URL`, проверяет `index.html`, `sitemap.xml`, `robots.txt`, затем атомарно переключает ссылку `current` и оставляет `KEEP_RELEASES` (3) релизов. Ошибка сборки удаляет черновой релиз, текущий сайт не меняется. Время ограничено `PUBLISH_TIMEOUT_MS` (15 минут по умолчанию), вывод сборки сохраняется в `log` и при успехе, и при ошибке. Если сборка уже идёт — 409. Если команда не задана — запись завершается `failed` с пояснением в `log`.
 - `GET /api/cms/publications?limit=20` (право `publish`) → `{ "publications": [{ "id", "state", "started_by", "started_at", "finished_at", "log" }] }`, новые первыми. Состояния: `queued`, `running`, `done`, `failed`.
 - `GET /api/cms/publications/:id` → одна запись.
 
