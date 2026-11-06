@@ -68,7 +68,7 @@ export function fill(template: string, values: Record<string, string>): string {
 }
 
 export const htmlToText = (html: string) =>
-  html.replace(/<br\s*\/?>/gi, '\n').replace(/<\/(p|tr|li|h\d)>/gi, '\n')
+  html.replace(/<\/td>\s*<td[^>]*>/gi, ' — ').replace(/<br\s*\/?>/gi, '\n').replace(/<\/(p|tr|li|h\d)>/gi, '\n')
     .replace(/<a [^>]*href="([^"]+)"[^>]*>([^<]*)<\/a>/gi, '$2 ($1)').replace(/<[^>]+>/g, '')
     .replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&amp;/g, '&')
     .replace(/\n{3,}/g, '\n\n').trim()
