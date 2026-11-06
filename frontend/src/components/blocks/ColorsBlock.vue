@@ -31,6 +31,13 @@ function dragEnd(e: PointerEvent) {
   el.classList.remove('is-dragging')
 }
 
+function nextSlide(e: MouseEvent) {
+  const strip = (e.currentTarget as HTMLElement).parentElement?.querySelector<HTMLElement>('.card__slides')
+  if (!strip) return
+  const step = (strip.children[0] as HTMLElement).offsetWidth + 15
+  strip.scrollBy({ left: strip.scrollLeft + strip.clientWidth >= strip.scrollWidth - 4 ? -strip.scrollLeft : step, behavior: 'smooth' })
+}
+
 const lines = (name: string) => name.split(' / ')
 const inCart = (id: number) => cart.items.find((l) => l.item_id === id)?.quantity ?? 0
 
@@ -56,10 +63,13 @@ async function change(id: number, delta: 1 | -1) {
 <template>
   <section class="colors" data-testid="colors">
     <article v-for="pair in pairs" :key="pair.id" class="card">
+      <div class="card__media">
       <div class="card__slides" :class="{ 'card__slides--single': pair.photos.length < 2 }" data-testid="pair-slides" tabindex="0" @pointerdown="dragStart" @pointermove="dragMove" @pointerup="dragEnd" @pointercancel="dragEnd" :aria-label="`Фото: ${pair.name}`">
         <div v-for="(p, i) in pair.photos" :key="i" class="card__slide">
           <PhotoItem :photo="p" />
         </div>
+      </div>
+      <button v-if="pair.photos.length > 1" type="button" class="card__next" aria-label="Следующее фото" data-testid="pair-next" @click="nextSlide">→</button>
       </div>
       <p class="card__name">
         <span v-for="(l, i) in lines(pair.name)" :key="i" class="card__line">{{ l }}</span>
@@ -110,6 +120,27 @@ async function change(id: number, delta: 1 | -1) {
   }
 
   &__slides--single &__slide { flex-basis: 100%; }
+
+  &__media { position: relative; }
+
+  &__next {
+    display: none;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    width: 36px;
+    padding: 0;
+    border: none;
+    background: none;
+    font: inherit;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+
+    @media (hover: hover) and (min-width: 661px) { display: flex; }
+  }
 
   &__line {
     display: block;

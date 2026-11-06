@@ -39,13 +39,14 @@ describe('public pages', () => {
     w.unmount()
   })
 
-  it('colours show one photo per pair and no stray arrow', async () => {
+  it('colours show three slides per pair and one next arrow', async () => {
     const w = await render('colors')
     const cards = w.findAll('.card')
     expect(cards.length).toBeGreaterThan(0)
-    for (const c of cards) expect(c.findAll('img').length).toBe(1)
-    expect(w.find('.card__arrow').exists()).toBe(false)
-    expect(w.text()).not.toContain('→')
+    for (const c of cards) {
+      expect(c.findAll('.card__slide').length).toBe(3)
+      expect(c.findAll('.card__next').length).toBe(1)
+    }
   })
 
   it('about renders text', async () => {
@@ -64,7 +65,7 @@ describe('public pages', () => {
   it('colours page lists the pairs with add buttons', async () => {
     const w = await render('colors')
     expect(w.findAll('.card').length).toBe(7)
-    expect(w.find('.card button').text()).toContain('добавить')
+    expect(w.find('.card__actions button').text()).toContain('добавить')
   })
 
   it('has no where-to-buy page, the route redirects to the shop', () => {

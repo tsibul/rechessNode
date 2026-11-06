@@ -40,7 +40,11 @@ function pairs(): ColorPair[] {
   ]
   return list.map(([name, m, mh, s, sh], i) => ({
     id: i + 1, name, main: c(m, mh), second: c(s, sh),
-    photos: [photo(`pair-${i + 1}`, `Шахматы ReChess: ${name}`, 1082, 862)]
+    photos: [
+      photo(`pair-${i + 1}`, `Шахматы ReChess: ${name}, фигуры сбоку`, 1082, 862),
+      photo(`top-${i + 1}`, `Шахматы ReChess: ${name}, фигуры сверху`, 1080, 860),
+      photo(`board-${i + 1}`, `Шахматы ReChess: ${name}, доска с фигурами`, 1080, 860)
+    ]
   }))
 }
 
