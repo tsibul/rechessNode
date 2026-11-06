@@ -13,7 +13,7 @@ defineProps<{ title?: string; columns: string[] }>()
 <style lang="scss" scoped>
 .columns {
   display: grid;
-  grid-template-columns: repeat(3, 540px);
+  grid-template-columns: repeat(3, minmax(0, 540px));
   column-gap: 30px;
   align-items: start;
   padding: 0 15px;
