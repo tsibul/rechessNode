@@ -182,7 +182,7 @@
 
 ### Публикация
 
-- `POST /api/cms/publish` (право `publish`) → 202 `{ "publication": { "id", "state": "queued", … } }`. Запускает пересборку командой из `PUBLISH_COMMAND` (окружение). Если сборка уже идёт — 409. Если команда не задана — запись сразу `failed` с пояснением в `log`.
+- `POST /api/cms/publish` (право `publish`) → 202 `{ "publication": { "id", "state": "queued", … } }`. Запускает пересборку командой из `PUBLISH_COMMAND` (окружение). Если сборка уже идёт — 409. Если команда не задана — запись завершается `failed` с пояснением в `log`.
 - `GET /api/cms/publications?limit=20` (право `publish`) → `{ "publications": [{ "id", "state", "started_by", "started_at", "finished_at", "log" }] }`, новые первыми. Состояния: `queued`, `running`, `done`, `failed`.
 - `GET /api/cms/publications/:id` → одна запись.
 
@@ -190,7 +190,7 @@
 
 ## Окружение
 
-`JWT_SECRET` (обязателен для CMS), `FRONTEND_URL`, `COOKIE_SECRET`, `PUBLISH_COMMAND`, `PUBLISH_CWD`, `UPLOAD_DIR` (по умолчанию `backend/uploads`), `PORT`, `NODE_ENV`, параметры БД.
+`JWT_SECRET` (обязателен для CMS), `FRONTEND_URL`, `PUBLISH_COMMAND`, `PUBLISH_CWD`, `UPLOAD_DIR` (по умолчанию `backend/uploads`), `PORT`, `NODE_ENV`, параметры БД.
 
 ## Решения этапа
 
