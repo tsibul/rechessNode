@@ -19,7 +19,7 @@ const LOCK = path.join(os.tmpdir(), 'rechess-jest-db.lock')
  * corrupt each other's row counts (and the shared counts file). Only one run holds the lock;
  * a lock left by a dead process is taken over.
  */
-async function acquireLock(): Promise<void> {
+export async function acquireLock(): Promise<void> {
   const deadline = Date.now() + 15 * 60 * 1000
   for (;;) {
     try {
@@ -45,7 +45,7 @@ async function acquireLock(): Promise<void> {
   }
 }
 
-function releaseLock(): void {
+export function releaseLock(): void {
   fs.rmSync(LOCK, { recursive: true, force: true })
 }
 
