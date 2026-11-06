@@ -16,6 +16,8 @@ type Row = Record<string, any>
 interface Spec {
   table: string
   permission: Permission
+  /** Extra permissions that may only read (GET) the table, e.g. SEO editors list pages. */
+  readPermissions?: Permission[]
   /** Fields accepted on create. Update accepts the same fields, all optional, except `updateOmit`. */
   fields: ZodRawShape
   updateOmit?: string[]
@@ -45,7 +47,7 @@ const REGISTRY: Record<string, Spec> = {
     fields: { name: req(255), code: z.string().length(2), hex: z.string().regex(/^[0-9a-fA-F]{6}$/).nullish() }
   },
   product: {
-    table: 'product', permission: 'references', ops: { create: true, update: true, remove: true }, searchColumn: 'name',
+    table: 'product', permission: 'references', readPermissions: ['prices'], ops: { create: true, update: true, remove: true }, searchColumn: 'name',
     fields: { name: req(255), description: z.string().max(65000).nullish() }
   },
   item: {
@@ -75,7 +77,7 @@ const REGISTRY: Record<string, Spec> = {
     }
   },
   order_state: {
-    table: 'order_state', permission: 'references', ops: { create: true, update: true, remove: true }, searchColumn: 'name',
+    table: 'order_state', permission: 'references', readPermissions: ['orders'], ops: { create: true, update: true, remove: true }, searchColumn: 'name',
     fields: { name: req(255), priority }
   },
   price: {
@@ -90,7 +92,7 @@ const REGISTRY: Record<string, Spec> = {
     }
   },
   page: {
-    table: 'page', permission: 'pages', ops: { create: true, update: true, remove: true }, searchColumn: 'name',
+    table: 'page', permission: 'pages', readPermissions: ['seo'], ops: { create: true, update: true, remove: true }, searchColumn: 'name',
     fields: { slug: z.string().trim().min(1).max(255).regex(/^[a-z0-9-]+$/), name: req(255) }
   },
   page_block: {
@@ -227,7 +229,8 @@ function single(v: unknown): string | undefined {
 cmsTablesRouter.use('/:name', (req, res, next) => {
   try {
     const spec = specOf(req.params.name)
-    requirePermission(spec.permission)(req, res, next)
+    const reading = req.method === 'GET' || req.method === 'HEAD'
+    requirePermission(spec.permission, ...(reading ? spec.readPermissions ?? [] : []))(req, res, next)
   } catch (e) { next(e) }
 })
 

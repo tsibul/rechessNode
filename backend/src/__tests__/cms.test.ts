@@ -41,7 +41,7 @@ beforeAll(async () => {
   cat = await createCatalog(prefix)
   for (const [suffix, perms] of [
     ['none', []], ['orders', ['orders']], ['refs', ['references']], ['pub', ['publish']],
-    ['all', [...PERMISSIONS]]
+    ['all', [...PERMISSIONS]], ['seo', ['seo']], ['prices', ['prices']]
   ] as [string, string[]][]) {
     const code = await makeRole(suffix, perms)
     userIds.push((await createUser(prefix, code)).id)
@@ -130,6 +130,22 @@ describe('permissions', () => {
     await all.get('/api/cms/tables/nope').expect(404)
     await all.get('/api/cms/tables/constructor').expect(404)
     await all.get('/api/cms/tables/__proto__').expect(404)
+  })
+})
+
+describe('read-only access for related permissions', () => {
+  it('lets order, SEO and price editors read their lookup tables but not write them', async () => {
+    const orders = await login('orders')
+    await orders.get('/api/cms/tables/order_state').expect(200)
+    await orders.post('/api/cms/tables/order_state').send({ name: 'x', priority: 1 }).expect(403)
+    await orders.get('/api/cms/tables/page').expect(403)
+    const seo = await login('seo')
+    await seo.get('/api/cms/tables/page').expect(200)
+    await seo.post('/api/cms/tables/page').send({ slug: 'zz-x', name: 'x' }).expect(403)
+    await seo.get('/api/cms/tables/product').expect(403)
+    const prices = await login('prices')
+    await prices.get('/api/cms/tables/product').expect(200)
+    await prices.post('/api/cms/tables/product').send({ name: 'x' }).expect(403)
   })
 })
 
