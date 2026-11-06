@@ -6,9 +6,9 @@ export interface ClientRow {
   city: string | null
   phone: string | null
   e_mail: string | null
-  adress_delivery: boolean
+  address_delivery: boolean
   delivery_address: string | null
-  comment: string | null
+  delivery_point_code: string | null
   ip_address: string | null
   deleted: boolean
 } 

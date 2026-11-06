@@ -11,10 +11,21 @@ export class Order extends BaseSettings {
   private date: Date
   private client_id: number
   private sum: number
+  private name: string
+  private family_name: string | null
+  private city: string | null
+  private phone: string
+  private e_mail: string
   private delivery_address: string
   private address_delivery: boolean
   private order_state_id: number
+  private delivery_point_code: string | null
+  private delivery_cost: number | null
   private delivery_reference: string | null
+  private payment_state: string
+  private comment: string | null
+  private consent_at: Date
+  private consent_version: string | null
   private last_updated: Date
   private updated_by: number | null
   private deleted: boolean
@@ -26,10 +37,21 @@ export class Order extends BaseSettings {
     this.date = data.date
     this.client_id = data.client_id
     this.sum = data.sum
+    this.name = data.name
+    this.family_name = data.family_name
+    this.city = data.city
+    this.phone = data.phone
+    this.e_mail = data.e_mail
     this.delivery_address = data.delivery_address
     this.address_delivery = data.address_delivery
     this.order_state_id = data.order_state_id
+    this.delivery_point_code = data.delivery_point_code
+    this.delivery_cost = data.delivery_cost
     this.delivery_reference = data.delivery_reference
+    this.payment_state = data.payment_state
+    this.comment = data.comment
+    this.consent_at = data.consent_at
+    this.consent_version = data.consent_version
     this.last_updated = data.last_updated
     this.updated_by = data.updated_by
     this.deleted = data.deleted

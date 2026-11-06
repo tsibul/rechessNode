@@ -9,6 +9,7 @@ export class ShopPhoto extends BaseSettings {
   private name: string
   private priority: number
   private photo: string
+  private shop_id: number
   private deleted: boolean
 
   public constructor(data: ShopPhotoRow) {
@@ -17,6 +18,7 @@ export class ShopPhoto extends BaseSettings {
     this.name = data.name
     this.priority = data.priority
     this.photo = data.photo
+    this.shop_id = data.shop_id
     this.deleted = data.deleted
   }
 

@@ -8,8 +8,7 @@ export class Shops extends BaseSettings {
   private id: number
   private name: string
   private address: string
-  private start_working: Date | null
-  private end_working: Date | null
+  private working_hours: string | null
   private phone: string | null
   private web_site: string | null
   private deleted: boolean
@@ -19,8 +18,7 @@ export class Shops extends BaseSettings {
     this.id = data.id
     this.name = data.name
     this.address = data.address
-    this.start_working = data.start_working
-    this.end_working = data.end_working
+    this.working_hours = data.working_hours
     this.phone = data.phone
     this.web_site = data.web_site
     this.deleted = data.deleted

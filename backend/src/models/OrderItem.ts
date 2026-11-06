@@ -8,6 +8,7 @@ export class OrderItem extends BaseSettings {
   private id: number
   private item_id: number
   private quantity: number
+  private price: number
   private order_id: number
   private deleted: boolean
 
@@ -16,6 +17,7 @@ export class OrderItem extends BaseSettings {
     this.id = data.id
     this.item_id = data.item_id
     this.quantity = data.quantity
+    this.price = data.price
     this.order_id = data.order_id
     this.deleted = data.deleted
   }
