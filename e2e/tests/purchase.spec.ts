@@ -53,7 +53,17 @@ test('buyer buys a pair of colours and gets the confirmation', async ({ page }) 
   await page.locator('input[name="consent"]').check()
   await page.getByTestId('submit').click()
 
+  // Payment stub: the page says that no money is charged. First decline, repeat, then pay.
+  await expect(page).toHaveURL(/\/order\/\d+\/pay$/)
+  await expect(page.getByTestId('pay-stub-note')).toContainText('деньги не списываются')
+  await expect(page.getByTestId('pay-amount')).toContainText('₽')
+  await page.getByTestId('pay-fail').click()
+  await expect(page.getByTestId('pay-declined')).toBeVisible()
+  await page.getByTestId('pay-retry').click()
+  await page.getByTestId('pay-ok').click()
+
   await expect(page).toHaveURL(/\/order\/\d+$/)
+  await expect(page.getByTestId('order-paid')).toBeVisible()
   const done = page.getByTestId('order-done')
   await expect(done).toContainText('оформлен')
   await expect(done).toContainText(email)

@@ -75,6 +75,10 @@ test.describe('CMS work', () => {
     const dialog = page.getByRole('dialog')
     await expect(dialog).toContainText(`№ ${number}`)
     await expect(dialog).toContainText('Тестов')
+    // Payment status of the stub is visible; the place for the 54-FZ receipt is there.
+    await expect(dialog.getByTestId('order-payment')).toContainText('Ожидает оплаты')
+    await expect(dialog.getByTestId('order-payment')).toContainText('заглушка')
+    await expect(dialog.getByTestId('order-receipt')).toBeVisible()
     await dialog.getByRole('textbox', { name: /Трек-номер/ }).fill('E2E123456')
     await dialog.getByRole('button', { name: 'Сохранить' }).click()
     // The card stays open after saving (it shows the saved record); the track is in the details.
