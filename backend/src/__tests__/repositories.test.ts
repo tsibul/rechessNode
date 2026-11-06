@@ -37,7 +37,7 @@ describe('Repository Tests - Get One Record from Each Table', () => {
       const item = await ItemRepository.findById(1)
       expect(item).toBeDefined()
       if (item) {
-        expect(item.getVerboseName()).toBe('Предмет')
+        expect(item.getVerboseName()).toBe('Товар')
       }
     })
   })
