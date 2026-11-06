@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { getProduct } from '@/data/content'
+import { api } from '@/services/api'
 import { useCartStore } from '@/store/cart'
 import PhotoItem from './PhotoItem.vue'
 
@@ -8,13 +9,35 @@ const product = getProduct()
 const selectedId = ref(product.pairs[0]?.id ?? 0)
 const selected = computed(() => product.pairs.find((p) => p.id === selectedId.value) ?? product.pairs[0])
 const added = ref(false)
-const price = computed(() => new Intl.NumberFormat('ru-RU').format(product.price))
+const failed = ref<string | null>(null)
+const busy = ref(false)
+// The rendered page carries the price of the build; the actual one is asked from the backend.
+const currentPrice = ref(product.price)
+const price = computed(() => new Intl.NumberFormat('ru-RU').format(currentPrice.value))
+
+onMounted(async () => {
+  try {
+    currentPrice.value = (await api<{ price: number }>(`/products/${product.id}/price`)).price
+  } catch {
+    // keep the price of the build
+  }
+})
 
 async function buy() {
-  if (!selected.value) return
-  // Local cart until the server cart of stage 7; the item id is the colour pair.
-  await useCartStore().addItem({ id: selected.value.id, name: `${product.name}, ${selected.value.name}`, price: product.price, quantity: 1 })
-  added.value = true
+  if (!selected.value || busy.value) return
+  busy.value = true
+  added.value = false
+  failed.value = null
+  try {
+    await useCartStore().add(selected.value.id)
+    added.value = true
+  } catch (e) {
+    failed.value = (e as { status?: number }).status === 429
+      ? 'Слишком много запросов, попробуйте через минуту.'
+      : 'Не удалось добавить в корзину. Попробуйте ещё раз.'
+  } finally {
+    busy.value = false
+  }
 }
 </script>
 
@@ -38,8 +61,9 @@ async function buy() {
       </fieldset>
 
       <p class="product__price" data-testid="price">{{ price }} ₽</p>
-      <button type="button" class="product__buy" @click="buy">В корзину</button>
-      <p v-if="added" class="product__added" role="status">Добавлено в корзину</p>
+      <button type="button" class="product__buy" :disabled="busy" @click="buy">В корзину</button>
+      <p v-if="added" class="product__added" role="status">Добавлено в корзину. <router-link to="/cart">Перейти в корзину</router-link></p>
+      <p v-if="failed" class="product__added" role="alert">{{ failed }}</p>
     </div>
   </section>
 </template>

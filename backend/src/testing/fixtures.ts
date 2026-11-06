@@ -15,13 +15,27 @@ export interface Catalog {
   priceIds: number[]
 }
 
+const CODE_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+
+/** Colour with a random unique 2-character code (retries on a clash with other rows). */
+async function insertColor(prefix: string, letter: string): Promise<number> {
+  for (let attempt = 0; ; attempt++) {
+    const code = CODE_CHARS[Math.floor(Math.random() * 36)] + CODE_CHARS[Math.floor(Math.random() * 36)]
+    try {
+      const [id] = await db('color').insert({ name: `${prefix} ${letter}`, code, hex: '112233', deleted: false })
+      return id
+    } catch (e) {
+      if ((e as { code?: string }).code !== 'ER_DUP_ENTRY' || attempt > 20) throw e
+    }
+  }
+}
+
 /** Product with 2 pairs, prices: past 100, later past 200, future 300, deleted-latest 400. */
 export async function createCatalog(prefix: string): Promise<Catalog> {
   const [productId] = await db('product').insert({ name: `${prefix} product`, description: 'd', deleted: false })
   const colorIds: number[] = []
-  for (const code of ['A', 'B', 'C']) {
-    const [id] = await db('color').insert({ name: `${prefix} ${code}`, code: `${code}${Math.floor(Math.random() * 10)}`, hex: '112233', deleted: false })
-    colorIds.push(id)
+  for (const letter of ['A', 'B', 'C']) {
+    colorIds.push(await insertColor(prefix, letter))
   }
   const itemIds: number[] = []
   for (const [m, s] of [[0, 1], [1, 2]]) {

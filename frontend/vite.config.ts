@@ -48,7 +48,9 @@ export default defineConfig({
         },
         excludedRoutes: [
             '/cms',
-            '/cart'
+            '/cart',
+            '/order',
+            '/order/:number'
         ]
     } as ViteSSGOptions,
     ssr: {

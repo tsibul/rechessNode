@@ -9,12 +9,12 @@ import { config } from 'dotenv'
 import type { Knex } from 'knex'
 import * as path from 'path'
 
-// Load environment variables
-config()
+// Load environment variables (backend/.env, independent of the working directory)
+config({ path: path.join(__dirname, '../../.env') })
 
 // Import knexfile configuration
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const knexConfig = require(path.join(process.cwd(), 'knexfile')).default as { [key: string]: Knex.Config }
+const knexConfig = require(path.join(__dirname, '../../knexfile')).default as { [key: string]: Knex.Config }
 
 // Determine current environment
 const environment = process.env.NODE_ENV || 'development'

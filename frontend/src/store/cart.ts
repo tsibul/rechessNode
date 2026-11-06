@@ -1,97 +1,75 @@
+/**
+ * Server cart of the anonymous visitor (docs/API.md). Prices and sums come from the backend only.
+ * The badge shows `rc_cart_count` (readable cookie) until the cart is loaded.
+ */
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
+import { api } from '@/services/api'
 
-interface CartItem {
-  id: number
+export interface CartLine {
+  item_id: number
   name: string
-  price: number
+  article: string
+  photo: string | null
   quantity: number
+  price: number
+  sum: number
 }
 
-const isBrowser = typeof window !== 'undefined'
+interface CartResponse {
+  items: CartLine[]
+  count: number
+  total: number
+}
 
-async function getCookies() {
-  if (!isBrowser) return null
-  const Cookies = (await import('js-cookie')).default
-  return Cookies
+function countFromCookie(): number {
+  if (typeof document === 'undefined') return 0
+  const m = document.cookie.match(/(?:^|;\s*)rc_cart_count=(\d+)/)
+  return m ? Number(m[1]) : 0
 }
 
 export const useCartStore = defineStore('cart', () => {
-  const items = ref<CartItem[]>([])
-  const isLoading = ref(false)
+  const items = ref<CartLine[]>([])
+  const count = ref(0)
+  const total = ref(0)
+  const loaded = ref(false)
+  const loading = ref(false)
+  const error = ref<string | null>(null)
 
-  // Getters
-  function totalItems() {
-    return items.value.reduce((sum, item) => sum + item.quantity, 0)
+  function apply(c: CartResponse) {
+    items.value = c.items
+    count.value = c.count
+    total.value = c.total
+    loaded.value = true
+    error.value = null
   }
 
-  function totalPrice() {
-    return items.value.reduce((sum, item) => sum + item.price * item.quantity, 0)
-  }
-
-  // Actions
-  async function initializeFromCookies() {
-    if (!isBrowser) return
-
-    const Cookies = await getCookies()
-    if (!Cookies) return
-
-    const savedCart = Cookies.get('cart')
-    if (savedCart) {
-      try {
-        items.value = JSON.parse(savedCart)
-      } catch (e) {
-        console.error('Failed to parse cart from cookies:', e)
-        items.value = []
-      }
+  async function run(fn: () => Promise<CartResponse>) {
+    loading.value = true
+    try {
+      apply(await fn())
+    } catch (e) {
+      error.value = (e as Error).message
+      throw e
+    } finally {
+      loading.value = false
     }
   }
 
-  async function saveToStorage() {
-    if (!isBrowser) return
-
-    const Cookies = await getCookies()
-    if (!Cookies) return
-
-    Cookies.set('cart', JSON.stringify(items.value), {
-      expires: 7,
-      path: '/',
-      secure: true,
-      sameSite: 'Strict'
-    })
+  const initCount = () => { if (!loaded.value) count.value = countFromCookie() }
+  const load = () => run(() => api<CartResponse>('/cart'))
+  const add = (itemId: number, quantity = 1) =>
+    run(() => api<CartResponse>('/cart/items', { method: 'POST', body: { item_id: itemId, quantity } }))
+  const setQuantity = (itemId: number, quantity: number) =>
+    run(() => api<CartResponse>(`/cart/items/${itemId}`, { method: 'PATCH', body: { quantity } }))
+  const remove = (itemId: number) =>
+    run(() => api<CartResponse>(`/cart/items/${itemId}`, { method: 'DELETE' }))
+  /** After an order: the server closed the cart. */
+  function reset() {
+    apply({ items: [], count: 0, total: 0 })
   }
 
-  async function addItem(item: CartItem) {
-    const existingItem = items.value.find(i => i.id === item.id)
-    if (existingItem) {
-      existingItem.quantity++
-    } else {
-      items.value.push({ ...item, quantity: 1 })
-    }
-    await saveToStorage()
-  }
+  const isEmpty = computed(() => items.value.length === 0)
 
-  async function removeItem(itemId: number) {
-    items.value = items.value.filter(item => item.id !== itemId)
-    await saveToStorage()
-  }
-
-  async function clearCart() {
-    items.value = []
-    await saveToStorage()
-  }
-
-  return {
-    // State
-    items,
-    isLoading,
-    // Getters
-    totalItems,
-    totalPrice,
-    // Actions
-    initializeFromCookies,
-    addItem,
-    removeItem,
-    clearCart
-  }
-}) 
+  return { items, count, total, loaded, loading, error, isEmpty, initCount, load, add, setQuantity, remove, reset }
+})
