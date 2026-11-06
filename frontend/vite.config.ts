@@ -21,6 +21,10 @@ export default defineConfig({
             '/api': {
                 target: 'http://localhost:3001',
                 changeOrigin: true
+            },
+            '/uploads': {
+                target: 'http://localhost:3001',
+                changeOrigin: true
             }
         },
     },
@@ -44,7 +48,9 @@ export default defineConfig({
         },
         excludedRoutes: [
             '/cms',
-            '/cart'
+            '/cart',
+            '/order',
+            '/order/:number'
         ]
     } as ViteSSGOptions,
     ssr: {
