@@ -1,0 +1,52 @@
+// Shared styles of the cart and order pages (in the style of the layout: plain text, grey and black).
+@use './vars' as *;
+
+.shop-page {
+  max-width: 720px;
+  padding: 30px 15px 0;
+
+  h1 {
+    margin-bottom: 30px;
+  }
+
+  p {
+    line-height: 22px;
+  }
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  height: 40px;
+  padding: 0 30px;
+  border: none;
+  border-radius: 5px;
+  background: $colorPrimary500;
+  color: $colorPrimary900;
+  cursor: pointer;
+  transition: background 0.2s;
+
+  &:hover:not(:disabled) {
+    background: $colorPrimary900;
+    color: #fff;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+}
+
+.btn-link {
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+  color: $colorPrimary900;
+}
+
+.notice {
+  margin-bottom: 20px;
+  padding: 12px 15px;
+  border: 1px solid $colorPrimary900;
+  border-radius: 5px;
+}
