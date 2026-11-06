@@ -52,9 +52,10 @@ describe('buildPayload', () => {
     const body = buildPayload(fields('users'), { name: 'a', login: 'b', password: '', role_id: 2 }, false)
     expect('password' in body).toBe(false)
     const order = buildPayload(fields('orders'), {
-      order_state_id: 1, payment_state: 'paid', delivery_reference: '', delivery_cost: null, comment: ''
+      order_state_id: 1, payment_state: 'paid', delivery_reference: '', comment: ''
     }, false)
-    expect(order.delivery_cost).toBeNull()
+    const product = buildPayload(fields('products'), { name: 'a', weight_g: null }, false)
+    expect(product.weight_g).toBeNull()
     expect(order.delivery_reference).toBeNull()
   })
 

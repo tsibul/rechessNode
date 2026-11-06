@@ -9,6 +9,7 @@ import { Permission, requireAuth, requirePermission } from '../../middleware/cms
 import { ApiError } from '../../middleware/error'
 import { wrap } from '../../utils/async'
 import { notDeleted } from '../../utils/db'
+import { sendOrderMail } from '../../services/mail'
 import { hashPassword } from '../../utils/password'
 
 type Row = Record<string, any>
@@ -27,6 +28,8 @@ interface Spec {
   decorate?: (rows: Row[]) => Promise<void>
   /** Transform validated data before writing. */
   prepare?: (data: Row, ctx: { creating: boolean; userId: number; id?: number }) => Promise<Row>
+  /** Runs after a successful update with the row as it was before. */
+  afterUpdate?: (id: number, before: Row) => Promise<void>
   /** Checks before delete. */
   beforeRemove?: (id: number, userId: number) => Promise<void>
   searchColumn?: string
@@ -48,7 +51,18 @@ const REGISTRY: Record<string, Spec> = {
   },
   product: {
     table: 'product', permission: 'references', readPermissions: ['prices'], ops: { create: true, update: true, remove: true }, searchColumn: 'name',
-    fields: { name: req(255), description: z.string().max(65000).nullish() }
+    fields: {
+      name: req(255), description: z.string().max(65000).nullish(),
+      weight_g: z.number().int().min(0).max(1000000).nullish(), length_mm: z.number().int().min(0).max(100000).nullish(),
+      width_mm: z.number().int().min(0).max(100000).nullish(), height_mm: z.number().int().min(0).max(100000).nullish()
+    }
+  },
+  delivery_tariff: {
+    table: 'delivery_tariff', permission: 'prices', ops: { create: true, update: true, remove: true }, searchColumn: 'name',
+    fields: {
+      name: req(255), address_delivery: z.boolean(), city: opt(255),
+      weight_to: z.number().int().min(0).max(10000000).nullish(), price: z.number().int().min(0).max(10000000), priority
+    }
   },
   item: {
     table: 'item', permission: 'references', ops: { create: true, update: true, remove: true }, searchColumn: 'name',
@@ -171,10 +185,19 @@ const REGISTRY: Record<string, Spec> = {
   order: {
     table: 'order', permission: 'orders', ops: { update: true }, searchColumn: 'name',
     fields: {
-      order_state_id: fk, delivery_reference: opt(255), delivery_cost: z.number().int().min(0).nullable(),
+      order_state_id: fk, delivery_reference: opt(255),
       payment_state: z.enum(PAYMENT_STATES), comment: opt(1000)
     },
-    prepare: async (data, ctx) => ({ ...data, updated_by: ctx.userId, last_updated: db.fn.now() }),
+    prepare: async (data, ctx) => ({
+      ...data,
+      ...('delivery_reference' in data ? { delivery_reference: data.delivery_reference ? String(data.delivery_reference).trim() || null : null } : {}),
+      updated_by: ctx.userId, last_updated: db.fn.now()
+    }),
+    // A new tracking number goes to the buyer once; a failed mail is stored in the order, the update stands.
+    afterUpdate: async (id) => {
+      const o = await db('order').where({ id }).first('delivery_reference', 'track_sent_ref')
+      if (o?.delivery_reference && o.delivery_reference !== o.track_sent_ref) await sendOrderMail(id, 'track')
+    },
     decorate: async (rows) => {
       if (!rows.length) return
       const states = await db('order_state').select('id', 'name')
@@ -315,7 +338,9 @@ cmsTablesRouter.patch('/:name/:id', wrap(async (req, res) => {
   if (!Object.keys(data).length) throw new ApiError(400, 'Nothing to update')
   if (!(await db(spec.table).where({ id }).first('id'))) throw new ApiError(404, 'Not found')
   if (spec.prepare) data = await spec.prepare(data, { creating: false, userId: req.cmsUser!.id, id })
+  const before = await db(spec.table).where({ id }).first()
   await db(spec.table).where({ id }).update(data)
+  if (spec.afterUpdate) await spec.afterUpdate(id, before)
   const [row] = await readRows(spec, [id])
   res.json({ row })
 }))
@@ -338,4 +363,16 @@ cmsTablesRouter.post('/:name/:id/restore', wrap(async (req, res) => {
   await db(spec.table).where({ id }).update({ deleted: false })
   const [row] = await readRows(spec, [id])
   res.json({ row })
+}))
+
+/** Sends a mail of the order again (after a failure or on request). Right `orders`. */
+cmsTablesRouter.post('/order/:id/send-mail', wrap(async (req, res) => {
+  const id = idOf(req.params.id)
+  const { kind } = z.object({ kind: z.enum(['confirmation', 'track']) }).strict().parse(req.body)
+  const order = await db('order').where({ id }).first('id', 'delivery_reference')
+  if (!order) throw new ApiError(404, 'Not found')
+  if (kind === 'track' && !order.delivery_reference) throw new ApiError(400, 'Order has no tracking number')
+  const ok = await sendOrderMail(id, kind)
+  const [row] = await readRows(specOf('order'), [id])
+  res.json({ ok, row })
 }))

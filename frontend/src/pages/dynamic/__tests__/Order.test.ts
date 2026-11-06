@@ -32,6 +32,7 @@ async function setup(handler: (url: string, init: any) => Promise<unknown>) {
 
 const base = (url: string) => {
   if (url.endsWith('/cart')) return res(200, cartBody)
+  if (url.includes('/checkout/delivery')) return res(200, { weight_g: 0, door: { cost: 500, name: 'Москва' }, pickup: null })
   if (url.endsWith('/checkout/prefill')) return res(200, { contact: null })
   return null
 }
@@ -40,6 +41,7 @@ async function fill(w: any, consent: boolean) {
   await w.find('[name=name]').setValue('Иван')
   await w.find('[name=phone]').setValue('+7 999 000-00-00')
   await w.find('[name=e_mail]').setValue('a@b.ru')
+  await w.find('[name=city]').setValue('Москва')
   await w.find('[name=delivery_address]').setValue('Москва, ул. 1')
   if (consent) await w.find('[name=consent]').setValue(true)
 }
@@ -76,6 +78,23 @@ describe('Order page', () => {
     await flushPromises()
     expect(w.find('[data-testid=form-error]').text()).toContain('Слишком много')
     expect(router.currentRoute.value.path).toBe('/order')
+  })
+
+  it('shows the delivery cost and total for the city, blocks unavailable method', async () => {
+    vi.useFakeTimers()
+    try {
+      const { w } = await setup((u) => base(u) as any)
+      await w.find('[name=city]').setValue('Москва')
+      await vi.advanceTimersByTimeAsync(500)
+      await flushPromises()
+      expect(w.find('[data-testid=order-total]').text()).toContain('Итого: 1\u00a0500')
+      await w.findAll('input[name=delivery]')[1].setValue(true)
+      await flushPromises()
+      expect(w.find('[data-testid=order-total]').text()).toContain('недоступна')
+      expect(w.find('[data-testid=submit]').attributes('disabled')).toBeDefined()
+    } finally {
+      vi.useRealTimers()
+    }
   })
 
   it('shows the empty state for an empty cart', async () => {

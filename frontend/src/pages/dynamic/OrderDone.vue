@@ -12,6 +12,7 @@ import { api } from '@/services/api'
 
 interface Order {
   number: number; sum: number; delivery_cost: number | null; state: string | null
+  tracking_url?: string | null; delivery_reference?: string | null
   name: string; e_mail: string; phone: string; address_delivery: boolean; delivery_address: string
   items: Array<{ item_id: number; name: string; article: string; quantity: number; price: number; sum: number }>
 }
@@ -41,8 +42,11 @@ onMounted(async () => {
       <ul class="items">
         <li v-for="i in order.items" :key="i.item_id">{{ i.name }} × {{ i.quantity }} — {{ rub(i.sum) }}</li>
       </ul>
+      <p v-if="order.delivery_cost !== null">Доставка: {{ rub(order.delivery_cost) }}</p>
       <p>Итого: {{ rub(order.sum) }}</p>
-      <p>{{ order.delivery_cost === null ? 'Стоимость доставки будет сообщена отдельно.' : `Доставка: ${rub(order.delivery_cost)}` }}</p>
+      <p v-if="order.tracking_url" data-testid="order-tracking">
+        Отслеживание: <a :href="order.tracking_url" target="_blank" rel="noopener">{{ order.delivery_reference }}</a>
+      </p>
       <p>{{ order.address_delivery ? 'Доставка до двери' : 'Пункт выдачи' }}: {{ order.delivery_address }}</p>
       <p class="actions"><router-link to="/" class="btn">На главную</router-link></p>
     </div>

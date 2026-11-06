@@ -86,4 +86,7 @@ debug.log
 # Local tooling
 .claude/settings.local.json*
 .serena/
+
+# Local mail outbox (stage 8)
+/backend/outbox/
 /site/

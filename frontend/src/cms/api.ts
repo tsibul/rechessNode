@@ -100,6 +100,9 @@ export const cmsApi = {
   restore: async (table: string, id: number): Promise<Row> =>
     (await http.post(`/tables/${table}/${id}/restore`)).data.row,
 
+  sendOrderMail: async (id: number, kind: 'confirmation' | 'track'): Promise<Row> =>
+    (await http.post(`/tables/order/${id}/send-mail`, { kind })).data.row,
+
   roles: async (): Promise<RoleWithPermissions[]> => (await http.get('/roles')).data.roles,
   setPermissions: async (id: number, permissions: string[]): Promise<RoleWithPermissions> =>
     (await http.put(`/roles/${id}/permissions`, { permissions })).data.role,

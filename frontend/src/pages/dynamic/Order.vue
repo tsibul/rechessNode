@@ -6,7 +6,7 @@
  */
 -->
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import ShopPage from '@/components/layout/ShopPage.vue'
 import { api, ApiError } from '@/services/api'
@@ -25,12 +25,41 @@ const form = reactive({
   name: '', family_name: '', city: '', phone: '', e_mail: '',
   address_delivery: true, delivery_address: '', delivery_point_code: '', comment: '', consent: false
 })
+interface Quote { cost: number; name: string }
+const quotes = ref<{ door: Quote | null; pickup: Quote | null } | null>(null)
+const quoteLoading = ref(false)
+let quoteTimer: ReturnType<typeof setTimeout> | undefined
+let quoteSeq = 0
+const quote = computed(() => (quotes.value ? (form.address_delivery ? quotes.value.door : quotes.value.pickup) : null))
+const deliveryUnavailable = computed(() => quotes.value !== null && quote.value === null)
+const orderTotal = computed(() => cart.total + (quote.value?.cost ?? 0))
+
+async function loadQuotes() {
+  const city = form.city.trim()
+  const seq = ++quoteSeq
+  if (!city || cart.isEmpty) { quotes.value = null; quoteLoading.value = false; return }
+  quoteLoading.value = true
+  try {
+    const r = await api<{ door: Quote | null; pickup: Quote | null }>(`/checkout/delivery?city=${encodeURIComponent(city)}`)
+    if (seq === quoteSeq) quotes.value = { door: r.door, pickup: r.pickup }
+  } catch {
+    if (seq === quoteSeq) quotes.value = null
+  } finally {
+    if (seq === quoteSeq) quoteLoading.value = false
+  }
+}
+
+watch(() => [form.city, cart.total, cart.loaded], () => {
+  clearTimeout(quoteTimer)
+  quoteTimer = setTimeout(loadQuotes, 400)
+})
+
 const errors = reactive<Record<string, string>>({})
 const formError = ref<string | null>(null)
 const submitting = ref(false)
 
 const FIELD_LABELS: Record<string, string> = {
-  name: 'Укажите имя', phone: 'Проверьте номер телефона', e_mail: 'Проверьте адрес электронной почты',
+  name: 'Укажите имя', city: 'Укажите город', phone: 'Проверьте номер телефона', e_mail: 'Проверьте адрес электронной почты',
   delivery_address: 'Укажите адрес', delivery_point_code: 'Укажите код пункта выдачи', consent: 'Нужно согласие на обработку данных'
 }
 
@@ -58,13 +87,14 @@ function validate(): boolean {
   if (!form.name.trim()) errors.name = FIELD_LABELS.name
   if (form.phone.replace(/\D/g, '').length < 10) errors.phone = FIELD_LABELS.phone
   if (!/^\S+@\S+\.\S+$/.test(form.e_mail.trim())) errors.e_mail = FIELD_LABELS.e_mail
+  if (!form.city.trim()) errors.city = FIELD_LABELS.city
   if (!form.delivery_address.trim()) errors.delivery_address = FIELD_LABELS.delivery_address
   if (!form.address_delivery && !form.delivery_point_code.trim()) errors.delivery_point_code = FIELD_LABELS.delivery_point_code
   if (!form.consent) errors.consent = FIELD_LABELS.consent
   return Object.keys(errors).length === 0
 }
 
-const canSubmit = computed(() => !submitting.value && !cart.isEmpty)
+const canSubmit = computed(() => !submitting.value && !cart.isEmpty && !deliveryUnavailable.value)
 
 async function submit() {
   formError.value = null
@@ -74,7 +104,7 @@ async function submit() {
     const { order } = await api<{ order: { number: number } }>('/orders', {
       method: 'POST',
       body: {
-        name: form.name, family_name: form.family_name || null, city: form.city || null,
+        name: form.name, family_name: form.family_name || null, city: form.city.trim(),
         phone: form.phone, e_mail: form.e_mail,
         address_delivery: form.address_delivery, delivery_address: form.delivery_address,
         delivery_point_code: form.address_delivery ? null : form.delivery_point_code,
@@ -91,6 +121,9 @@ async function submit() {
         if (field in FIELD_LABELS) errors[field] = FIELD_LABELS[field]
       }
       formError.value = 'Проверьте выделенные поля.'
+    } else if (err.status === 422) {
+      formError.value = 'Доставка в этот город выбранным способом недоступна. Выберите другой способ или город.'
+      loadQuotes()
     } else if (err.status === 400) {
       formError.value = 'Корзина пуста. Добавьте шахматы и повторите.'
       cart.load().catch(() => {})
@@ -118,7 +151,11 @@ async function submit() {
 
       <div v-if="cart.loaded" class="summary" data-testid="order-summary">
         <p v-for="line in cart.items" :key="line.item_id">{{ line.name }} × {{ line.quantity }} — {{ rub(line.sum) }}</p>
-        <p class="summary__total">Итого: {{ rub(cart.total) }}. Стоимость доставки рассчитывается отдельно.</p>
+        <p class="summary__total" data-testid="order-total">
+          <template v-if="quote">Товары: {{ rub(cart.total) }}. Доставка: {{ rub(quote.cost) }}. Итого: {{ rub(orderTotal) }}.</template>
+          <template v-else-if="deliveryUnavailable">Доставка в этот город выбранным способом недоступна.</template>
+          <template v-else>Товары: {{ rub(cart.total) }}. Стоимость доставки рассчитается после ввода города.</template>
+        </p>
       </div>
 
       <label class="field">Имя
@@ -137,20 +174,21 @@ async function submit() {
         <span v-if="errors.e_mail" class="field__error" role="alert">{{ errors.e_mail }}</span>
       </label>
       <label class="field">Город
-        <input v-model="form.city" name="city" autocomplete="address-level2">
+        <input v-model="form.city" name="city" autocomplete="address-level2" required>
+        <span v-if="errors.city" class="field__error" role="alert">{{ errors.city }}</span>
       </label>
 
       <fieldset class="field">
         <legend>Доставка</legend>
-        <label class="inline"><input v-model="form.address_delivery" type="radio" name="delivery" :value="true"> До двери</label>
-        <label class="inline"><input v-model="form.address_delivery" type="radio" name="delivery" :value="false"> В пункт выдачи</label>
+        <label class="inline"><input v-model="form.address_delivery" type="radio" name="delivery" :value="true"> До двери<template v-if="quotes?.door"> — {{ rub(quotes.door.cost) }}</template></label>
+        <label class="inline"><input v-model="form.address_delivery" type="radio" name="delivery" :value="false"> В пункт выдачи<template v-if="quotes?.pickup"> — {{ rub(quotes.pickup.cost) }}</template></label>
       </fieldset>
       <label class="field">{{ form.address_delivery ? 'Адрес доставки' : 'Адрес пункта выдачи' }}
         <input v-model="form.delivery_address" name="delivery_address" autocomplete="street-address" required>
         <span v-if="errors.delivery_address" class="field__error" role="alert">{{ errors.delivery_address }}</span>
       </label>
       <label v-if="!form.address_delivery" class="field">Код пункта выдачи
-        <input v-model="form.delivery_point_code" name="delivery_point_code">
+        <input v-model="form.delivery_point_code" name="delivery_point_code" placeholder="Например, MSK123">
         <span v-if="errors.delivery_point_code" class="field__error" role="alert">{{ errors.delivery_point_code }}</span>
       </label>
       <label class="field">Комментарий

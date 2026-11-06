@@ -8,6 +8,8 @@ import { ApiError } from '../middleware/error'
 import { notDeleted } from '../utils/db'
 import { hashToken, newToken } from '../utils/visitor'
 import { currentPrice } from './catalog'
+import { cartWeight, quoteDelivery } from './delivery'
+import { trackingUrl } from './mail'
 
 export const MAX_QUANTITY = 99
 /** Recorded when the setting `legal.consent_version` is empty. */
@@ -140,7 +142,7 @@ export async function removeItem(token: string | null, itemId: number): Promise<
 export interface OrderInput {
   name: string
   family_name?: string | null
-  city?: string | null
+  city: string
   phone: string
   e_mail: string
   address_delivery: boolean
@@ -159,6 +161,10 @@ export async function createOrder(token: string | null, input: OrderInput) {
         const view = await buildCartView(cart.id, trx)
         if (!view.items.length) throw new ApiError(400, 'Cart is empty')
 
+        const weight = await cartWeight(cart.id, trx)
+        const quote = await quoteDelivery(input.address_delivery, input.city, weight, trx)
+        if (!quote) throw new ApiError(422, 'Delivery is not available')
+
         const state = await notDeleted(trx('order_state')).orderBy('priority').orderBy('id').first('id')
         if (!state) throw new ApiError(500, 'No order states configured')
         const consent = await trx('setting').where({ code: 'legal.consent_version' }).first('value')
@@ -166,8 +172,9 @@ export async function createOrder(token: string | null, input: OrderInput) {
         const number = Number(maxRow?.m ?? 1000) + 1
 
         const [orderId] = await trx('order').insert({
-          number, client_id: client.id, sum: view.total, delivery_cost: null,
-          name: input.name, family_name: input.family_name ?? null, city: input.city ?? null,
+          number, client_id: client.id, sum: view.total + quote.cost, delivery_cost: quote.cost,
+          weight_g: weight, delivery_tariff_id: quote.tariff_id,
+          name: input.name, family_name: input.family_name ?? null, city: input.city,
           phone: input.phone, e_mail: input.e_mail,
           delivery_address: input.delivery_address, address_delivery: input.address_delivery,
           delivery_point_code: input.address_delivery ? null : input.delivery_point_code ?? null,
@@ -178,7 +185,7 @@ export async function createOrder(token: string | null, input: OrderInput) {
           order_id: orderId, item_id: i.item_id, quantity: i.quantity, price: i.price, deleted: false
         })))
         await trx('client').where({ id: client.id }).update({
-          name: input.name, family_name: input.family_name ?? null, city: input.city ?? null,
+          name: input.name, family_name: input.family_name ?? null, city: input.city,
           phone: input.phone, e_mail: input.e_mail, address_delivery: input.address_delivery,
           delivery_address: input.delivery_address,
           delivery_point_code: input.address_delivery ? null : input.delivery_point_code ?? null
@@ -201,6 +208,7 @@ export async function getOrderView(token: string | null, number: number) {
   const order = await notDeleted(db('order').where({ number, client_id: client.id })).first()
   if (!order) return null
   const state = await db('order_state').where({ id: order.order_state_id }).first('name')
+  const urlSetting = await db('setting').where({ code: 'delivery.tracking_url' }).first('value')
   const rows = await notDeleted(
     db('order_item as oi')
       .join('item as i', 'i.id', 'oi.item_id')
@@ -213,6 +221,7 @@ export async function getOrderView(token: string | null, number: number) {
     number: order.number, date: order.date, sum: order.sum, delivery_cost: order.delivery_cost ?? null,
     state: state?.name ?? null, payment_state: order.payment_state,
     delivery_reference: order.delivery_reference ?? null,
+    tracking_url: trackingUrl(urlSetting?.value ?? '', order.delivery_reference),
     name: order.name, family_name: order.family_name ?? null, city: order.city ?? null,
     phone: order.phone, e_mail: order.e_mail,
     address_delivery: Boolean(order.address_delivery), delivery_address: order.delivery_address,
@@ -232,4 +241,16 @@ export async function getPrefill(token: string | null) {
     e_mail: c.e_mail ?? null, address_delivery: Boolean(c.address_delivery),
     delivery_address: c.delivery_address ?? null, delivery_point_code: c.delivery_point_code ?? null
   }
+}
+
+/** Delivery options for the current cart and city: cost of each method or null if no tariff fits. */
+export async function getDeliveryOptions(token: string | null, city: string | null) {
+  const client = await findClient(token)
+  const cart = client ? await findOpenCart(client.id) : null
+  const weight = cart ? await cartWeight(cart.id) : 0
+  const pick = async (door: boolean) => {
+    const q = await quoteDelivery(door, city, weight)
+    return q ? { cost: q.cost, name: q.tariff_name } : null
+  }
+  return { weight_g: weight, door: await pick(true), pickup: await pick(false) }
 }

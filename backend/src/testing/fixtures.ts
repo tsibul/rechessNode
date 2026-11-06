@@ -91,3 +91,27 @@ export async function dropClients(ids: number[]): Promise<void> {
   await db('cart').whereIn('client_id', ids).delete()
   await db('client').whereIn('id', ids).delete()
 }
+
+export interface Tariffs { city: string; ids: number[] }
+
+/** Tariffs of a unique city: door 250 / pickup 150 up to 1000 g, door 400 / pickup 300 above (no limit). */
+export async function createTariffs(prefix: string): Promise<Tariffs> {
+  const city = `${prefix}-city`
+  const rows = [
+    { name: `${prefix} door light`, address_delivery: true, weight_to: 1000, price: 250 },
+    { name: `${prefix} door heavy`, address_delivery: true, weight_to: null, price: 400 },
+    { name: `${prefix} pickup light`, address_delivery: false, weight_to: 1000, price: 150 },
+    { name: `${prefix} pickup heavy`, address_delivery: false, weight_to: null, price: 300 }
+  ]
+  const ids: number[] = []
+  for (const r of rows) {
+    const [id] = await db('delivery_tariff').insert({ ...r, city, priority: 1, deleted: false })
+    ids.push(id)
+  }
+  return { city, ids }
+}
+
+export async function dropTariffs(t: Tariffs): Promise<void> {
+  await db('order').whereIn('delivery_tariff_id', t.ids).update({ delivery_tariff_id: null })
+  await db('delivery_tariff').whereIn('id', t.ids).delete()
+}
