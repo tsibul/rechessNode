@@ -90,3 +90,6 @@ debug.log
 # Local mail outbox (stage 8)
 /backend/outbox/
 /site/
+/e2e/.tmp/
+/e2e/test-results/
+/e2e/playwright-report/
