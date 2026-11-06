@@ -3,7 +3,7 @@
  * The CMS may leave things empty: whatever the API does not provide is taken from the
  * development content, so a page is never rendered empty.
  */
-import { api, apiBase } from '@/services/api'
+import { api } from '@/services/api'
 import { devContent } from './fixtures'
 import type { ColorPair, PageBlock, PageContent, Photo, Product, Seller, Shop, SiteContent } from './types'
 
@@ -29,7 +29,8 @@ interface ApiSite {
 }
 
 export function uploadUrl(file: string): string {
-  return `${import.meta.env.SSR ? apiBase() : import.meta.env.VITE_API_URL ?? ''}/uploads/${file}`
+  // Same on the server and in the browser: the built HTML must not carry a build-time host.
+  return `/uploads/${file}`
 }
 
 const photo = (p: ApiPhoto, ratio = 1): Photo => ({ src: uploadUrl(p.photo), alt: p.name, ratio })
@@ -79,7 +80,7 @@ function mapPage(fixture: PageContent, site: ApiSite): PageContent {
       ? {
           title: s.title, description: s.description,
           ogTitle: s.og_title ?? undefined, ogDescription: s.og_description ?? undefined,
-          ogImage: s.og_image ?? undefined, robotsIndex: s.robots_index
+          ogImage: s.og_image ? (/^(https?:)?\//.test(s.og_image) ? s.og_image : uploadUrl(s.og_image)) : undefined, robotsIndex: s.robots_index
         }
       : fixture.seo
   }
@@ -109,6 +110,8 @@ export async function loadSite(): Promise<SiteContent> {
   try {
     return mapSite(await api<ApiSite>('/site'))
   } catch (e) {
+    // A publication must never replace the site with the development texts.
+    if (import.meta.env.SSR && process.env.REQUIRE_API === '1') throw e
     console.warn('Site content from API is not available, using development content:', (e as Error).message)
     return devContent
   }

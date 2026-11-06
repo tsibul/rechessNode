@@ -8,6 +8,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { getSetting } from '@/data/content'
+import { startCounters } from '@/services/counters'
 
 const COOKIE = 'cookieConsent'
 const visible = ref(false)
@@ -23,6 +24,7 @@ async function accept() {
   const Cookies = (await import('js-cookie')).default
   Cookies.set(COOKIE, 'accepted', { expires: 365, path: '/', secure: location.protocol === 'https:', sameSite: 'Strict' })
   visible.value = false
+  startCounters()
 }
 </script>
 

@@ -86,3 +86,4 @@ debug.log
 # Local tooling
 .claude/settings.local.json*
 .serena/
+/site/

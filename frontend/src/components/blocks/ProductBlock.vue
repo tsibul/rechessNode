@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { getProduct } from '@/data/content'
+import { livePrice } from '@/data/livePrice'
 import { api } from '@/services/api'
 import { useCartStore } from '@/store/cart'
 import PhotoItem from './PhotoItem.vue'
@@ -18,6 +19,7 @@ const price = computed(() => new Intl.NumberFormat('ru-RU').format(currentPrice.
 onMounted(async () => {
   try {
     currentPrice.value = (await api<{ price: number }>(`/products/${product.id}/price`)).price
+    livePrice.value = currentPrice.value
   } catch {
     // keep the price of the build
   }
