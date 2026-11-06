@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "deny": [
+      "Bash(git push)",
+      "Bash(git push *)",
+      "Bash(git -C * push)",
+      "Bash(git -C * push *)",
+      "Edit(//mnt/datadisk/005_IDE_Projects/IdeaProjects/rechess2/**)"
+    ]
+  }
+}
