@@ -101,7 +101,7 @@ async function submit() {
   if (!validate()) return
   submitting.value = true
   try {
-    const { order } = await api<{ order: { number: number } }>('/orders', {
+    const { order } = await api<{ order: { number: number; payment?: { url: string | null } | null } }>('/orders', {
       method: 'POST',
       body: {
         name: form.name, family_name: form.family_name || null, city: form.city.trim(),
@@ -112,7 +112,8 @@ async function submit() {
       }
     })
     cart.reset()
-    await router.push(`/order/${order.number}`)
+    // With a payment provider the buyer pays first; the confirmation page shows the result.
+    await router.push(order.payment?.url ?? `/order/${order.number}`)
   } catch (e) {
     const err = e as ApiError
     if (err.status === 400 && err.details.length) {
@@ -127,6 +128,8 @@ async function submit() {
     } else if (err.status === 400) {
       formError.value = 'Корзина пуста. Добавьте шахматы и повторите.'
       cart.load().catch(() => {})
+    } else if (err.status === 503) {
+      formError.value = err.message
     } else if (err.status === 429) {
       formError.value = 'Слишком много попыток. Подождите несколько минут и повторите.'
     } else {

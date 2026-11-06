@@ -103,4 +103,27 @@ describe('Order page', () => {
     expect(w.find('[data-testid=order-empty]').exists()).toBe(true)
     expect(w.find('form').exists()).toBe(false)
   })
+
+  it('goes to the payment page when the order has a payment', async () => {
+    const { w, router } = await setup((u, init) => {
+      if (u.endsWith('/orders') && init?.method === 'POST') return res(201, { order: { number: 7, payment: { url: '/order/7/pay' } } })
+      return base(u) as any
+    })
+    await fill(w, true)
+    await w.find('form').trigger('submit')
+    await flushPromises()
+    expect(router.currentRoute.value.path).toBe('/order/7/pay')
+  })
+
+  it('shows the server message when payment is unavailable and keeps the form', async () => {
+    const { w, router } = await setup((u, init) => {
+      if (u.endsWith('/orders') && init?.method === 'POST') return res(503, { error: 'Оплата временно недоступна' })
+      return base(u) as any
+    })
+    await fill(w, true)
+    await w.find('form').trigger('submit')
+    await flushPromises()
+    expect(w.find('[data-testid=form-error]').text()).toContain('Оплата временно недоступна')
+    expect(router.currentRoute.value.path).toBe('/order')
+  })
 })

@@ -104,7 +104,9 @@ const photoCol: Column = { key: 'photo', label: 'Фото', kind: 'photo' }
 
 export const PAYMENT_STATES = [
   { value: 'not_paid', label: 'Не оплачен' },
+  { value: 'pending', label: 'Ожидает оплаты' },
   { value: 'paid', label: 'Оплачен' },
+  { value: 'failed', label: 'Оплата не прошла' },
   { value: 'refunded', label: 'Возврат' }
 ]
 

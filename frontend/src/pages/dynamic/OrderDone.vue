@@ -13,6 +13,7 @@ import { api } from '@/services/api'
 interface Order {
   number: number; sum: number; delivery_cost: number | null; state: string | null
   tracking_url?: string | null; delivery_reference?: string | null
+  payment_state?: string; payment?: { url: string | null; state: string } | null
   name: string; e_mail: string; phone: string; address_delivery: boolean; delivery_address: string
   items: Array<{ item_id: number; name: string; article: string; quantity: number; price: number; sum: number }>
 }
@@ -44,6 +45,13 @@ onMounted(async () => {
       </ul>
       <p v-if="order.delivery_cost !== null">Доставка: {{ rub(order.delivery_cost) }}</p>
       <p>Итого: {{ rub(order.sum) }}</p>
+      <p v-if="order.payment_state === 'paid'" data-testid="order-paid">Оплата получена.</p>
+      <p v-else-if="order.payment" data-testid="order-unpaid">
+        {{ order.payment.state === 'failed' ? 'Оплата не прошла.' : 'Заказ ещё не оплачен.' }}
+        <router-link v-if="order.payment.url" :to="order.payment.url" data-testid="order-pay-link">Перейти к оплате</router-link>
+      </p>
+      <!-- Place for the 54-FZ receipt (stage 11 does not issue receipts). -->
+      <p class="receipt" data-testid="receipt-slot" hidden></p>
       <p v-if="order.tracking_url" data-testid="order-tracking">
         Отслеживание: <a :href="order.tracking_url" target="_blank" rel="noopener">{{ order.delivery_reference }}</a>
       </p>
