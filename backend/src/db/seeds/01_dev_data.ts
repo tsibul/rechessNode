@@ -88,9 +88,11 @@ export async function seed(knex: Knex): Promise<void> {
   ])
 
   await knex('item_photo').insert(
-    itemIds.map((itemId, i) => ({
-      name: PAIRS[i][0], priority: 10, photo: `pair-${i + 1}.jpg`, item_id: itemId
-    }))
+    itemIds.flatMap((itemId, i) => ([
+      { name: `${PAIRS[i][0]}, фигуры сбоку`, priority: 10, photo: `pair-${i + 1}.jpg`, slot: 'side', item_id: itemId },
+      { name: `${PAIRS[i][0]}, фигуры сверху`, priority: 20, photo: `top-${i + 1}.jpg`, slot: 'top', item_id: itemId },
+      { name: `${PAIRS[i][0]}, доска с фигурами`, priority: 30, photo: `board-${i + 1}.jpg`, slot: 'board', item_id: itemId }
+    ]))
   )
   await knex('index_photo').insert(
     Array.from({ length: 32 }, (_, i) => ({ name: `Фото ${i + 1}`, priority: (i + 1) * 10, photo: `index-${pad(i + 1)}.jpg` }))
