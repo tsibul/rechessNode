@@ -12,6 +12,42 @@ const TABLES = [
   'price', 'user', 'page', 'page_block', 'seo', 'setting', 'shops', 'shop_photo', 'index_photo', 'seller', 'publication', 'delivery_tariff'
 ]
 const FILE = path.join(os.tmpdir(), 'rechess-jest-row-counts.json')
+const LOCK = path.join(os.tmpdir(), 'rechess-jest-db.lock')
+
+/**
+ * All sessions and worktrees of the machine share one database, so two jest runs at once
+ * corrupt each other's row counts (and the shared counts file). Only one run holds the lock;
+ * a lock left by a dead process is taken over.
+ */
+async function acquireLock(): Promise<void> {
+  const deadline = Date.now() + 15 * 60 * 1000
+  for (;;) {
+    try {
+      fs.mkdirSync(LOCK)
+      fs.writeFileSync(path.join(LOCK, 'pid'), String(process.pid))
+      return
+    } catch (e) {
+      if ((e as NodeJS.ErrnoException).code !== 'EEXIST') throw e
+    }
+    let alive = true
+    try {
+      process.kill(Number(fs.readFileSync(path.join(LOCK, 'pid'), 'utf8')), 0)
+    } catch (e) {
+      // Dead owner only; a missing pid file means the owner is just starting.
+      alive = (e as NodeJS.ErrnoException).code !== 'ESRCH'
+    }
+    if (!alive) {
+      fs.rmSync(LOCK, { recursive: true, force: true })
+      continue
+    }
+    if (Date.now() > deadline) throw new Error('Another jest run holds the shared database for too long')
+    await new Promise((r) => setTimeout(r, 1000))
+  }
+}
+
+function releaseLock(): void {
+  fs.rmSync(LOCK, { recursive: true, force: true })
+}
 
 async function counts(): Promise<Record<string, number>> {
   dotenv.config({ path: path.join(__dirname, '../../.env') })
@@ -28,10 +64,24 @@ async function counts(): Promise<Record<string, number>> {
 }
 
 export async function setup() {
-  fs.writeFileSync(FILE, JSON.stringify(await counts()))
+  await acquireLock()
+  try {
+    fs.writeFileSync(FILE, JSON.stringify(await counts()))
+  } catch (e) {
+    releaseLock()
+    throw e
+  }
 }
 
 export async function teardown() {
+  try {
+    await check()
+  } finally {
+    releaseLock()
+  }
+}
+
+async function check() {
   const before = JSON.parse(fs.readFileSync(FILE, 'utf8')) as Record<string, number>
   fs.unlinkSync(FILE)
   const after = await counts()
