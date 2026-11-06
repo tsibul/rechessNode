@@ -1,0 +1,124 @@
+@use '../styles/vars' as *;
+
+// CMS styles. All classes are prefixed with `cms`, the public site is not affected.
+$line: #d8d8d8;
+$soft: #f4f4f4;
+$danger: #b3261e;
+$ok: #1b6e3c;
+
+.cms {
+  min-height: 100vh;
+  color: $colorPrimary900;
+
+  * { font-family: Arial, 'PragmaticaWebMedium', sans-serif; font-size: 15px; line-height: 20px; }
+  h1, h2, h3 { font-weight: 600; }
+}
+
+.cms-muted { color: $colorPrimary500; }
+.cms-center-text { padding: 40px; text-align: center; }
+.cms-center { text-align: center; }
+.cms-error { color: $danger; font-size: 13px; &--box { padding: 8px 12px; border: 1px solid $danger; border-radius: 6px; margin: 8px 0; } }
+.cms-ok { color: $ok; margin: 8px 0; }
+
+.cms-btn {
+  display: inline-block; cursor: pointer; padding: 8px 16px; border: 1px solid $colorPrimary900; border-radius: 6px;
+  &:hover { background: $soft; }
+  &:disabled { opacity: 0.5; cursor: default; }
+  &--primary { background: $colorPrimary900; color: $colorNeutral100; &:hover { background: #333; } }
+  &--ghost { border-color: $line; }
+}
+.cms-link {
+  cursor: pointer; border: 0; text-decoration: underline; padding: 2px 4px;
+  &--danger { color: $danger; }
+}
+.cms-input {
+  width: 100%; padding: 8px 10px; border: 1px solid $line; border-radius: 6px;
+  &:focus { outline: 2px solid $colorPrimary500; outline-offset: -1px; }
+  &--code { font-family: monospace; * { font-family: monospace; } }
+}
+.cms-check { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.cms-swatch { display: inline-block; width: 18px; height: 18px; border: 1px solid $line; border-radius: 50%; vertical-align: middle; margin-right: 6px; }
+.cms-thumb { height: 40px; border-radius: 4px; display: block; }
+.cms-badge { padding: 2px 8px; border-radius: 10px; background: $soft; border: 1px solid $line; font-size: 13px;
+  &--done { color: $ok; } &--failed { color: $danger; } }
+
+// ---- login & shell ----
+.cms-login-wrap { display: flex; justify-content: center; padding: 15vh 16px 0; }
+.cms-login { width: 100%; max-width: 340px; display: flex; flex-direction: column; gap: 8px;
+  &__title { margin-bottom: 12px; font-size: 22px; } }
+
+.cms-shell { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+.cms-nav {
+  border-right: 1px solid $line; padding: 20px 16px; display: flex; flex-direction: column; gap: 16px; position: sticky; top: 0; height: 100vh; overflow: auto;
+  &__user { display: flex; flex-direction: column; }
+  &__title { text-transform: uppercase; font-size: 12px; color: $colorPrimary500; margin: 12px 0 4px; }
+  &__link { display: block; padding: 6px 8px; border-radius: 6px; &:hover { background: $soft; }
+    &--active { background: $colorPrimary900; color: $colorNeutral100; &:hover { background: $colorPrimary900; } } }
+  &__foot { margin-top: auto; display: flex; justify-content: space-between; }
+}
+.cms-main { padding: 24px; min-width: 0; }
+
+// ---- list ----
+.cms-toolbar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 16px;
+  &__search { max-width: 220px; } &__deleted { max-width: 140px; } &__filter { display: flex; align-items: center; gap: 6px; }
+  .cms-title { margin-right: auto; } }
+.cms-title { font-size: 22px; }
+.cms-tablewrap { overflow-x: auto; }
+.cms-table {
+  width: 100%; border-collapse: collapse;
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid $line; vertical-align: middle; }
+  th { font-size: 13px; color: $colorPrimary500; font-weight: 600; white-space: nowrap; }
+  tbody tr { cursor: pointer; &:hover td { background: $soft; } }
+  &--compact tbody tr, &--matrix tbody tr { cursor: default; }
+  &--compact td, &--compact th { padding: 5px 8px; }
+}
+.cms-sortable { cursor: pointer; user-select: none; }
+.cms-row--deleted td { opacity: 0.5; text-decoration: line-through; }
+.cms-actions { white-space: nowrap; text-align: right; }
+.cms-pager { display: flex; justify-content: center; align-items: center; gap: 16px; margin-top: 16px; }
+
+// ---- forms ----
+.cms-form { display: flex; flex-direction: column; gap: 14px; margin: 12px 0;
+  &__actions { display: flex; gap: 8px; } }
+.cms-field { &__label { display: block; margin-bottom: 4px; font-size: 13px; color: #444; }
+  &__req { color: $danger; margin-left: 2px; } &__hint { font-size: 12px; color: $colorPrimary500; margin-top: 3px; }
+  &--error .cms-input { border-color: $danger; } }
+.cms-hex { display: flex; align-items: center; .cms-input { max-width: 140px; } }
+.cms-photo { display: flex; flex-direction: column; gap: 8px; align-items: flex-start;
+  &__img { max-height: 120px; max-width: 100%; border-radius: 6px; border: 1px solid $line; }
+  &__empty { padding: 20px 28px; border: 1px dashed $line; border-radius: 6px; color: $colorPrimary500; }
+  &__actions { display: flex; gap: 8px; } }
+
+// ---- modal ----
+.cms-modal { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.45); display: flex; justify-content: center; align-items: flex-start; overflow: auto; padding: 32px 16px; z-index: 50;
+  &__box { width: 100%; max-width: 760px; padding: 24px; border-radius: 10px; }
+  &__head { display: flex; justify-content: space-between; align-items: center; } }
+
+// ---- details, child, cards ----
+.cms-details { margin: 12px 0; dl { display: grid; grid-template-columns: 110px 1fr; gap: 4px 12px; margin-bottom: 12px; } dt { color: $colorPrimary500; } }
+.cms-child { margin-top: 24px; border-top: 1px solid $line; padding-top: 12px;
+  &__head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  &__form { margin-top: 12px; padding: 12px; border: 1px solid $line; border-radius: 8px; } }
+.cms-card { border: 1px solid $line; border-radius: 10px; padding: 16px; margin-bottom: 16px; &__title { margin-bottom: 8px; } }
+.cms-setting { display: grid; grid-template-columns: 1fr 1.4fr auto; gap: 12px; padding: 10px 0; border-top: 1px solid $line; align-items: start;
+  &:first-of-type { border-top: 0; }
+  &__code { display: block; font-size: 12px; color: $colorPrimary500; font-family: monospace; }
+  &__actions { display: flex; flex-direction: column; gap: 4px; align-items: flex-end; } }
+.cms-log { white-space: pre-wrap; font-family: monospace; * { font-family: monospace; } background: $soft; padding: 10px; border-radius: 6px; max-height: 300px; overflow: auto; }
+
+// ---- SEO preview ----
+.cms-preview { margin-top: 20px; padding-top: 12px; border-top: 1px solid $line; &__title { margin-bottom: 8px; } }
+.cms-snippet { padding: 12px; border: 1px solid $line; border-radius: 8px; margin-bottom: 12px; max-width: 600px;
+  &__url { color: $ok; font-size: 13px; } &__title { color: #1a0dab; font-size: 18px; line-height: 24px; } &__desc { color: #4d5156; } }
+.cms-og { display: flex; flex-direction: column; border: 1px solid $line; border-radius: 8px; overflow: hidden; max-width: 400px;
+  &__img { width: 100%; aspect-ratio: 1.91; object-fit: cover; &--empty { display: flex; align-items: center; justify-content: center; background: $soft; color: $colorPrimary500; } }
+  &__body { padding: 10px 12px; } &__title { font-weight: 600; } &__desc { color: #4d5156; font-size: 13px; } }
+.cms-warn { margin-top: 10px; padding-left: 18px; color: #8a5a00; li { list-style: disc; } }
+
+@media (max-width: 800px) {
+  .cms-shell { grid-template-columns: 1fr; }
+  .cms-nav { position: static; height: auto; border-right: 0; border-bottom: 1px solid $line; }
+  .cms-setting { grid-template-columns: 1fr; }
+  .cms-setting__actions { align-items: flex-start; flex-direction: row; }
+  .cms-main { padding: 16px; }
+}
