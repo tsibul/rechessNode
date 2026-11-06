@@ -26,6 +26,16 @@ export const routes: RouteRecordRaw[] = [
     component: () => import('../pages/dynamic/Cart.vue')
   },
   {
+    path: '/order',
+    name: 'order',
+    component: () => import('../pages/dynamic/Order.vue')
+  },
+  {
+    path: '/order/:number',
+    name: 'order-done',
+    component: () => import('../pages/dynamic/OrderDone.vue')
+  },
+  {
     path: '/cms',
     name: 'cms',
     component: () => import('../pages/dynamic/CMS.vue')
