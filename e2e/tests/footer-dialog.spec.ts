@@ -56,11 +56,10 @@ test('the document pages are still reachable and the links keep their addresses'
   await expect(page.getByTestId('info-dialog')).toHaveCount(0)
 })
 
-test('each colour pair has one clean photo and no stray arrow', async ({ page }) => {
+test('each colour pair is a three-slide carousel with one next arrow', async ({ page }) => {
   await page.goto('/colors')
   const cards = page.locator('.card')
   await expect(cards).toHaveCount(7)
-  for (let i = 0; i < 7; i++) await expect(cards.nth(i).locator('img')).toHaveCount(1)
-  await expect(page.locator('.card__arrow')).toHaveCount(0)
-  await expect(page.getByTestId('colors')).not.toContainText('→')
+  for (let i = 0; i < 7; i++) await expect(cards.nth(i).locator('.card__slide')).toHaveCount(3)
+  await expect(page.getByTestId('pair-next')).toHaveCount(7)
 })
