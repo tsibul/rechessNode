@@ -88,16 +88,22 @@ function mapPage(fixture: PageContent, site: ApiSite): PageContent {
   }
 }
 
+/** Settings the customer maintains in the CMS: contacts, social links, signature, shop texts. */
+const CMS_OWNED = /^(contact\.|social\.|footer\.credit$|shop\.)/
+
 export function mapSite(site: ApiSite): SiteContent {
   const settings: Record<string, string> = { ...devContent.settings }
   for (const [k, v] of Object.entries(site.settings)) if (v !== null && v !== '') settings[k] = String(v)
+  // Contacts belong to the CMS: once the API has answered, an emptied value stays empty
+  // and never brings back the demo value from the development content.
+  for (const k of Object.keys(settings)) if (CMS_OWNED.test(k)) settings[k] = site.settings[k] == null ? '' : String(site.settings[k])
   const seller: Seller = site.seller ? { name: site.seller.name, ogrn: site.seller.ogrn, inn: site.seller.inn, address: site.seller.address, phone: site.seller.phone } : devContent.seller
   const shops: Shop[] = site.shops.length
     ? site.shops.map((s) => ({
         id: s.id, name: s.name, address: s.address, workingHours: s.working_hours, phone: s.phone, webSite: s.web_site,
         photos: s.photos.map((p) => photo(p, 1.33))
       }))
-    : devContent.shops
+    : []
   return {
     settings,
     seller,
