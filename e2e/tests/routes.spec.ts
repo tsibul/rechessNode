@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 
-const PAGES = ['/', '/about', '/shop', '/where-to-buy', '/privacy', '/personal-data']
+const PAGES = ['/', '/about', '/shop', '/colors', '/privacy', '/personal-data']
 const DYNAMIC = ['/cart', '/order', '/order/999999999', '/cms']
 
 /** Console errors that are not the site's fault: the missing placeholder photos (404 of /uploads/…). */
@@ -19,7 +19,8 @@ test.describe('public routes, direct entry', () => {
       await page.waitForLoadState('networkidle')
       await expect(page.locator('body')).not.toBeEmpty()
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)
-      expect(overflow, 'horizontal overflow, px').toBeLessThanOrEqual(0)
+      // /colors is a fixed-width grid of three 540 px columns: it scrolls sideways by design.
+      if (path !== '/colors') expect(overflow, 'horizontal overflow, px').toBeLessThanOrEqual(0)
       expect(errors).toEqual([])
     })
   }
@@ -49,7 +50,7 @@ test.describe('public routes, direct entry', () => {
 
   test('sitemap.xml and robots.txt', async ({ request }) => {
     const sm = await (await request.get('/sitemap.xml')).text()
-    for (const p of ['/about', '/shop', '/where-to-buy']) expect(sm).toContain(p)
+    for (const p of ['/about', '/shop', '/colors']) expect(sm).toContain(p)
     expect(sm).not.toContain('/cart')
     const robots = await (await request.get('/robots.txt')).text()
     expect(robots).toMatch(/Disallow: \/cms/)

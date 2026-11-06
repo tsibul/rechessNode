@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 
 /** Loose budgets on a local server: they catch an accidental regression (a huge bundle, a blocking request), not tune speed. */
-for (const path of ['/', '/shop', '/where-to-buy']) {
+for (const path of ['/', '/shop', '/colors']) {
   test(`${path} loads fast and light`, async ({ page }) => {
     await page.goto(path, { waitUntil: 'load' })
     await page.waitForLoadState('networkidle')

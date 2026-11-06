@@ -12,22 +12,20 @@ test('buyer buys a pair of colours and gets the confirmation', async ({ page }) 
 
   await page.goto('/shop')
   await expect(page.getByTestId('product')).toBeVisible()
-  const price = await page.getByTestId('price').innerText()
-  expect(price).toMatch(/\d/)
+  expect(await page.getByTestId('price').innerText()).toMatch(/\d/)
 
-  // The cookie banner covers the lower part of a phone screen: the buyer closes it first.
+  // Pairs of colours are bought on /colors. The cookie banner covers a phone screen: the buyer closes it first.
+  await page.goto('/colors')
   const banner = page.getByTestId('cookie-consent')
   await expect(banner).toBeVisible()
   await banner.getByRole('button').click()
   await expect(banner).toBeHidden()
 
-  await page.locator('.pairs__item').nth(1).click()
-  await expect(page.locator('input[name="pair"]').nth(1)).toBeChecked()
-  await page.getByRole('button', { name: 'В корзину' }).click()
-  await expect(page.getByRole('status')).toContainText('Добавлено в корзину')
+  await page.getByRole('button', { name: /добавить/ }).nth(1).click()
+  await expect(page.getByRole('button', { name: /добавить \(1\)/ })).toBeVisible()
   await expect(page.getByTestId('cart-badge')).toContainText('(1)')
 
-  await page.getByRole('link', { name: 'Перейти в корзину' }).click()
+  await page.getByTestId('cart-badge').click()
   await expect(page).toHaveURL(/\/cart$/)
   await expect(page.getByTestId('cart-line')).toHaveCount(1)
   await page.getByRole('button', { name: 'Больше' }).click()
