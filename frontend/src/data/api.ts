@@ -7,7 +7,7 @@ import { api } from '@/services/api'
 import { devContent } from './fixtures'
 import type { ColorPair, PageBlock, PageContent, Photo, Product, Seller, Shop, SiteContent } from './types'
 
-interface ApiPhoto { name: string; photo: string }
+interface ApiPhoto { name: string; photo: string; slot?: string }
 interface ApiSite {
   settings: Record<string, string | number | boolean | null>
   pages: Array<{
@@ -36,6 +36,9 @@ export function uploadUrl(file: string): string {
 const photo = (p: ApiPhoto, ratio = 1): Photo => ({ src: uploadUrl(p.photo), alt: p.name, ratio })
 const hex = (h: string) => (h.startsWith('#') ? h : `#${h}`)
 
+const SLOTS = ['side', 'top', 'board']
+const slotRank = (s?: string) => { const i = SLOTS.indexOf(s ?? 'side'); return i < 0 ? 0 : i }
+
 function mapProduct(site: ApiSite): Product {
   const p = site.products.find((x) => x.price !== null && x.items.length)
   if (!p) return devContent.product
@@ -44,7 +47,7 @@ function mapProduct(site: ApiSite): Product {
     name: i.name,
     main: { name: i.main_color.name, hex: hex(i.main_color.hex) },
     second: { name: i.second_color.name, hex: hex(i.second_color.hex) },
-    photos: i.photos.length ? i.photos.map((x) => photo(x)) : [{ src: null, alt: i.name, ratio: 1 }]
+    photos: i.photos.length ? [...i.photos].sort((a, b) => slotRank(a.slot) - slotRank(b.slot)).map((x) => photo(x)) : [{ src: null, alt: i.name, ratio: 1 }]
   }))
   return { id: p.id, name: p.name, description: p.description ?? '', price: p.price as number, pairs }
 }

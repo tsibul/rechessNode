@@ -42,6 +42,7 @@ const priority = z.number().int().min(-32768).max(32767)
 const fk = z.number().int().positive()
 
 export const PAYMENT_STATES = ['not_paid', 'pending', 'paid', 'failed', 'refunded'] as const
+export const PHOTO_SLOTS = ['side', 'top', 'board'] as const
 const photoName = req(255).regex(/^[A-Za-z0-9._-]+$/, 'Invalid file name')
 
 const REGISTRY: Record<string, Spec> = {
@@ -70,7 +71,7 @@ const REGISTRY: Record<string, Spec> = {
   },
   item_photo: {
     table: 'item_photo', permission: 'references', ops: { create: true, update: true, remove: true }, searchColumn: 'name',
-    fields: { name: req(255), priority, photo: photoName, item_id: fk }
+    fields: { name: req(255), priority, photo: photoName, slot: z.enum(PHOTO_SLOTS).default('side'), item_id: fk }
   },
   index_photo: {
     table: 'index_photo', permission: 'references', ops: { create: true, update: true, remove: true }, searchColumn: 'name',

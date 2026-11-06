@@ -52,7 +52,7 @@ describe('GET /api/products', () => {
     expect(p.items).toHaveLength(2)
     expect(p.items[0].article).toMatch(/^[A-Z0-9]{4}$/)
     expect(p.items[0].main_color.hex).toBe('112233')
-    expect(p.items[0].photos).toEqual([{ name: 'p', photo: `${prefix}.jpg` }])
+    expect(p.items[0].photos).toEqual([{ name: 'p', photo: `${prefix}.jpg`, slot: 'side' }])
     expect(p.items[1].photos).toEqual([])
   })
 
