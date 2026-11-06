@@ -1,10 +1,33 @@
 <script setup lang="ts">
-import { getSetting } from '@/data/content'
+import { computed, ref } from 'vue'
+import { getPage, getSetting } from '@/data/content'
+import InfoDialog from '@/components/layout/InfoDialog.vue'
 
 defineOptions({ name: 'SiteFooter' })
 
 const phone = getSetting('contact.phone')
 const email = getSetting('contact.email')
+
+// The legal page keeps company details in its first column and the privacy policy in its third; the pop-up shows one of them.
+type Doc = { label: string; column: number }
+const docs: Record<string, Doc> = {
+  company: { label: 'О компании', column: 0 },
+  privacy: { label: 'Политика конфиденциальности', column: 2 }
+}
+const current = ref<keyof typeof docs | null>(null)
+const html = computed(() => {
+  if (!current.value) return ''
+  const block = getPage('privacy').blocks.find((b) => b.code === 'columns')
+  return block && block.code === 'columns' ? (block.columns[docs[current.value].column] ?? '') : ''
+})
+
+/** Plain click opens the pop-up; new tab, new window and middle click keep the normal link to the page. */
+function show(e: MouseEvent, doc: keyof typeof docs) {
+  if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return
+  if (!html.value && !getPage('privacy').blocks.length) return
+  e.preventDefault()
+  current.value = doc
+}
 </script>
 
 <template>
@@ -16,9 +39,10 @@ const email = getSetting('contact.email')
       <p>{{ getSetting('contact.instagram') }}</p>
     </div>
     <div class="footer__col">
-      <p><router-link to="/privacy#company">О компании</router-link></p>
-      <p><router-link to="/privacy">Политика конфиденциальности</router-link></p>
+      <p><a href="/privacy#company" data-testid="footer-company" @click="show($event, 'company')">О компании</a></p>
+      <p><a href="/privacy" data-testid="footer-privacy" @click="show($event, 'privacy')">Политика конфиденциальности</a></p>
     </div>
+    <InfoDialog :open="!!current" :label="current ? docs[current].label : ''" :html="html" @close="current = null" />
   </footer>
 </template>
 

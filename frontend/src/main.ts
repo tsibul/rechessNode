@@ -23,7 +23,16 @@ const pinia = createPinia()
  */
 export const createApp = ViteSSG(
     App,
-    { routes },
+    {
+        routes,
+        // Direct links with an anchor (/privacy#company) scroll to it; other navigation starts at the top.
+        scrollBehavior(to, _from, saved) {
+            if (import.meta.env.SSR) return false // prerender runs in jsdom, which has no scrollTo
+            if (saved) return saved
+            if (to.hash) return { el: to.hash, top: 70 }
+            return { top: 0 }
+        }
+    },
     async ({ app, router, initialState, isClient }) => {
         app.use(pinia)
 
