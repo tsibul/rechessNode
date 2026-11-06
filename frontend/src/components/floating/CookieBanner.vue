@@ -85,11 +85,20 @@ async function accept() {
 }
 
 @media (max-width: 660px) {
+  // On a phone the banner stays on the bottom line next to the cart icon
+  // (right: 90px leaves it free) and shrinks, so it covers less of the page.
   .cookie {
-    right: 15px;
-    bottom: 90px;
-    flex-direction: column;
-    align-items: flex-start;
+    left: 15px;
+    right: 90px;
+    bottom: 30px;
+    gap: 10px;
+    padding: 10px;
+
+    &__text,
+    &__text :deep(*) {
+      font-size: 12px;
+      line-height: 15px;
+    }
   }
 }
 </style>

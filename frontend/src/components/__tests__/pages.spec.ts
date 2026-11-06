@@ -53,7 +53,7 @@ describe('public pages', () => {
     expect(privacy.find('h1').text()).toContain('Политика')
     expect(privacy.findAll('[data-testid="columns"] > div').length).toBe(3)
     expect(privacy.find('#company').text()).toContain('ИНН')
-    expect((await render('personal-data')).find('h1').text()).toContain('Согласие')
+    expect((await render('personal-data')).find('h1').text()).toContain('Политика обработки')
   })
 
   it('has no cabinet route', () => {
