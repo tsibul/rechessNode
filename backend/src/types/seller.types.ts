@@ -1,5 +1,6 @@
 export interface SellerRow {
   id: number
+  name: string
   ogrn: string
   inn: string
   kpp: string

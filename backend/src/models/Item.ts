@@ -6,6 +6,7 @@ import {ItemRow} from '../types/item.types'
  */
 export class Item extends BaseSettings {
   private id: number
+  private product_id: number
   private name: string
   private main_color: number
   private second_color: number
@@ -14,6 +15,7 @@ export class Item extends BaseSettings {
   constructor(data: ItemRow) {
     super()
     this.id = data.id
+    this.product_id = data.product_id
     this.name = data.name
     this.main_color = data.main_color
     this.second_color = data.second_color

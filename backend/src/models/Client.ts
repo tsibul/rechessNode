@@ -14,7 +14,7 @@ export class Client extends BaseSettings {
   private e_mail: string | null
   private address_delivery: boolean
   private delivery_address: string | null
-  private comment: string | null
+  private delivery_point_code: string | null
   private ip_address: string | null
   private deleted: boolean
 
@@ -27,9 +27,9 @@ export class Client extends BaseSettings {
     this.city = data.city
     this.phone = data.phone
     this.e_mail = data.e_mail
-    this.address_delivery = data.adress_delivery
+    this.address_delivery = data.address_delivery
     this.delivery_address = data.delivery_address
-    this.comment = data.comment
+    this.delivery_point_code = data.delivery_point_code
     this.ip_address = data.ip_address
     this.deleted = data.deleted
   }

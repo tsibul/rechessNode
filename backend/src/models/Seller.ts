@@ -6,6 +6,7 @@ import { SellerRow } from '../types/seller.types'
  */
 export class Seller extends BaseSettings {
   private id: number
+  private name: string
   private ogrn: string
   private inn: string
   private kpp: string
@@ -16,6 +17,7 @@ export class Seller extends BaseSettings {
   public constructor(data: SellerRow) {
     super()
     this.id = data.id
+    this.name = data.name
     this.ogrn = data.ogrn
     this.inn = data.inn
     this.kpp = data.kpp

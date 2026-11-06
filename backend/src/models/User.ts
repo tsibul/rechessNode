@@ -10,6 +10,7 @@ export class User extends BaseSettings {
   private login: string
   private password: string
   private hashToken: string | null
+  private role_id: number
   private deleted: boolean
 
   public constructor(data: UserRow) {
@@ -19,6 +20,7 @@ export class User extends BaseSettings {
     this.login = data.login
     this.password = data.password
     this.hashToken = data.hashToken
+    this.role_id = data.role_id
     this.deleted = data.deleted
   }
 

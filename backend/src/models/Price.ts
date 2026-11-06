@@ -7,7 +7,7 @@ import { PriceRow } from '../types/price.types'
 export class Price extends BaseSettings {
   private id: number
   private price: number
-  private item: boolean
+  private product_id: number
   private price_date: Date
   private deleted: boolean
 
@@ -15,7 +15,7 @@ export class Price extends BaseSettings {
     super()
     this.id = data.id
     this.price = data.price
-    this.item = data.item
+    this.product_id = data.product_id
     this.price_date = data.price_date
     this.deleted = data.deleted
   }

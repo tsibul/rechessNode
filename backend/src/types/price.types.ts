@@ -1,7 +1,7 @@
 export interface PriceRow {
   id: number
   price: number
-  item: boolean
+  product_id: number
   price_date: Date
   deleted: boolean
 } 

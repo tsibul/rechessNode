@@ -3,5 +3,6 @@ export interface ShopPhotoRow {
   name: string
   priority: number
   photo: string
+  shop_id: number
   deleted: boolean
 } 

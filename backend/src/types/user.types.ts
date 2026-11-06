@@ -4,5 +4,6 @@ export interface UserRow {
   login: string
   password: string
   hashToken: string | null
+  role_id: number
   deleted: boolean
 }
