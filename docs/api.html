@@ -1,0 +1,1013 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>reChess API</title>
+<style>
+body{font:15px/1.5 system-ui,sans-serif;max-width:60rem;margin:0 auto;padding:1rem;color:#1d1d1f;background:#fff}
+@media(prefers-color-scheme:dark){body{color:#e8e8ea;background:#16161a}pre,code{background:#26262c}}
+code,pre{background:#f0f0f3;border-radius:4px;padding:0 .25em}pre{padding:.6em;overflow:auto}
+.op{border-top:1px solid #8884;padding:.4rem 0}.m{display:inline-block;min-width:4.5em;text-align:center;border-radius:4px;color:#fff;font-size:.8em;padding:.1em .4em}
+.get{background:#2a7}.post{background:#27c}.put{background:#c82}.patch{background:#a5b}.delete{background:#c33}.auth{font-size:.9em;opacity:.8}
+.resp{list-style:none;padding:0}
+</style></head><body>
+<h1>reChess API</h1><p>JSON API of the reChess shop. Request bodies are generated from the zod schemas of the routes; response shapes are described in words. Base path: <code>/api</code>. Machine-readable: <a href="openapi.json">openapi.json</a>.</p>
+<h2>Public</h2><section class="op"><h3><span class="m get">GET</span> <code>/health</code></h3><p>Liveness check</p><ul class="resp"><li><b>200</b> – Service status</li><li><b>400</b> – Validation error: <code>{ error, details }</code></li></ul></section><section class="op"><h3><span class="m get">GET</span> <code>/products</code></h3><p>Products with colours, prices and photos</p><ul class="resp"><li><b>200</b> – <code>{ products }</code></li><li><b>400</b> – Validation error: <code>{ error, details }</code></li></ul></section><section class="op"><h3><span class="m get">GET</span> <code>/products/{id}/price</code></h3><p>Current price of a product</p><ul><li><code>id</code> (path) – Product id</li></ul><ul class="resp"><li><b>200</b> – <code>{ product_id, price }</code>; 404 when unknown</li><li><b>400</b> – Validation error: <code>{ error, details }</code></li></ul></section><section class="op"><h3><span class="m get">GET</span> <code>/pages</code></h3><p>Published pages with blocks</p><ul class="resp"><li><b>200</b> – <code>{ pages }</code></li><li><b>400</b> – Validation error: <code>{ error, details }</code></li></ul></section><section class="op"><h3><span class="m get">GET</span> <code>/pages/{slug}</code></h3><p>One published page</p><ul><li><code>slug</code> (path) – Page slug</li></ul><ul class="resp"><li><b>200</b> – The page; 404 when unknown</li><li><b>400</b> – Validation error: <code>{ error, details }</code></li></ul></section><section class="op"><h3><span class="m get">GET</span> <code>/settings</code></h3><p>Public site settings</p><ul class="resp"><li><b>200</b> – Settings by code</li><li><b>400</b> – Validation error: <code>{ error, details }</code></li></ul></section><section class="op"><h3><span class="m get">GET</span> <code>/shops</code></h3><p>Shops</p><ul class="resp"><li><b>200</b> – <code>{ shops }</code></li><li><b>400</b> – Validation error: <code>{ error, details }</code></li></ul></section><section class="op"><h3><span class="m get">GET</span> <code>/index-photos</code></h3><p>Photos of the home page</p><ul class="resp"><li><b>200</b> – <code>{ photos }</code></li><li><b>400</b> – Validation error: <code>{ error, details }</code></li></ul></section><section class="op"><h3><span class="m get">GET</span> <code>/seller</code></h3><p>Seller details</p><ul class="resp"><li><b>200</b> – <code>{ seller }</code></li><li><b>400</b> – Validation error: <code>{ error, details }</code></li></ul></section><section class="op"><h3><span class="m get">GET</span> <code>/site</code></h3><p>Everything the site build needs in one response</p><ul class="resp"><li><b>200</b> – Site content</li><li><b>400</b> – Validation error: <code>{ error, details }</code></li></ul></section>
+<h2>Shop</h2><section class="op"><h3><span class="m get">GET</span> <code>/cart</code></h3><p>Cart of the visitor</p><p class="auth">Auth: visitor cookie (optional)</p><ul class="resp"><li><b>200</b> – Cart view: <code>items</code>, <code>count</code>, <code>total</code></li><li><b>400</b> – Validation error: <code>{ error, details }</code></li></ul></section><section class="op"><h3><span class="m post">POST</span> <code>/cart/items</code></h3><p>Add a product to the cart</p><p class="auth">Auth: visitor cookie (optional)</p><p>Body: <a href="#AddCartItemBody">AddCartItemBody</a></p><ul class="resp"><li><b>200</b> – Updated cart view; sets the visitor cookie on first use</li><li><b>400</b> – Validation error: <code>{ error, details }</code></li></ul></section><section class="op"><h3><span class="m patch">PATCH</span> <code>/cart/items/{itemId}</code></h3><p>Change the quantity of a cart line (0 removes it)</p><p class="auth">Auth: visitor cookie (optional)</p><ul><li><code>itemId</code> (path) – Product id</li></ul><p>Body: <a href="#CartQuantityBody">CartQuantityBody</a></p><ul class="resp"><li><b>200</b> – Updated cart view</li><li><b>400</b> – Validation error: <code>{ error, details }</code></li></ul></section><section class="op"><h3><span class="m delete">DELETE</span> <code>/cart/items/{itemId}</code></h3><p>Remove a cart line</p><p class="auth">Auth: visitor cookie (optional)</p><ul><li><code>itemId</code> (path) – Product id</li></ul><ul class="resp"><li><b>200</b> – Updated cart view</li><li><b>400</b> – Validation error: <code>{ error, details }</code></li></ul></section><section class="op"><h3><span class="m get">GET</span> <code>/checkout/prefill</code></h3><p>Checkout data from the previous order</p><p class="auth">Auth: visitor cookie (optional)</p><ul class="resp"><li><b>200</b> – <code>{ contact }</code> (null when unknown)</li><li><b>400</b> – Validation error: <code>{ error, details }</code></li></ul></section><section class="op"><h3><span class="m get">GET</span> <code>/checkout/delivery</code></h3><p>Delivery options for the cart and a city</p><p class="auth">Auth: visitor cookie (optional)</p><ul><li><code>city</code> (query) – City name</li></ul><ul class="resp"><li><b>200</b> – Weight, door and pickup costs</li><li><b>400</b> – Validation error: <code>{ error, details }</code></li></ul></section><section class="op"><h3><span class="m post">POST</span> <code>/orders</code></h3><p>Place an order from the cart</p><p class="auth">Auth: visitor cookie (optional)</p><p>Body: <a href="#OrderBody">OrderBody</a></p><ul class="resp"><li><b>201</b> – <code>{ order }</code> with its payment</li><li><b>400</b> – Validation error: <code>{ error, details }</code></li></ul></section><section class="op"><h3><span class="m get">GET</span> <code>/orders/{number}</code></h3><p>An order of this visitor</p><p class="auth">Auth: visitor cookie (optional)</p><ul><li><code>number</code> (path) – Order number</li></ul><ul class="resp"><li><b>200</b> – <code>{ order }</code>; 404 for someone else’s order</li><li><b>400</b> – Validation error: <code>{ error, details }</code></li></ul></section><section class="op"><h3><span class="m get">GET</span> <code>/orders/{number}/payment</code></h3><p>Payment state of an order</p><p class="auth">Auth: visitor cookie (optional)</p><ul><li><code>number</code> (path) – Order number</li></ul><ul class="resp"><li><b>200</b> – <code>{ payment }</code></li><li><b>400</b> – Validation error: <code>{ error, details }</code></li></ul></section><section class="op"><h3><span class="m post">POST</span> <code>/orders/{number}/payment</code></h3><p>Retry the payment of an order</p><p class="auth">Auth: visitor cookie (optional)</p><ul><li><code>number</code> (path) – Order number</li></ul><ul class="resp"><li><b>200</b> – <code>{ payment }</code></li><li><b>400</b> – Validation error: <code>{ error, details }</code></li></ul></section><section class="op"><h3><span class="m post">POST</span> <code>/payments/{provider}/notify</code></h3><p>Payment notification from a provider (the stub page sends it too)</p><ul><li><code>provider</code> (path) – Provider code, e.g. <code>stub</code></li></ul><p>Body: <a href="#StubNotificationBody">StubNotificationBody</a></p><ul class="resp"><li><b>200</b> – <code>{ state, changed }</code>; repeats are harmless</li><li><b>400</b> – Validation error: <code>{ error, details }</code></li></ul></section>
+<h2>CMS auth</h2><section class="op"><h3><span class="m post">POST</span> <code>/cms/login</code></h3><p>Sign in; sets the session cookie</p><p>Body: <a href="#LoginBody">LoginBody</a></p><ul class="resp"><li><b>200</b> – <code>{ user }</code></li><li><b>400</b> – Validation error: <code>{ error, details }</code></li></ul></section><section class="op"><h3><span class="m post">POST</span> <code>/cms/logout</code></h3><p>Sign out</p><p class="auth">Auth: CMS session cookie</p><ul class="resp"><li><b>200</b> – Empty confirmation</li><li><b>400</b> – Validation error: <code>{ error, details }</code></li><li><b>401</b> – No valid session</li><li><b>403</b> – Missing permission</li></ul></section><section class="op"><h3><span class="m get">GET</span> <code>/cms/me</code></h3><p>Current user with permissions</p><p class="auth">Auth: CMS session cookie</p><ul class="resp"><li><b>200</b> – <code>{ user }</code></li><li><b>400</b> – Validation error: <code>{ error, details }</code></li><li><b>401</b> – No valid session</li><li><b>403</b> – Missing permission</li></ul></section>
+<h2>CMS roles</h2><section class="op"><h3><span class="m get">GET</span> <code>/cms/roles</code></h3><p>Roles with permissions</p><p>Requires one of the permissions: users.</p><p class="auth">Auth: CMS session cookie</p><ul class="resp"><li><b>200</b> – <code>{ roles }</code></li><li><b>400</b> – Validation error: <code>{ error, details }</code></li><li><b>401</b> – No valid session</li><li><b>403</b> – Missing permission</li></ul></section><section class="op"><h3><span class="m put">PUT</span> <code>/cms/roles/{id}/permissions</code></h3><p>Replace the permissions of a role</p><p>Requires one of the permissions: users.</p><p class="auth">Auth: CMS session cookie</p><ul><li><code>id</code> (path) – Role id</li></ul><p>Body: <a href="#PermissionsBody">PermissionsBody</a></p><ul class="resp"><li><b>200</b> – <code>{ role }</code></li><li><b>400</b> – Validation error: <code>{ error, details }</code></li><li><b>401</b> – No valid session</li><li><b>403</b> – Missing permission</li></ul></section>
+<h2>CMS uploads</h2><section class="op"><h3><span class="m post">POST</span> <code>/cms/uploads</code></h3><p>Upload an image (multipart field <code>file</code>, up to 10 MB; jpg, png, webp, avif)</p><p>Requires one of the permissions: references, pages, seo, settings.</p><p class="auth">Auth: CMS session cookie</p><ul class="resp"><li><b>200</b> – <code>{ photo }</code> – stored file name</li><li><b>400</b> – Validation error: <code>{ error, details }</code></li><li><b>401</b> – No valid session</li><li><b>403</b> – Missing permission</li></ul></section>
+<h2>CMS publish</h2><section class="op"><h3><span class="m post">POST</span> <code>/cms/publish</code></h3><p>Start a site build</p><p>Requires one of the permissions: publish.</p><p class="auth">Auth: CMS session cookie</p><ul class="resp"><li><b>202</b> – <code>{ publication }</code>; 409 when a build is running</li><li><b>400</b> – Validation error: <code>{ error, details }</code></li><li><b>401</b> – No valid session</li><li><b>403</b> – Missing permission</li></ul></section><section class="op"><h3><span class="m get">GET</span> <code>/cms/publications</code></h3><p>Latest builds</p><p>Requires one of the permissions: publish.</p><p class="auth">Auth: CMS session cookie</p><ul><li><code>limit</code> (query) – Maximum number of records</li></ul><ul class="resp"><li><b>200</b> – <code>{ publications }</code></li><li><b>400</b> – Validation error: <code>{ error, details }</code></li><li><b>401</b> – No valid session</li><li><b>403</b> – Missing permission</li></ul></section><section class="op"><h3><span class="m get">GET</span> <code>/cms/publications/{id}</code></h3><p>One build</p><p>Requires one of the permissions: publish.</p><p class="auth">Auth: CMS session cookie</p><ul><li><code>id</code> (path) – Publication id</li></ul><ul class="resp"><li><b>200</b> – <code>{ publication }</code></li><li><b>400</b> – Validation error: <code>{ error, details }</code></li><li><b>401</b> – No valid session</li><li><b>403</b> – Missing permission</li></ul></section>
+<h2>CMS tables</h2><section class="op"><h3><span class="m get">GET</span> <code>/cms/tables/{name}</code></h3><p>List rows (search, sort, page)</p><p class="auth">Auth: CMS session cookie</p><ul><li><code>name</code> (path) – Table name: color, product, delivery_tariff, item, item_photo, index_photo, shops, shop_photo, seller, order_state, price, seo, page, page_block, setting, user, role, client, cart, order</li><li><code>q</code> (query) – Search text</li><li><code>page</code> (query) – Page number</li><li><code>sort</code> (query) – Sort column</li></ul><ul class="resp"><li><b>200</b> – Rows and the total count</li><li><b>400</b> – Validation error: <code>{ error, details }</code></li><li><b>401</b> – No valid session</li><li><b>403</b> – Missing permission</li></ul></section><section class="op"><h3><span class="m post">POST</span> <code>/cms/tables/{name}</code></h3><p>Create a row; the body is validated by the schema <code>Cms_&lt;name&gt;</code></p><p class="auth">Auth: CMS session cookie</p><ul><li><code>name</code> (path) – Table name: color, product, delivery_tariff, item, item_photo, index_photo, shops, shop_photo, seller, order_state, price, seo, page, page_block, setting, user, role, client, cart, order</li></ul><p>Body: one of the <code>Cms_*</code> schemas below, chosen by the table name</p><ul class="resp"><li><b>201</b> – <code>{ row }</code></li><li><b>400</b> – Validation error: <code>{ error, details }</code></li><li><b>401</b> – No valid session</li><li><b>403</b> – Missing permission</li></ul></section><section class="op"><h3><span class="m get">GET</span> <code>/cms/tables/order/state-counts</code></h3><p>Number of orders per state</p><p>Requires one of the permissions: orders.</p><p class="auth">Auth: CMS session cookie</p><ul class="resp"><li><b>200</b> – <code>{ total, states }</code></li><li><b>400</b> – Validation error: <code>{ error, details }</code></li><li><b>401</b> – No valid session</li><li><b>403</b> – Missing permission</li></ul></section><section class="op"><h3><span class="m get">GET</span> <code>/cms/tables/{name}/{id}</code></h3><p>One row</p><p class="auth">Auth: CMS session cookie</p><ul><li><code>name</code> (path) – Table name: color, product, delivery_tariff, item, item_photo, index_photo, shops, shop_photo, seller, order_state, price, seo, page, page_block, setting, user, role, client, cart, order</li><li><code>id</code> (path) – Row id</li></ul><ul class="resp"><li><b>200</b> – <code>{ row }</code></li><li><b>400</b> – Validation error: <code>{ error, details }</code></li><li><b>401</b> – No valid session</li><li><b>403</b> – Missing permission</li></ul></section><section class="op"><h3><span class="m patch">PATCH</span> <code>/cms/tables/{name}/{id}</code></h3><p>Update a row; same fields as create, all optional</p><p class="auth">Auth: CMS session cookie</p><ul><li><code>name</code> (path) – Table name: color, product, delivery_tariff, item, item_photo, index_photo, shops, shop_photo, seller, order_state, price, seo, page, page_block, setting, user, role, client, cart, order</li><li><code>id</code> (path) – Row id</li></ul><p>Body: one of the <code>Cms_*</code> schemas below, chosen by the table name</p><ul class="resp"><li><b>200</b> – <code>{ row }</code></li><li><b>400</b> – Validation error: <code>{ error, details }</code></li><li><b>401</b> – No valid session</li><li><b>403</b> – Missing permission</li></ul></section><section class="op"><h3><span class="m delete">DELETE</span> <code>/cms/tables/{name}/{id}</code></h3><p>Mark a row as deleted</p><p class="auth">Auth: CMS session cookie</p><ul><li><code>name</code> (path) – Table name: color, product, delivery_tariff, item, item_photo, index_photo, shops, shop_photo, seller, order_state, price, seo, page, page_block, setting, user, role, client, cart, order</li><li><code>id</code> (path) – Row id</li></ul><ul class="resp"><li><b>200</b> – Empty confirmation</li><li><b>400</b> – Validation error: <code>{ error, details }</code></li><li><b>401</b> – No valid session</li><li><b>403</b> – Missing permission</li></ul></section><section class="op"><h3><span class="m post">POST</span> <code>/cms/tables/{name}/{id}/restore</code></h3><p>Restore a deleted row</p><p class="auth">Auth: CMS session cookie</p><ul><li><code>name</code> (path) – Table name: color, product, delivery_tariff, item, item_photo, index_photo, shops, shop_photo, seller, order_state, price, seo, page, page_block, setting, user, role, client, cart, order</li><li><code>id</code> (path) – Row id</li></ul><ul class="resp"><li><b>200</b> – <code>{ row }</code></li><li><b>400</b> – Validation error: <code>{ error, details }</code></li><li><b>401</b> – No valid session</li><li><b>403</b> – Missing permission</li></ul></section><section class="op"><h3><span class="m post">POST</span> <code>/cms/tables/order/{id}/send-mail</code></h3><p>Send an order e-mail</p><p>Requires one of the permissions: orders.</p><p class="auth">Auth: CMS session cookie</p><ul><li><code>id</code> (path) – Row id</li></ul><p>Body: <a href="#SendMailBody">SendMailBody</a></p><ul class="resp"><li><b>200</b> – <code>{ row }</code></li><li><b>400</b> – Validation error: <code>{ error, details }</code></li><li><b>401</b> – No valid session</li><li><b>403</b> – Missing permission</li></ul></section>
+<h2>Request body schemas</h2>
+<h3 id="LoginBody">LoginBody</h3><pre>{
+  "type": "object",
+  "properties": {
+    "login": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "password": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    }
+  },
+  "required": [
+    "login",
+    "password"
+  ],
+  "additionalProperties": false
+}</pre>
+<h3 id="PermissionsBody">PermissionsBody</h3><pre>{
+  "type": "object",
+  "properties": {
+    "permissions": {
+      "maxItems": 10,
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "orders",
+          "clients",
+          "carts",
+          "references",
+          "prices",
+          "seo",
+          "pages",
+          "settings",
+          "users",
+          "publish"
+        ]
+      }
+    }
+  },
+  "required": [
+    "permissions"
+  ],
+  "additionalProperties": false
+}</pre>
+<h3 id="AddCartItemBody">AddCartItemBody</h3><pre>{
+  "type": "object",
+  "properties": {
+    "item_id": {
+      "type": "integer",
+      "exclusiveMinimum": 0,
+      "maximum": 9007199254740991
+    },
+    "quantity": {
+      "default": 1,
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 99
+    }
+  },
+  "required": [
+    "item_id"
+  ],
+  "additionalProperties": false
+}</pre>
+<h3 id="CartQuantityBody">CartQuantityBody</h3><pre>{
+  "type": "object",
+  "properties": {
+    "quantity": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 99
+    }
+  },
+  "required": [
+    "quantity"
+  ],
+  "additionalProperties": false
+}</pre>
+<h3 id="OrderBody">OrderBody</h3><pre>{
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "family_name": {
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 255
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "city": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "phone": {
+      "type": "string"
+    },
+    "e_mail": {
+      "type": "string",
+      "maxLength": 255,
+      "format": "email",
+      "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+    },
+    "address_delivery": {
+      "type": "boolean"
+    },
+    "delivery_address": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "delivery_point_code": {
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 50,
+          "pattern": "^[A-Za-z0-9А-Яа-я_-]*$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "comment": {
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 1000
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "consent": {
+      "type": "boolean",
+      "const": true
+    }
+  },
+  "required": [
+    "name",
+    "city",
+    "phone",
+    "e_mail",
+    "address_delivery",
+    "delivery_address",
+    "consent"
+  ],
+  "additionalProperties": false
+}</pre>
+<h3 id="StubNotificationBody">StubNotificationBody</h3><pre>{
+  "type": "object",
+  "properties": {
+    "ref": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 64
+    },
+    "result": {
+      "type": "string",
+      "enum": [
+        "paid",
+        "failed"
+      ]
+    }
+  },
+  "required": [
+    "ref",
+    "result"
+  ],
+  "additionalProperties": false
+}</pre>
+<h3 id="SendMailBody">SendMailBody</h3><pre>{
+  "type": "object",
+  "properties": {
+    "kind": {
+      "type": "string",
+      "enum": [
+        "confirmation",
+        "track",
+        "manager"
+      ]
+    }
+  },
+  "required": [
+    "kind"
+  ],
+  "additionalProperties": false
+}</pre>
+<h3 id="Cms_color">Cms_color</h3><pre>{
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "code": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 2
+    },
+    "hex": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[0-9a-fA-F]{6}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "name",
+    "code"
+  ],
+  "additionalProperties": false
+}</pre>
+<h3 id="Cms_product">Cms_product</h3><pre>{
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "description": {
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 65000
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "weight_g": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "length_mm": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100000
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "width_mm": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100000
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "height_mm": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100000
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "name"
+  ],
+  "additionalProperties": false
+}</pre>
+<h3 id="Cms_delivery_tariff">Cms_delivery_tariff</h3><pre>{
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "address_delivery": {
+      "type": "boolean"
+    },
+    "city": {
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 255
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "weight_to": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000000
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "price": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000000
+    },
+    "priority": {
+      "type": "integer",
+      "minimum": -32768,
+      "maximum": 32767
+    }
+  },
+  "required": [
+    "name",
+    "address_delivery",
+    "price",
+    "priority"
+  ],
+  "additionalProperties": false
+}</pre>
+<h3 id="Cms_item">Cms_item</h3><pre>{
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "product_id": {
+      "type": "integer",
+      "exclusiveMinimum": 0,
+      "maximum": 9007199254740991
+    },
+    "main_color": {
+      "type": "integer",
+      "exclusiveMinimum": 0,
+      "maximum": 9007199254740991
+    },
+    "second_color": {
+      "type": "integer",
+      "exclusiveMinimum": 0,
+      "maximum": 9007199254740991
+    }
+  },
+  "required": [
+    "name",
+    "product_id",
+    "main_color",
+    "second_color"
+  ],
+  "additionalProperties": false
+}</pre>
+<h3 id="Cms_item_photo">Cms_item_photo</h3><pre>{
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "priority": {
+      "type": "integer",
+      "minimum": -32768,
+      "maximum": 32767
+    },
+    "photo": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255,
+      "pattern": "^(?!\\.+$)[A-Za-z0-9._-]+$"
+    },
+    "slot": {
+      "default": "side",
+      "type": "string",
+      "enum": [
+        "side",
+        "top",
+        "board"
+      ]
+    },
+    "item_id": {
+      "type": "integer",
+      "exclusiveMinimum": 0,
+      "maximum": 9007199254740991
+    }
+  },
+  "required": [
+    "name",
+    "priority",
+    "photo",
+    "item_id"
+  ],
+  "additionalProperties": false
+}</pre>
+<h3 id="Cms_index_photo">Cms_index_photo</h3><pre>{
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "priority": {
+      "type": "integer",
+      "minimum": -32768,
+      "maximum": 32767
+    },
+    "photo": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255,
+      "pattern": "^(?!\\.+$)[A-Za-z0-9._-]+$"
+    }
+  },
+  "required": [
+    "name",
+    "priority",
+    "photo"
+  ],
+  "additionalProperties": false
+}</pre>
+<h3 id="Cms_shops">Cms_shops</h3><pre>{
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "address": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "working_hours": {
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 255
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "phone": {
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 20
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "web_site": {
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 255
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "name",
+    "address"
+  ],
+  "additionalProperties": false
+}</pre>
+<h3 id="Cms_shop_photo">Cms_shop_photo</h3><pre>{
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "priority": {
+      "type": "integer",
+      "minimum": -32768,
+      "maximum": 32767
+    },
+    "photo": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255,
+      "pattern": "^(?!\\.+$)[A-Za-z0-9._-]+$"
+    },
+    "shop_id": {
+      "type": "integer",
+      "exclusiveMinimum": 0,
+      "maximum": 9007199254740991
+    }
+  },
+  "required": [
+    "name",
+    "priority",
+    "photo",
+    "shop_id"
+  ],
+  "additionalProperties": false
+}</pre>
+<h3 id="Cms_seller">Cms_seller</h3><pre>{
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "ogrn": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 13
+    },
+    "inn": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 12
+    },
+    "kpp": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 9
+    },
+    "address": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "phone": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 20
+    }
+  },
+  "required": [
+    "name",
+    "ogrn",
+    "inn",
+    "kpp",
+    "address",
+    "phone"
+  ],
+  "additionalProperties": false
+}</pre>
+<h3 id="Cms_order_state">Cms_order_state</h3><pre>{
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "priority": {
+      "type": "integer",
+      "minimum": -32768,
+      "maximum": 32767
+    }
+  },
+  "required": [
+    "name",
+    "priority"
+  ],
+  "additionalProperties": false
+}</pre>
+<h3 id="Cms_price">Cms_price</h3><pre>{
+  "type": "object",
+  "properties": {
+    "product_id": {
+      "type": "integer",
+      "exclusiveMinimum": 0,
+      "maximum": 9007199254740991
+    },
+    "price": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "price_date": {}
+  },
+  "required": [
+    "product_id",
+    "price",
+    "price_date"
+  ],
+  "additionalProperties": false
+}</pre>
+<h3 id="Cms_seo">Cms_seo</h3><pre>{
+  "type": "object",
+  "properties": {
+    "page_id": {
+      "type": "integer",
+      "exclusiveMinimum": 0,
+      "maximum": 9007199254740991
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "og_title": {
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 255
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "og_description": {
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 500
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "og_image": {
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 255
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "robots_index": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "page_id",
+    "title",
+    "description",
+    "robots_index"
+  ],
+  "additionalProperties": false
+}</pre>
+<h3 id="Cms_page">Cms_page</h3><pre>{
+  "type": "object",
+  "properties": {
+    "slug": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255,
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255
+    }
+  },
+  "required": [
+    "slug",
+    "name"
+  ],
+  "additionalProperties": false
+}</pre>
+<h3 id="Cms_page_block">Cms_page_block</h3><pre>{
+  "type": "object",
+  "properties": {
+    "page_id": {
+      "type": "integer",
+      "exclusiveMinimum": 0,
+      "maximum": 9007199254740991
+    },
+    "code": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "priority": {
+      "type": "integer",
+      "minimum": -32768,
+      "maximum": 32767
+    },
+    "content": {}
+  },
+  "required": [
+    "page_id",
+    "code",
+    "priority",
+    "content"
+  ],
+  "additionalProperties": false
+}</pre>
+<h3 id="Cms_setting">Cms_setting</h3><pre>{
+  "type": "object",
+  "properties": {
+    "code": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "pattern": "^[a-z0-9_.-]+$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "text",
+        "html",
+        "number",
+        "boolean",
+        "photo"
+      ]
+    },
+    "value": {
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 65000
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "group_name": {
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 100
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "priority": {
+      "type": "integer",
+      "minimum": -32768,
+      "maximum": 32767
+    }
+  },
+  "required": [
+    "code",
+    "name",
+    "type",
+    "priority"
+  ],
+  "additionalProperties": false
+}</pre>
+<h3 id="Cms_user">Cms_user</h3><pre>{
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "login": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "password": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 200
+    },
+    "role_id": {
+      "type": "integer",
+      "exclusiveMinimum": 0,
+      "maximum": 9007199254740991
+    }
+  },
+  "required": [
+    "name",
+    "login",
+    "password",
+    "role_id"
+  ],
+  "additionalProperties": false
+}</pre>
+<h3 id="Cms_role">Cms_role</h3><pre>{
+  "type": "object",
+  "properties": {
+    "code": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 50,
+      "pattern": "^[a-z0-9_-]+$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255
+    }
+  },
+  "required": [
+    "code",
+    "name"
+  ],
+  "additionalProperties": false
+}</pre>
+<h3 id="Cms_client">Cms_client</h3><pre>{
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "family_name": {
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 255
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "city": {
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 255
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "phone": {
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 20
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "e_mail": {
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 255
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "address_delivery": {
+      "type": "boolean"
+    },
+    "delivery_address": {
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 500
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "delivery_point_code": {
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 50
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "name",
+    "address_delivery"
+  ],
+  "additionalProperties": false
+}</pre>
+<h3 id="Cms_cart">Cms_cart</h3><pre>{
+  "type": "object",
+  "properties": {},
+  "additionalProperties": false
+}</pre>
+<h3 id="Cms_order">Cms_order</h3><pre>{
+  "type": "object",
+  "properties": {
+    "order_state_id": {
+      "type": "integer",
+      "exclusiveMinimum": 0,
+      "maximum": 9007199254740991
+    },
+    "delivery_reference": {
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 255
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "payment_state": {
+      "type": "string",
+      "enum": [
+        "not_paid",
+        "pending",
+        "paid",
+        "failed",
+        "refunded"
+      ]
+    },
+    "comment": {
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 1000
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "order_state_id",
+    "payment_state"
+  ],
+  "additionalProperties": false
+}</pre>
+</body></html>

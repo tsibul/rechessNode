@@ -10,7 +10,8 @@ import { db } from '../../db'
 import { ApiError } from '../../middleware/error'
 import type { PaymentNotification, PaymentProvider, PaymentStatus } from './types'
 
-const body = z.object({ ref: z.string().min(8).max(64), result: z.enum(['paid', 'failed']) }).strict()
+/** Body of the stub payment notification. */
+export const stubNotificationSchema = z.object({ ref: z.string().min(8).max(64), result: z.enum(['paid', 'failed']) }).strict()
 
 /**
  * Stub provider for development: moves no money, payment is confirmed on a site page.
@@ -32,7 +33,7 @@ export const stubProvider: PaymentProvider = {
 
   async parseNotification(req: Request): Promise<PaymentNotification> {
     if (process.env.NODE_ENV === 'production') throw new ApiError(403, 'Stub payments are disabled')
-    const b = body.parse(req.body)
+    const b = stubNotificationSchema.parse(req.body)
     return { ref: b.ref, status: b.result }
   }
 }

@@ -31,11 +31,17 @@ shopRouter.get('/cart', wrap(async (req, res) => {
   res.json(await getCartView(readToken(req)))
 }))
 
+/** Body of `POST /cart/items`. */
+export const addItemSchema = z.object({
+  item_id: z.number().int().positive(),
+  quantity: z.number().int().min(1).max(MAX_QUANTITY).default(1)
+}).strict()
+
+/** Body of `PATCH /cart/items/:itemId`. */
+export const quantitySchema = z.object({ quantity: z.number().int().min(0).max(MAX_QUANTITY) }).strict()
+
 shopRouter.post('/cart/items', wrap(async (req, res) => {
-  const body = z.object({
-    item_id: z.number().int().positive(),
-    quantity: z.number().int().min(1).max(MAX_QUANTITY).default(1)
-  }).strict().parse(req.body)
+  const body = addItemSchema.parse(req.body)
   const { view, issued } = await addItem(readToken(req), body.item_id, body.quantity)
   if (issued) setClientCookie(res, issued)
   setCountCookie(res, view.count)
@@ -43,7 +49,7 @@ shopRouter.post('/cart/items', wrap(async (req, res) => {
 }))
 
 shopRouter.patch('/cart/items/:itemId', wrap(async (req, res) => {
-  const body = z.object({ quantity: z.number().int().min(0).max(MAX_QUANTITY) }).strict().parse(req.body)
+  const body = quantitySchema.parse(req.body)
   const view = await setQuantity(readToken(req), itemId(req.params.itemId), body.quantity)
   setCountCookie(res, view.count)
   res.json(view)
@@ -67,7 +73,8 @@ shopRouter.get('/checkout/delivery', wrap(async (req, res) => {
 const text = (max: number) => z.string().trim().max(max)
 const optional = (max: number) => text(max).nullish().transform((v) => (v ? v : null))
 
-const orderSchema = z.object({
+/** Body of `POST /orders`. */
+export const orderSchema = z.object({
   name: text(255).min(1),
   family_name: optional(255),
   city: text(255).min(1),

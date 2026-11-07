@@ -47,7 +47,8 @@ export function resetLoginThrottle(): void {
 
 let dummyHash: Promise<string> | null = null
 
-const loginSchema = z.object({ login: z.string().min(1).max(255), password: z.string().min(1).max(500) }).strict()
+/** Body of `POST /login`. */
+export const loginSchema = z.object({ login: z.string().min(1).max(255), password: z.string().min(1).max(500) }).strict()
 
 cmsAuthRouter.post('/login', wrap(async (req, res) => {
   const { login, password } = loginSchema.parse(req.body)

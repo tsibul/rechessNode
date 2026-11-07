@@ -16,7 +16,8 @@ import { cleanHtml, cleanJson } from '../../utils/sanitizeHtml'
 
 type Row = Record<string, any>
 
-interface Spec {
+/** Description of an editable CMS table: permission, allowed operations and body validation. */
+export interface Spec {
   table: string
   permission: Permission
   /** Extra permissions that may only read (GET) the table, e.g. SEO editors list pages. */
@@ -53,7 +54,8 @@ export const PAYMENT_STATES = ['not_paid', 'pending', 'paid', 'failed', 'refunde
 export const PHOTO_SLOTS = ['side', 'top', 'board'] as const
 const photoName = req(255).regex(/^(?!\.+$)[A-Za-z0-9._-]+$/, 'Invalid file name')
 
-const REGISTRY: Record<string, Spec> = {
+/** Editable tables by name; `fields` is the validation schema of the request body. */
+export const REGISTRY: Record<string, Spec> = {
   color: {
     table: 'color', permission: 'references', ops: { create: true, update: true, remove: true }, searchColumn: 'name',
     fields: { name: req(255), code: z.string().length(2), hex: z.string().regex(/^[0-9a-fA-F]{6}$/).nullish() }
@@ -124,10 +126,12 @@ const REGISTRY: Record<string, Spec> = {
       page_id: fk, code: req(100), priority,
       content: z.unknown().refine((v) => v !== undefined, 'Required')
     },
+    /** Normalises the validated body before it is written. */
     prepare: async (data) => {
       if ('content' in data) data.content = JSON.stringify(cleanJson(data.content))
       return data
     },
+    /** Adds computed fields to the rows sent to the client. */
     decorate: async (rows) => {
       for (const r of rows) {
         if (typeof r.content === 'string') {
@@ -144,6 +148,7 @@ const REGISTRY: Record<string, Spec> = {
       value: z.string().max(65000).nullish(), group_name: opt(100), priority
     },
     updateOmit: ['code'],
+    /** Normalises the validated body before it is written. */
     prepare: async (data, ctx) => {
       if (typeof data.value === 'string') {
         const type = 'type' in data ? data.type : ctx.id ? (await db('setting').where({ id: ctx.id }).first('type'))?.type : undefined
@@ -156,6 +161,7 @@ const REGISTRY: Record<string, Spec> = {
     table: 'user', permission: 'users', ops: { create: true, update: true, remove: true }, searchColumn: 'name',
     hidden: ['password', 'hashToken'],
     fields: { name: req(255), login: req(255), password: z.string().min(8).max(200), role_id: fk },
+    /** Normalises the validated body before it is written. */
     prepare: async (data, ctx) => {
       if (!ctx.creating && ctx.id === ctx.userId && 'role_id' in data) {
         throw new ApiError(400, 'Cannot change own role')
@@ -167,6 +173,7 @@ const REGISTRY: Record<string, Spec> = {
       }
       return data
     },
+    /** Checks that the row may be marked as deleted. */
     beforeRemove: async (id, userId) => {
       if (id === userId) throw new ApiError(400, 'Cannot delete yourself')
     }
@@ -174,6 +181,7 @@ const REGISTRY: Record<string, Spec> = {
   role: {
     table: 'role', permission: 'users', ops: { create: true, update: true, remove: true }, searchColumn: 'name',
     fields: { code: z.string().trim().min(1).max(50).regex(/^[a-z0-9_-]+$/), name: req(255) },
+    /** Checks that the row may be marked as deleted. */
     beforeRemove: async (id) => {
       const used = await notDeleted(db('user').where({ role_id: id })).first('id')
       if (used) throw new ApiError(409, 'Role is in use')
@@ -187,6 +195,7 @@ const REGISTRY: Record<string, Spec> = {
       address_delivery: z.boolean(), delivery_address: opt(500), delivery_point_code: opt(50)
     },
     // Customer card: order history and carts of the client (the manager sees what and when was ordered).
+    /** Adds computed fields to the rows sent to the client. */
     decorate: async (rows) => {
       if (!rows.length) return
       const ids = rows.map((r) => r.id)
@@ -207,6 +216,7 @@ const REGISTRY: Record<string, Spec> = {
   },
   cart: {
     table: 'cart', permission: 'carts', ops: { remove: true }, fields: {},
+    /** Adds computed fields to the rows sent to the client. */
     decorate: async (rows) => {
       if (!rows.length) return
       const clients = await db('client').whereIn('id', rows.map((r) => r.client_id)).select('id', 'name', 'phone', 'e_mail')
@@ -226,16 +236,19 @@ const REGISTRY: Record<string, Spec> = {
       order_state_id: fk, delivery_reference: opt(255),
       payment_state: z.enum(PAYMENT_STATES), comment: opt(1000)
     },
+    /** Normalises the validated body before it is written. */
     prepare: async (data, ctx) => ({
       ...data,
       ...('delivery_reference' in data ? { delivery_reference: data.delivery_reference ? String(data.delivery_reference).trim() || null : null } : {}),
       updated_by: ctx.userId, last_updated: db.fn.now()
     }),
     // A new tracking number goes to the buyer once; a failed mail is stored in the order, the update stands.
+    /** Runs after a successful update. */
     afterUpdate: async (id) => {
       const o = await db('order').where({ id }).first('delivery_reference', 'track_sent_ref')
       if (o?.delivery_reference && o.delivery_reference !== o.track_sent_ref) await sendOrderMail(id, 'track')
     },
+    /** Adds computed fields to the rows sent to the client. */
     decorate: async (rows) => {
       if (!rows.length) return
       const states = await db('order_state').select('id', 'name')
@@ -423,9 +436,12 @@ cmsTablesRouter.post('/:name/:id/restore', wrap(async (req, res) => {
 }))
 
 /** Sends a mail of the order again (after a failure or on request). Right `orders`. */
+/** Body of `POST /order/:id/send-mail`. */
+export const sendMailSchema = z.object({ kind: z.enum(['confirmation', 'track', 'manager']) }).strict()
+
 cmsTablesRouter.post('/order/:id/send-mail', wrap(async (req, res) => {
   const id = idOf(req.params.id)
-  const { kind } = z.object({ kind: z.enum(['confirmation', 'track', 'manager']) }).strict().parse(req.body)
+  const { kind } = sendMailSchema.parse(req.body)
   const order = await db('order').where({ id }).first('id', 'delivery_reference')
   if (!order) throw new ApiError(404, 'Not found')
   if (kind === 'track' && !order.delivery_reference) throw new ApiError(400, 'Order has no tracking number')

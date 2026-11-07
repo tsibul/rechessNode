@@ -34,9 +34,12 @@ cmsRolesRouter.get('/', wrap(async (_req, res) => {
   })
 }))
 
+/** Body of `PUT /:id/permissions`. */
+export const permissionsSchema = z.object({ permissions: z.array(z.enum(PERMISSIONS)).max(PERMISSIONS.length) }).strict()
+
 cmsRolesRouter.put('/:id/permissions', wrap(async (req, res) => {
   const id = Number(req.params.id)
-  const body = z.object({ permissions: z.array(z.enum(PERMISSIONS)).max(PERMISSIONS.length) }).strict().parse(req.body)
+  const body = permissionsSchema.parse(req.body)
   const permissions = [...new Set(body.permissions)]
   const role = Number.isInteger(id) ? await roleView(id) : null
   if (!role) throw new ApiError(404, 'Not found')

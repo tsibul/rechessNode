@@ -13,8 +13,9 @@
     "migrate": "knex migrate:latest",
     "seed": "knex seed:run",
     "create-admin": "ts-node src/scripts/create-admin.ts",
-    "docs": "npm run docs:lint && npm run docs:ts",
+    "docs": "npm run docs:lint && npm run docs:ts && npm run docs:openapi",
     "docs:ts": "typedoc",
+    "docs:openapi": "ts-node src/scripts/generate-openapi.ts",
     "docs:lint": "eslint src --ext .ts"
   },
   "dependencies": {
