@@ -11,6 +11,13 @@ const trimSlash = (s: string) => s.replace(/\/+$/, '')
 /** Routes the server must never offer to crawlers: the app shell pages and the API. */
 export const DISALLOWED = ['/cms', '/cart', '/order', '/app-shell', '/api/']
 
+/**
+ * Builds `sitemap.xml`.
+ * @param site - Site origin, e.g. `https://example.com`.
+ * @param paths - Page paths to list.
+ * @param lastmod - Last modification date (`YYYY-MM-DD`).
+ * @returns XML text.
+ */
 export function sitemapXml(site: string, paths: string[], lastmod: string): string {
   const urls = paths
     .map((p) => `  <url><loc>${escapeXml(p === '/' ? `${trimSlash(site)}/` : `${trimSlash(site)}${p}`)}</loc><lastmod>${lastmod}</lastmod></url>`)
@@ -18,6 +25,11 @@ export function sitemapXml(site: string, paths: string[], lastmod: string): stri
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`
 }
 
+/**
+ * Builds `robots.txt` pointing to the sitemap.
+ * @param site - Site origin.
+ * @returns File text.
+ */
 export function robotsTxt(site: string): string {
   return ['User-agent: *', 'Allow: /', ...DISALLOWED.map((p) => `Disallow: ${p}`), '', `Sitemap: ${trimSlash(site)}/sitemap.xml`, ''].join('\n')
 }

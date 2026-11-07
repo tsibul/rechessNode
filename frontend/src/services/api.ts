@@ -4,12 +4,24 @@
  * @module services/api
  */
 
+/**
+ * One field-level error returned by the API.
+ */
 export interface ApiDetail {
   path: Array<string | number>
   message: string
 }
 
+/**
+ * Error returned by the API.
+ */
 export class ApiError extends Error {
+  /**
+   * Creates an API error.
+   * @param status - HTTP status.
+   * @param message - Message from the API.
+   * @param details - Field-level errors.
+   */
   constructor(public status: number, message: string, public details: ApiDetail[] = []) {
     super(message)
     this.name = 'ApiError'
@@ -22,6 +34,15 @@ export function apiBase(): string {
   return import.meta.env.VITE_API_URL ?? ''
 }
 
+/**
+ * Sends a JSON request to the API.
+ * @param path - Path after `/api`.
+ * @param init - Method and body.
+ * @param init.method - HTTP method (default GET).
+ * @param init.body - Value sent as JSON.
+ * @returns Parsed response.
+ * @throws ApiError when the response is not successful.
+ */
 export async function api<T>(path: string, init: { method?: string; body?: unknown } = {}): Promise<T> {
   let res: Response
   try {

@@ -5,4 +5,7 @@
  */
 import { ref } from 'vue'
 
+/**
+ * Current price loaded in the browser; null until loaded.
+ */
 export const livePrice = ref<number | null>(null)

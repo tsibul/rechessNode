@@ -59,6 +59,9 @@ function page(slug: string, name: string, title: string, description: string, bl
   return { slug, name, seo: { title, description, robotsIndex }, blocks }
 }
 
+/**
+ * Sample content used when the API is not available (development).
+ */
 export const devContent: SiteContent = {
   settings: {
     'site.name': 'reChess',

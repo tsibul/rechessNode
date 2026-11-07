@@ -6,6 +6,9 @@
 import type { Field } from './registry'
 import type { Row } from './api'
 
+/**
+ * Values of a CMS edit form by field key.
+ */
 export type FormValues = Record<string, any>
 
 /** Initial form values for a new record or an existing row. */
@@ -37,6 +40,11 @@ export function toInputDateTime(value: unknown): string {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`
 }
 
+/**
+ * Parses JSON text without throwing.
+ * @param text - JSON text.
+ * @returns The value, or an error message.
+ */
 export function parseJson(text: string): { ok: true; value: unknown } | { ok: false; error: string } {
   try {
     return { ok: true, value: JSON.parse(text) }
@@ -105,11 +113,21 @@ export function buildPayload(fields: Field[], values: FormValues, creating: bool
   return out
 }
 
+/**
+ * Formats a number as money in roubles.
+ * @param value - Amount.
+ * @returns Formatted text, or an empty string for an empty value.
+ */
 export function formatMoney(value: unknown): string {
   if (value === null || value === undefined || value === '') return '—'
   return `${Number(value).toLocaleString('ru-RU')} ₽`
 }
 
+/**
+ * Formats a date for the CMS tables.
+ * @param value - Date or ISO string.
+ * @returns Formatted text, or an empty string for an empty value.
+ */
 export function formatDate(value: unknown): string {
   if (!value) return '—'
   const d = new Date(String(value))
@@ -117,10 +135,19 @@ export function formatDate(value: unknown): string {
   return d.toLocaleString('ru-RU', { dateStyle: 'short', timeStyle: 'short' })
 }
 
+/**
+ * Shortens text to a given length with an ellipsis.
+ * @param text - Source text.
+ * @param max - Maximum length.
+ * @returns The text or its shortened form.
+ */
 export function truncate(text: string, max: number): string {
   return text.length <= max ? text : `${text.slice(0, Math.max(0, max - 1)).trimEnd()}…`
 }
 
+/**
+ * What a search engine and a social network show for the SEO form values.
+ */
 export interface SeoPreviewData {
   title: string
   description: string
@@ -163,6 +190,12 @@ export function settingToInput(type: string, value: string | null): string | boo
   return value ?? ''
 }
 
+/**
+ * Converts an input value to the stored setting value.
+ * @param type - Setting type.
+ * @param value - Input value.
+ * @returns Stored text, or null when empty.
+ */
 export function settingFromInput(type: string, value: string | boolean): string | null {
   if (type === 'boolean') return value ? '1' : '0'
   const s = String(value)
@@ -183,6 +216,11 @@ export function groupSettings<T extends Record<string, any>>(rows: T[]): { group
   }))
 }
 
+/**
+ * Builds the URL of an uploaded image.
+ * @param name - Stored file name.
+ * @returns URL path, or null when there is no file.
+ */
 export function photoUrl(name: string | null | undefined): string | null {
   return name ? `/uploads/${name}` : null
 }

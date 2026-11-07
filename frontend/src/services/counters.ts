@@ -7,11 +7,18 @@
  */
 import { getSetting } from '@/data/content'
 
+/**
+ * Name of the cookie that stores the consent choice.
+ */
 export const CONSENT_COOKIE = 'cookieConsent'
 
 type Win = Window & Record<string, any>
 let started = false
 
+/**
+ * Tells whether the visitor accepted cookies.
+ * @returns True when accepted.
+ */
 export function hasConsent(): boolean {
   return typeof document !== 'undefined' && /(?:^|;\s*)cookieConsent=accepted(?:;|$)/.test(document.cookie)
 }

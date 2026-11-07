@@ -5,6 +5,9 @@
  */
 import type { Product, Seller, Seo, Settings } from '@/data/types'
 
+/**
+ * Input for building page head tags.
+ */
 export interface HeadInput {
   seo: Seo
   /** Path of the page, `/` for the home page. */
@@ -31,6 +34,12 @@ export function imageUrl(site: string, image: string | null | undefined): string
   return `${trimSlash(site)}${image.startsWith('/') ? image : `/uploads/${image}`}`
 }
 
+/**
+ * Builds schema.org Organization data.
+ * @param settings - Site settings.
+ * @param seller - Seller details.
+ * @returns JSON-LD object.
+ */
 export function organizationLd(settings: Settings, seller?: Seller): Record<string, unknown> {
   const site = settings['site.url'] ?? ''
   const sameAs = [settings['social.vk'], settings['contact.whatsapp']].filter(Boolean)
@@ -48,6 +57,14 @@ export function organizationLd(settings: Settings, seller?: Seller): Record<stri
   }
 }
 
+/**
+ * Builds schema.org Product data.
+ * @param settings - Site settings.
+ * @param product - Product.
+ * @param price - Current price.
+ * @param image - Image URL.
+ * @returns JSON-LD object.
+ */
 export function productLd(settings: Settings, product: Product, price: number, image?: string): Record<string, unknown> {
   const site = settings['site.url'] ?? ''
   const images = [image, ...product.pairs.flatMap((p) => p.photos.map((ph) => imageUrl(site, ph.src)))]

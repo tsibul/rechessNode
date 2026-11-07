@@ -5,11 +5,20 @@
  * @module cms/registry
  */
 
+/**
+ * Permission codes of the CMS.
+ */
 export const PERMISSIONS = [
   'orders', 'clients', 'carts', 'references', 'prices', 'seo', 'pages', 'settings', 'users', 'publish'
 ] as const
+/**
+ * One of {@link PERMISSIONS}.
+ */
 export type Permission = (typeof PERMISSIONS)[number]
 
+/**
+ * Display names of permissions.
+ */
 export const PERMISSION_LABELS: Record<Permission, string> = {
   orders: 'Заказы',
   clients: 'Клиенты',
@@ -23,9 +32,15 @@ export const PERMISSION_LABELS: Record<Permission, string> = {
   publish: 'Публикация'
 }
 
+/**
+ * Input type of a form field.
+ */
 export type FieldType =
   | 'text' | 'textarea' | 'number' | 'boolean' | 'hex' | 'select' | 'enum' | 'photo' | 'json' | 'password' | 'datetime'
 
+/**
+ * A field of a CMS edit form.
+ */
 export interface Field {
   key: string
   label: string
@@ -43,8 +58,14 @@ export interface Field {
   default?: unknown
 }
 
+/**
+ * How a list column is shown.
+ */
 export type ColumnKind = 'text' | 'bool' | 'photo' | 'color' | 'ref' | 'date' | 'money' | 'badge'
 
+/**
+ * A column of a CMS list.
+ */
 export interface Column {
   key: string
   label: string
@@ -54,6 +75,9 @@ export interface Column {
   sortable?: boolean
 }
 
+/**
+ * A child table edited inside its parent.
+ */
 export interface Child {
   title: string
   /** Section key whose table is shown inside the form. */
@@ -62,6 +86,9 @@ export interface Child {
   fk: string
 }
 
+/**
+ * A filter of a CMS list.
+ */
 export interface Filter {
   key: string
   label: string
@@ -71,6 +98,9 @@ export interface Filter {
   params?: Record<string, string>
 }
 
+/**
+ * A CMS section: a table with its list columns, form fields and filters.
+ */
 export interface Section {
   key: string
   title: string
@@ -102,12 +132,18 @@ const nameCol: Column = { key: 'name', label: 'Название', sortable: true
 const prioCol: Column = { key: 'priority', label: 'Порядок', sortable: true }
 const photoCol: Column = { key: 'photo', label: 'Фото', kind: 'photo' }
 
+/**
+ * Photo slots of a product.
+ */
 export const PHOTO_SLOTS = [
   { value: 'side', label: 'Сбоку' },
   { value: 'top', label: 'Сверху' },
   { value: 'board', label: 'Доска' }
 ]
 
+/**
+ * Payment states of an order.
+ */
 export const PAYMENT_STATES = [
   { value: 'not_paid', label: 'Не оплачен' },
   { value: 'pending', label: 'Ожидает оплаты' },
@@ -116,6 +152,9 @@ export const PAYMENT_STATES = [
   { value: 'refunded', label: 'Возврат' }
 ]
 
+/**
+ * Types of a site setting.
+ */
 export const SETTING_TYPES = [
   { value: 'text', label: 'Текст' },
   { value: 'html', label: 'HTML' },
@@ -133,6 +172,9 @@ export const BLOCK_HINTS: Record<string, string> = {
   shops: '{}'
 }
 
+/**
+ * All CMS sections in menu order.
+ */
 export const SECTIONS: Section[] = [
   // ---- Каталог ----
   {
@@ -372,6 +414,11 @@ export const SECTIONS: Section[] = [
   { key: 'publish', title: 'Публикация', group: 'Система', permission: 'publish', kind: 'publish' }
 ]
 
+/**
+ * Finds a section.
+ * @param key - Section key.
+ * @returns The section, or undefined.
+ */
 export function sectionByKey(key: string): Section | undefined {
   return SECTIONS.find((s) => s.key === key)
 }

@@ -8,7 +8,8 @@ import { devContent } from './fixtures'
 import type { ColorPair, PageBlock, PageContent, Photo, Product, Seller, Shop, SiteContent } from './types'
 
 interface ApiPhoto { name: string; photo: string; slot?: string; ratio?: number }
-interface ApiSite {
+/** Shape of the `/api/site` response. */
+export interface ApiSite {
   settings: Record<string, string | number | boolean | null>
   pages: Array<{
     slug: string; name: string
@@ -28,6 +29,11 @@ interface ApiSite {
   seller: { name: string; ogrn: string; inn: string; address: string; phone: string } | null
 }
 
+/**
+ * Builds the URL of an uploaded file.
+ * @param file - Stored file name.
+ * @returns URL path.
+ */
 export function uploadUrl(file: string): string {
   // Same on the server and in the browser: the built HTML must not carry a build-time host.
   return `/uploads/${file}`
@@ -94,6 +100,11 @@ function mapPage(fixture: PageContent, site: ApiSite): PageContent {
 /** Settings the customer maintains in the CMS: contacts, social links, signature, shop texts. */
 const CMS_OWNED = /^(contact\.|social\.|footer\.credit$|shop\.|company\.|legal\.email$)/
 
+/**
+ * Converts the API response into the site content model.
+ * @param site - API response.
+ * @returns Site content.
+ */
 export function mapSite(site: ApiSite): SiteContent {
   const settings: Record<string, string> = { ...devContent.settings }
   for (const [k, v] of Object.entries(site.settings)) if (v !== null && v !== '') settings[k] = String(v)

@@ -6,6 +6,9 @@
 import { reactive } from 'vue'
 import { cmsApi } from './api'
 
+/**
+ * A select option built from a reference table.
+ */
 export interface RefOption { value: number; label: string; hex?: string | null }
 
 const cache = reactive<Record<string, RefOption[]>>({})
@@ -13,19 +16,45 @@ const loading: Record<string, Promise<void> | undefined> = {}
 
 const key = (table: string, label: string) => `${table}:${label}`
 
+/**
+ * Returns options of a loaded reference table.
+ * @param table - Table name.
+ * @param label - Field used as the label.
+ * @returns Options.
+ */
 export function refOptions(table: string, label = 'name'): RefOption[] {
   return cache[key(table, label)] ?? []
 }
 
+/**
+ * Returns the label of a reference row.
+ * @param table - Table name.
+ * @param id - Row id.
+ * @param label - Field used as the label.
+ * @returns Label, or an empty string.
+ */
 export function refLabel(table: string, id: unknown, label = 'name'): string {
   const o = refOptions(table, label).find((x) => x.value === Number(id))
   return o ? o.label : id == null ? '—' : `#${id}`
 }
 
+/**
+ * Returns the colour code of a reference row.
+ * @param table - Table name.
+ * @param id - Row id.
+ * @returns Hex colour, or null.
+ */
 export function refHex(table: string, id: unknown): string | null {
   return refOptions(table).find((x) => x.value === Number(id))?.hex ?? null
 }
 
+/**
+ * Loads a reference table into the cache.
+ * @param table - Table name.
+ * @param label - Field used as the label.
+ * @param force - Reload even if cached.
+ * @returns Resolves when loaded.
+ */
 export function loadRef(table: string, label = 'name', force = false): Promise<void> {
   const k = key(table, label)
   if (!force && cache[k]) return Promise.resolve()

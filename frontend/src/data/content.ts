@@ -52,36 +52,71 @@ export function prepareContent(content: SiteContent): SiteContent {
 
 let current: SiteContent = prepareContent(devContent)
 
+/**
+ * Stores the site content used by pages.
+ * @param content - Site content.
+ */
 export function setSiteContent(content: SiteContent): void {
   current = prepareContent(content)
 }
 
+/**
+ * Returns a page.
+ * @param slug - Page slug.
+ * @returns Page content.
+ */
 export function getPage(slug: string): PageContent {
   const page = current.pages.find((p) => p.slug === slug)
   if (!page) throw new Error(`Page "${slug}" is not in the content`)
   return page
 }
 
+/**
+ * Returns site settings.
+ * @returns Settings by key.
+ */
 export function getSettings(): Settings {
   return current.settings
 }
 
+/**
+ * Returns one setting.
+ * @param code - Setting code.
+ * @param fallback - Value when the setting is missing.
+ * @returns Setting value.
+ */
 export function getSetting(code: string, fallback = ''): string {
   return current.settings[code] || fallback
 }
 
+/**
+ * Returns the product.
+ * @returns Product.
+ */
 export function getProduct(): Product {
   return current.product
 }
 
+/**
+ * Returns the shops.
+ * @returns Shop list.
+ */
 export function getShops(): Shop[] {
   return current.shops
 }
 
+/**
+ * Returns the seller details.
+ * @returns Seller.
+ */
 export function getSeller(): Seller {
   return current.seller
 }
 
+/**
+ * Returns the slugs of all pages.
+ * @returns Slug list.
+ */
 export function pageSlugs(): string[] {
   return current.pages.map((p) => p.slug)
 }

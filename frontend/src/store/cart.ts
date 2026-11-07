@@ -6,6 +6,9 @@ import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import { api } from '@/services/api'
 
+/**
+ * A cart line shown in the cart.
+ */
 export interface CartLine {
   item_id: number
   name: string
@@ -29,6 +32,9 @@ function countFromCookie(): number {
   return m ? Number(m[1]) : 0
 }
 
+/**
+ * Pinia store of the cart: lines, count, total and operations on them.
+ */
 export const useCartStore = defineStore('cart', () => {
   const items = ref<CartLine[]>([])
   const count = ref(0)

@@ -12,6 +12,9 @@ export interface Photo {
   ratio: number
 }
 
+/**
+ * SEO fields of a page.
+ */
 export interface Seo {
   title: string
   description: string
@@ -21,6 +24,9 @@ export interface Seo {
   robotsIndex: boolean
 }
 
+/**
+ * A block of a page.
+ */
 export type PageBlock =
   | { code: 'gallery'; photos: Photo[] }
   | { code: 'text'; title?: string; hideTitle?: boolean; html: string }
@@ -28,6 +34,9 @@ export type PageBlock =
   | { code: 'product' }
   | { code: 'colors' }
 
+/**
+ * A page with its blocks.
+ */
 export interface PageContent {
   slug: string
   name: string
@@ -35,6 +44,9 @@ export interface PageContent {
   blocks: PageBlock[]
 }
 
+/**
+ * A product colour.
+ */
 export interface Color {
   name: string
   hex: string
@@ -49,6 +61,9 @@ export interface ColorPair {
   photos: Photo[]
 }
 
+/**
+ * The product with prices and photos.
+ */
 export interface Product {
   id: number
   name: string
@@ -61,6 +76,9 @@ export interface Product {
   pairs: ColorPair[]
 }
 
+/**
+ * A shop.
+ */
 export interface Shop {
   id: number
   name: string
@@ -71,6 +89,9 @@ export interface Shop {
   photos: Photo[]
 }
 
+/**
+ * Seller details.
+ */
 export interface Seller {
   name: string
   ogrn: string
@@ -82,6 +103,9 @@ export interface Seller {
 /** `setting` rows as a code → value map. */
 export type Settings = Record<string, string>
 
+/**
+ * All content of the site.
+ */
 export interface SiteContent {
   settings: Settings
   seller: Seller

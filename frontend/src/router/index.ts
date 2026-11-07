@@ -13,6 +13,9 @@ const page = (path: string, name: string, slug: string): RouteRecordRaw => ({
   props: { slug }
 })
 
+/**
+ * Routes of the site.
+ */
 export const routes: RouteRecordRaw[] = [
   page('/', 'home', 'index'),
   page('/about', 'about', 'about'),

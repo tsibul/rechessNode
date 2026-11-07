@@ -9,6 +9,10 @@ import { cmsApi } from './api'
 const url = ref('')
 let loaded = false
 
+/**
+ * Composable that builds public site URLs from the `site_url` setting.
+ * @returns URL helpers.
+ */
 export function useSiteUrl() {
   if (!loaded) {
     loaded = true

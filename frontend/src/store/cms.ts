@@ -9,6 +9,9 @@ import { computed, ref } from 'vue'
 import { cmsApi, CmsUser, errorMessage, setUnauthorizedHandler } from '../cms/api'
 import { visibleSections } from '../cms/registry'
 
+/**
+ * Pinia store of the CMS session: user, permissions and available sections.
+ */
 export const useCmsStore = defineStore('cms', () => {
   const user = ref<CmsUser | null>(null)
   const checked = ref(false)

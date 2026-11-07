@@ -12,6 +12,11 @@ const CONFIG = {
   ALLOW_DATA_ATTR: false
 }
 
+/**
+ * Removes unsafe markup from HTML entered in the CMS.
+ * @param html - Source HTML.
+ * @returns Safe HTML, or an empty string.
+ */
 export function safeHtml(html: string | null | undefined): string {
   if (!html) return ''
   if (typeof window === 'undefined') return html

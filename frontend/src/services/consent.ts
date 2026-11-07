@@ -7,10 +7,16 @@
 import { ref } from 'vue'
 import { startCounters } from './counters'
 
+/**
+ * Cookie consent state; null until the visitor chooses.
+ */
 export type Consent = 'accepted' | 'declined' | null
 
 const COOKIE = 'cookieConsent'
 
+/**
+ * Current cookie consent.
+ */
 export const consent = ref<Consent>(null)
 /** The banner shows until the visitor answers. */
 export const bannerOpen = ref(false)
@@ -32,12 +38,20 @@ export async function initConsent(): Promise<void> {
   bannerOpen.value = consent.value === null
 }
 
+/**
+ * Records that the visitor accepted cookies.
+ * @returns Resolves when saved.
+ */
 export async function acceptCookies(): Promise<void> {
   await store('accepted')
   bannerOpen.value = false
   startCounters()
 }
 
+/**
+ * Records that the visitor declined cookies.
+ * @returns Resolves when saved.
+ */
 export async function declineCookies(): Promise<void> {
   await store('declined')
   bannerOpen.value = false
