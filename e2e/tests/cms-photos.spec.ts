@@ -87,15 +87,21 @@ test('manager adds a pair with three slides; after publication it is a three-sli
     expect(res.status()).toBe(201)
   }
   await page.getByRole('dialog').getByRole('button', { name: 'Закрыть' }).click()
-  await publish(page)
+  try {
+    await publish(page)
 
-  const ctx = await browser.newContext()
-  const site = await ctx.newPage()
-  await site.goto('/colors')
-  await expect(site.locator('.card')).toHaveCount(before + 1)
-  const card = site.locator('.card', { has: site.locator(`img[alt="e2e-slide-top-${tag}"]`) })
-  await expect(card.locator('.card__slide')).toHaveCount(3)
-  await expect(card.locator('.card__slide img').evaluateAll((l) => l.map((i) => (i as HTMLImageElement).alt)))
-    .resolves.toEqual([`e2e-slide-side-${tag}`, `e2e-slide-top-${tag}`, `e2e-slide-board-${tag}`])
-  await ctx.close()
+    const ctx = await browser.newContext()
+    const site = await ctx.newPage()
+    await site.goto('/colors')
+    await expect(site.locator('.card')).toHaveCount(before + 1)
+    const card = site.locator('.card', { has: site.locator(`img[alt="e2e-slide-top-${tag}"]`) })
+    await expect(card.locator('.card__slide')).toHaveCount(3)
+    await expect(card.locator('.card__slide img').evaluateAll((l) => l.map((i) => (i as HTMLImageElement).alt)))
+      .resolves.toEqual([`e2e-slide-side-${tag}`, `e2e-slide-top-${tag}`, `e2e-slide-board-${tag}`])
+    await ctx.close()
+  } finally {
+    // the built site must not keep the test pair for the next specs
+    await page.request.delete(`/api/cms/tables/item/${id}`)
+    await publish(page)
+  }
 })
