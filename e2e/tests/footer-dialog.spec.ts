@@ -20,8 +20,15 @@ test('footer links open a pop-up that closes with Esc, the cross and a click out
   await expect(dialog).toHaveCount(0)
   expect(await page.evaluate(() => document.body.style.overflow)).toBe('')
 
-  // Company details; closed by the cross.
+  // About the company is its own text, not the legal details.
   await page.getByTestId('footer-company').click()
+  await expect(dialog).toContainText('ReChess')
+  await expect(dialog).not.toContainText('ИНН')
+  await page.keyboard.press('Escape')
+  await expect(dialog).toHaveCount(0)
+
+  // Legal information (the details); closed by the cross.
+  await page.getByTestId('footer-legal').click()
   await expect(dialog).toContainText('ИНН')
   await expect(dialog).not.toContainText('Редакция от')
   await page.getByTestId('info-dialog-close').click()
@@ -30,7 +37,7 @@ test('footer links open a pop-up that closes with Esc, the cross and a click out
   // Closed by a click on the dark area outside the panel.
   // On a phone the panel is a full-screen sheet (<= 660px), so there is no outside area to click.
   if (page.viewportSize()!.width > 660) {
-    await page.getByTestId('footer-company').click()
+    await page.getByTestId('footer-legal').click()
     await expect(dialog).toBeVisible()
     await dialog.click({ position: { x: 3, y: 3 } })
     await expect(dialog).toHaveCount(0)
@@ -49,7 +56,7 @@ test('footer links open a pop-up that closes with Esc, the cross and a click out
 test('the document pages are still reachable and the links keep their addresses', async ({ page }) => {
   await page.goto('/about')
   await expect(page.getByTestId('footer-privacy')).toHaveAttribute('href', '/privacy')
-  await expect(page.getByTestId('footer-company')).toHaveAttribute('href', '/privacy#company')
+  await expect(page.getByTestId('footer-legal')).toHaveAttribute('href', '/privacy#company')
   await page.goto('/privacy#company')
   await expect(page.getByTestId('columns')).toBeVisible()
   await expect(page.getByTestId('columns')).toContainText('ИНН')
@@ -62,4 +69,24 @@ test('each colour pair is a three-slide carousel with one next arrow', async ({ 
   await expect(cards).toHaveCount(7)
   for (let i = 0; i < 7; i++) await expect(cards.nth(i).locator('.card__slide')).toHaveCount(3)
   await expect(page.getByTestId('pair-next')).toHaveCount(7)
+})
+
+test('the next arrow sits on the photo and the frame hugs it', async ({ page }) => {
+  await page.goto('/colors')
+  const card = page.locator('.card').first()
+  const photo = (await card.locator('.card__slide').first().boundingBox())!
+  const next = card.getByTestId('pair-next')
+  // The arrow is shown only where there is a mouse; on a phone the strip is swiped.
+  if (await next.isVisible()) {
+    const a = (await next.boundingBox())!
+    expect(a.x + a.width).toBeLessThanOrEqual(photo.x + photo.width + 1)
+    expect(a.x).toBeGreaterThanOrEqual(photo.x)
+  }
+  await card.evaluate((el) => el.classList.add('card--in-cart'))
+  const frame = await card.evaluate((el) => {
+    const f = getComputedStyle(el, '::after')
+    return { right: parseFloat(f.right), width: parseFloat(f.width), card: el.getBoundingClientRect().width }
+  })
+  // The frame ends near the photo edge, not at the edge of the next slide.
+  expect(frame.width).toBeLessThan(frame.card * 0.95)
 })

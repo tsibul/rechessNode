@@ -92,7 +92,7 @@ function mapPage(fixture: PageContent, site: ApiSite): PageContent {
 }
 
 /** Settings the customer maintains in the CMS: contacts, social links, signature, shop texts. */
-const CMS_OWNED = /^(contact\.|social\.|footer\.credit$|shop\.)/
+const CMS_OWNED = /^(contact\.|social\.|footer\.credit$|shop\.|company\.)/
 
 export function mapSite(site: ApiSite): SiteContent {
   const settings: Record<string, string> = { ...devContent.settings }

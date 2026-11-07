@@ -68,6 +68,7 @@ export const devContent: SiteContent = {
     'contact.whatsapp': 'https://wa.me/79266026441',
     'contact.instagram': figma.footer.instagram,
     'footer.credit': figma.footer.credit,
+    'company.about': '<p>ReChess — шахматы из переработанной тетрапак-упаковки. Фигуры сделаны из полиалюминия, который получается при переработке упаковки: то, что было незаметным, возвращается в игру.</p><p>Данные продавца и реквизиты — в разделе «Юридическая информация».</p>',
     'shop.buy_note': figma.buy_note,
     'shop.corporate_title': figma.corporate_title,
     'shop.corporate': figma.corporate_text,

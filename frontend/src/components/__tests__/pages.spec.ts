@@ -6,7 +6,7 @@ import { createHead } from '@unhead/vue/client'
 import { routes } from '@/router'
 import PageView from '@/pages/static/PageView.vue'
 import { useCartStore } from '@/store/cart'
-import { getProduct } from '@/data/content'
+import { getProduct, getSeller } from '@/data/content'
 import CookieBanner from '@/components/floating/CookieBanner.vue'
 
 async function render(slug: string) {
@@ -30,14 +30,21 @@ describe('public pages', () => {
   it('footer links open a pop-up and keep the address; Esc closes it', async () => {
     const w = await render('index')
     expect(w.find('[data-testid="footer-privacy"]').attributes('href')).toBe('/privacy')
-    expect(w.find('[data-testid="footer-company"]').attributes('href')).toBe('/privacy#company')
-    await w.find('[data-testid="footer-company"]').trigger('click')
+    expect(w.find('[data-testid="footer-legal"]').attributes('href')).toBe('/privacy#company')
+    // "Legal information" is the legal details; "About the company" is a different text.
+    await w.find('[data-testid="footer-legal"]').trigger('click')
     const dialog = document.querySelector('[data-testid="info-dialog"]')
     expect(dialog).not.toBeNull()
     expect(dialog!.textContent).toContain('ИНН')
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))
     await w.vm.$nextTick()
     expect(document.querySelector('[data-testid="info-dialog"]')).toBeNull()
+    await w.find('[data-testid="footer-company"]').trigger('click')
+    const about = document.querySelector('[data-testid="info-dialog"]')
+    expect(about!.textContent).toContain('ReChess')
+    expect(about!.textContent).not.toContain('ИНН')
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))
+    await w.vm.$nextTick()
     w.unmount()
   })
 
@@ -97,6 +104,9 @@ describe('public pages', () => {
     expect(privacy.find('h1').text()).toContain('Политика')
     expect(privacy.findAll('[data-testid="columns"] > div').length).toBe(3)
     expect(privacy.find('#company').text()).toContain('ИНН')
+    // The company name in the policy comes from the seller, no placeholder is left.
+    expect(privacy.text()).toContain(getSeller().name)
+    expect(privacy.text()).not.toContain('{{company}}')
     expect((await render('personal-data')).find('h1').text()).toContain('Политика обработки')
   })
 

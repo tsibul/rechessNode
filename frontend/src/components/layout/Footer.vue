@@ -8,23 +8,28 @@ defineOptions({ name: 'SiteFooter' })
 const phone = getSetting('contact.phone')
 const email = getSetting('contact.email')
 
-// The legal page keeps company details in its first column and the privacy policy in its third; the pop-up shows one of them.
-type Doc = { label: string; column: number }
+// "About the company" is its own text (setting company.about). The legal page keeps the legal details
+// in its first column and the privacy policy in its third; the pop-up shows one of them.
+type Doc = { label: string; column?: number }
 const docs: Record<string, Doc> = {
-  company: { label: 'О компании', column: 0 },
+  company: { label: 'О компании' },
+  legal: { label: 'Юридическая информация', column: 0 },
   privacy: { label: 'Политика конфиденциальности', column: 2 }
 }
+const about = getSetting('company.about')
 const current = ref<keyof typeof docs | null>(null)
 const html = computed(() => {
   if (!current.value) return ''
+  const doc = docs[current.value]
+  if (doc.column === undefined) return about
   const block = getPage('privacy').blocks.find((b) => b.code === 'columns')
-  return block && block.code === 'columns' ? (block.columns[docs[current.value].column] ?? '') : ''
+  return block && block.code === 'columns' ? (block.columns[doc.column] ?? '') : ''
 })
 
 /** Plain click opens the pop-up; new tab, new window and middle click keep the normal link to the page. */
 function show(e: MouseEvent, doc: keyof typeof docs) {
   if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return
-  if (!html.value && !getPage('privacy').blocks.length) return
+  if (doc === 'company' ? !about : !getPage('privacy').blocks.length) return
   e.preventDefault()
   current.value = doc
 }
@@ -39,7 +44,8 @@ function show(e: MouseEvent, doc: keyof typeof docs) {
       <p>{{ getSetting('contact.instagram') }}</p>
     </div>
     <div class="footer__col">
-      <p><a href="/privacy#company" data-testid="footer-company" @click="show($event, 'company')">О компании</a></p>
+      <p v-if="about"><a href="/about" data-testid="footer-company" @click="show($event, 'company')">О компании</a></p>
+      <p><a href="/privacy#company" data-testid="footer-legal" @click="show($event, 'legal')">Юридическая информация</a></p>
       <p><a href="/privacy" data-testid="footer-privacy" @click="show($event, 'privacy')">Политика конфиденциальности</a></p>
     </div>
     <InfoDialog :open="!!current" :label="current ? docs[current].label : ''" :html="html" @close="current = null" />

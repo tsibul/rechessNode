@@ -9,10 +9,33 @@
 import type { PageContent, Product, Seller, Settings, Shop, SiteContent } from './types'
 import { devContent } from './fixtures'
 
-let current: SiteContent = devContent
+const COMPANY = '{{company}}'
+const escapeHtml = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+
+/**
+ * Texts of the documents carry the placeholder {{company}} instead of the company name;
+ * it is replaced with the seller name from the CMS ("Сайт" → "Продавец"), so the name is kept in one place.
+ */
+export function withCompanyName(content: SiteContent): SiteContent {
+  const name = escapeHtml(content.seller?.name ?? '')
+  const fill = (html: string) => (html.includes(COMPANY) ? html.split(COMPANY).join(name) : html)
+  return {
+    ...content,
+    pages: content.pages.map((p) => ({
+      ...p,
+      blocks: p.blocks.map((b) => {
+        if (b.code === 'text') return { ...b, html: fill(b.html) }
+        if (b.code === 'columns') return { ...b, columns: b.columns.map(fill) }
+        return b
+      })
+    }))
+  }
+}
+
+let current: SiteContent = withCompanyName(devContent)
 
 export function setSiteContent(content: SiteContent): void {
-  current = content
+  current = withCompanyName(content)
 }
 
 export function getPage(slug: string): PageContent {
