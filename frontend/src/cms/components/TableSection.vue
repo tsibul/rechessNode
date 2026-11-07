@@ -2,7 +2,7 @@
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { cmsApi, errorMessage, ListParams, Row } from '../api'
 import { invalidateRef, loadRef, refOptions } from '../refs'
-import { movePriority } from '../logic'
+import { movePriority, type FormValues } from '../logic'
 import type { Section } from '../registry'
 import Cell from './Cell.vue'
 import ChildTable from './ChildTable.vue'
@@ -30,10 +30,10 @@ const q = ref('')
 const deleted = ref<'0' | '1' | 'all'>('0')
 const sort = ref(props.section.sort ?? 'id')
 const dir = ref<'asc' | 'desc'>(props.section.dir ?? 'asc')
-const filterValues = reactive<Record<string, any>>({})
+const filterValues = reactive<FormValues>({})
 const selected = ref<Row | null>(null)
 const creating = ref(false)
-const formValues = ref<Record<string, any>>({})
+const formValues = ref<FormValues>({})
 const pageSlugs = ref<Record<number, string>>({})
 
 const isOrders = computed(() => props.section.table === 'order')

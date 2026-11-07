@@ -8,9 +8,6 @@
     "**/testing/**",
     "**/db/migrations/**",
     "**/db/seeds/**",
-    "**/models/**",
-    "**/repositories/**",
-    "**/types/**",
     "**/*.test.ts"
   ],
   "tsconfig": "tsconfig.json",

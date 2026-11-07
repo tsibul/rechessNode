@@ -12,7 +12,15 @@ import { getSetting } from '@/data/content'
  */
 export const CONSENT_COOKIE = 'cookieConsent'
 
-type Win = Window & Record<string, any>
+/** Yandex Metrika queue function: calls are queued in `a` until the tag script loads. */
+type YmFn = ((...args: unknown[]) => void) & { a?: unknown[][]; l?: number }
+
+/** Globals the counter scripts add to `window`. */
+type Win = Window & {
+  ym?: YmFn
+  VK?: { Retargeting?: { Init(id: string): void; Hit(): void } }
+  _tmr?: Array<Record<string, unknown>>
+}
 let started = false
 
 /**
@@ -33,10 +41,11 @@ function addScript(src: string, onload?: () => void): void {
 
 function startMetrika(id: string): void {
   const w = window as Win
-  w.ym = w.ym || function (...args: unknown[]) { (w.ym.a = w.ym.a || []).push(args) }
-  w.ym.l = Date.now()
+  const ym: YmFn = w.ym || function (...args: unknown[]) { (ym.a = ym.a || []).push(args) }
+  w.ym = ym
+  ym.l = Date.now()
   addScript('https://mc.yandex.ru/metrika/tag.js')
-  w.ym(Number(id), 'init', { clickmap: true, trackLinks: true, accurateTrackBounce: true, webvisor: false })
+  ym(Number(id), 'init', { clickmap: true, trackLinks: true, accurateTrackBounce: true, webvisor: false })
 }
 
 function startVk(id: string): void {

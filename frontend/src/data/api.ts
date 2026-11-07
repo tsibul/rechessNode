@@ -9,12 +9,20 @@ import type { ColorPair, PageBlock, PageContent, Photo, Product, Seller, Shop, S
 
 /** Photo as the API returns it. */
 export interface ApiPhoto { name: string; photo: string; slot?: string; ratio?: number }
+/** Content of a page block: the fields depend on the block code, so all are optional and checked where used. */
+export interface ApiBlockContent {
+  title?: string
+  hide_title?: boolean
+  html?: string
+  columns?: unknown[]
+  photos?: Array<{ name?: string; photo?: string; ratio?: number } | null>
+}
 /** Shape of the `/api/site` response. */
 export interface ApiSite {
   settings: Record<string, string | number | boolean | null>
   pages: Array<{
     slug: string; name: string
-    blocks: Array<{ code: string; priority: number; content: any }>
+    blocks: Array<{ code: string; priority: number; content: ApiBlockContent | null }>
     seo: { title: string; description: string; og_title: string | null; og_description: string | null; og_image: string | null; robots_index: boolean } | null
   }>
   products: Array<{
@@ -68,7 +76,7 @@ function mapBlock(b: ApiSite['pages'][number]['blocks'][number], site: ApiSite, 
       return Array.isArray(c.columns) && c.columns.length ? { code: 'columns', title: c.title, columns: c.columns.map(String) } : null
     case 'gallery': {
       const own: Photo[] = Array.isArray(c.photos)
-        ? c.photos.filter((p: any) => p && p.photo).map((p: any) => photo({ name: p.name ?? '', photo: p.photo }, p.ratio ?? 1))
+        ? c.photos.filter((p): p is { name?: string; photo: string; ratio?: number } => Boolean(p && p.photo)).map((p) => photo({ name: p.name ?? '', photo: p.photo }, p.ratio ?? 1))
         : []
       const photos = own.length ? own : slug === 'index' ? site.index_photos.map((p) => photo(p)) : []
       return photos.length ? { code: 'gallery', photos } : null

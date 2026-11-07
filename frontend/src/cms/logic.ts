@@ -9,6 +9,7 @@ import type { Row } from './api'
 /**
  * Values of a CMS edit form by field key.
  */
+/** Form values by field name: the fields are set by the table description at run time, so `any` is deliberate. */
 export type FormValues = Record<string, any>
 
 /** Initial form values for a new record or an existing row. */
@@ -202,7 +203,7 @@ export function settingFromInput(type: string, value: string | boolean): string 
   return s === '' ? null : s
 }
 
-/** Settings grouped by `group_name`, sorted by `priority` inside. */
+/** Settings grouped by `group_name`, sorted by `priority` inside. Rows are dynamic CMS rows (`Row`), so `any` is deliberate. */
 export function groupSettings<T extends Record<string, any>>(rows: T[]): { group: string; rows: T[] }[] {
   const groups = new Map<string, T[]>()
   for (const r of rows) {

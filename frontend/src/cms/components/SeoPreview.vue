@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { photoUrl, seoPreview } from '../logic'
+import { photoUrl, seoPreview, type FormValues } from '../logic'
 import { useSiteUrl } from '../siteUrl'
 
 /** Preview of how a page looks in search results and social networks. */
@@ -8,7 +8,7 @@ defineOptions({ name: 'SeoPreview' })
 
 const props = defineProps<{
   /** Current SEO form values. */
-  values: Record<string, any>
+  values: FormValues
   /** Page slugs by page id. */
   pageSlugs: Record<number, string>
 }>()

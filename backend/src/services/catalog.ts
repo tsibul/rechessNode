@@ -82,7 +82,7 @@ function seoOf(row: Record<string, unknown> | undefined) {
  * @returns Page list.
  */
 export async function getPages(slug?: string) {
-  const pages: Record<string, any>[] = await notDeleted(db("page")).modify((q) => { if (slug) q.where('slug', slug) }).orderBy('id')
+  const pages: { id: number; slug: string; name: string }[] = await notDeleted(db("page")).modify((q) => { if (slug) q.where('slug', slug) }).orderBy('id')
   if (!pages.length) return []
   const ids = pages.map((p) => p.id)
   const blocks = await notDeleted(db('page_block').whereIn('page_id', ids)).orderBy('priority').orderBy('id')

@@ -14,6 +14,7 @@ import { sendOrderMail } from '../../services/mail'
 import { hashPassword } from '../../utils/password'
 import { cleanHtml, cleanJson } from '../../utils/sanitizeHtml'
 
+/** A table row of dynamic shape: CMS tables are described by `Spec` at run time, so columns have no static type. `any` stays on purpose (knex rows are `any` too; `unknown` would need a cast on every column). */
 type Row = Record<string, any>
 
 /** Description of an editable CMS table: permission, allowed operations and body validation. */
@@ -363,9 +364,9 @@ cmsTablesRouter.get('/:name', wrap(async (req, res) => {
 
 /** Orders per status for the filter chips (the same orders the list shows). Right `orders`. */
 cmsTablesRouter.get('/order/state-counts', wrap(async (_req, res) => {
-  const rows = await db('order').groupBy('order_state_id').select('order_state_id').count({ c: '*' })
+  const rows = await db('order').groupBy('order_state_id').select('order_state_id').count({ c: '*' }) as unknown as { order_state_id: number; c: string | number }[]
   const states = await db('order_state').orderBy('priority').orderBy('id').select('id', 'name', 'deleted')
-  const counts = new Map(rows.map((r: any) => [Number(r.order_state_id), Number(r.c)]))
+  const counts = new Map(rows.map((r) => [Number(r.order_state_id), Number(r.c)] as const))
   res.json({
     total: [...counts.values()].reduce((a, b) => a + b, 0),
     states: states.filter((s) => !s.deleted || counts.get(s.id)).map((s) => ({ id: s.id, name: s.name, count: counts.get(s.id) ?? 0 }))
