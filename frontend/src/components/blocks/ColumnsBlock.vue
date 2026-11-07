@@ -6,7 +6,7 @@ defineProps<{ title?: string; columns: string[] }>()
 <template>
   <section class="columns" data-testid="columns">
     <h1 v-if="title" class="visually-hidden">{{ title }}</h1>
-    <div v-for="(html, i) in columns" :id="i === 0 ? 'company' : undefined" :key="i" class="columns__col" v-html="html" />
+    <div v-for="(html, i) in columns" :id="i === 0 ? 'company' : i === 1 ? 'cookie' : undefined" :key="i" class="columns__col" v-html="html" />
   </section>
 </template>
 
@@ -29,6 +29,7 @@ defineProps<{ title?: string; columns: string[] }>()
 
     :deep(a) {
       text-decoration: underline;
+      overflow-wrap: anywhere;
     }
   }
 }
@@ -36,8 +37,14 @@ defineProps<{ title?: string; columns: string[] }>()
 @media (max-width: 1160px) {
   .columns {
     grid-template-columns: minmax(0, 1fr);
-    row-gap: 19px;
+    row-gap: 38px;
     padding: 0 20px;
+
+    // Stacked columns are different documents: a thin line shows where the next one starts.
+    &__col + &__col {
+      padding-top: 19px;
+      border-top: 1px solid currentColor;
+    }
   }
 }
 
