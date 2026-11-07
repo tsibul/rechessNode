@@ -18,7 +18,7 @@ test('buyer buys a pair of colours and gets the confirmation', async ({ page }) 
   await page.goto('/colors')
   const banner = page.getByTestId('cookie-consent')
   await expect(banner).toBeVisible()
-  await banner.getByRole('button').click()
+  await banner.getByTestId('cookie-accept').click()
   await expect(banner).toBeHidden()
 
   await page.getByRole('button', { name: /добавить/ }).nth(1).click()
@@ -105,4 +105,47 @@ test('empty cart and form validation', async ({ page }) => {
   await page.goto('/order')
   await expect(page.getByTestId('order-empty')).toBeVisible()
   await expect(page.getByTestId('order-form')).toHaveCount(0)
+})
+
+test('after a refusal of cookies the order asks to accept them and goes on', async ({ page }) => {
+  const { tag } = readState()
+  const email = `e2e-${tag}-${test.info().project.name}-cookies@example.com`
+  const post = page.waitForRequest((r) => r.url().endsWith('/api/orders') && r.method() === 'POST', { timeout: 5000 }).catch(() => null)
+
+  await page.goto('/colors')
+  const banner = page.getByTestId('cookie-consent')
+  await expect(banner).toHaveAttribute('data-mode', 'ask')
+  await banner.getByTestId('cookie-decline').click()
+  await expect(banner).toHaveAttribute('data-mode', 'declined')
+  await expect(banner).toContainText('нельзя оформить заказ')
+  await banner.getByTestId('cookie-close').click()
+  await expect(banner).toBeHidden()
+  // The refusal is remembered: the banner does not come back after a reload.
+  await page.reload()
+  await expect(page.getByTestId('cookie-consent')).toHaveCount(0)
+
+  await page.getByRole('button', { name: /добавить/ }).nth(2).click()
+  await expect(page.getByTestId('pair-in-cart')).toHaveText('в корзине: 1')
+  await page.goto('/order')
+  await page.locator('input[name="name"]').fill('Иван')
+  await page.locator('input[name="family_name"]').fill('Тестов')
+  await page.locator('input[name="phone"]').fill('+7 999 000-00-02')
+  await page.locator('input[name="e_mail"]').fill(email)
+  await page.locator('input[name="city"]').fill('Москва')
+  await page.locator('input[name="delivery_address"]').fill('Москва, ул. Тестовая, 2')
+  await page.locator('input[name="consent"]').check()
+
+  // First try: the question comes back, the order is not sent; cancelling keeps the form.
+  await page.getByTestId('submit').click()
+  await expect(banner).toHaveAttribute('data-mode', 'order')
+  await banner.getByTestId('cookie-cancel').click()
+  await expect(banner).toBeHidden()
+  await expect(page).toHaveURL(/\/order$/)
+  expect(await post).toBeNull()
+
+  // Second try: after «Принять и продолжить» the order goes on.
+  await page.getByTestId('submit').click()
+  await expect(banner).toHaveAttribute('data-mode', 'order')
+  await banner.getByTestId('cookie-accept').click()
+  await expect(page).toHaveURL(/\/order\/\d+\/pay$/)
 })

@@ -6,6 +6,7 @@
  */
 -->
 <script setup lang="ts">
+import { requireConsent } from '@/services/consent'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import ShopPage from '@/components/layout/ShopPage.vue'
@@ -99,6 +100,8 @@ const canSubmit = computed(() => !submitting.value && !cart.isEmpty && !delivery
 async function submit() {
   formError.value = null
   if (!validate()) return
+  // The order needs the cookie consent: otherwise the banner asks again and the order goes on after «Принять».
+  if (!(await requireConsent())) return
   submitting.value = true
   try {
     const { order } = await api<{ order: { number: number; payment?: { url: string | null } | null } }>('/orders', {

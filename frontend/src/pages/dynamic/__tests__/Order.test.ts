@@ -3,6 +3,9 @@ import { flushPromises, mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import Order from '../Order.vue'
+import * as consent from '@/services/consent'
+
+vi.mock('@/services/consent', () => ({ requireConsent: vi.fn(() => Promise.resolve(true)) }))
 
 const cartBody = {
   items: [{ item_id: 1, name: 'Шахматы', article: 'A1B2', photo: null, quantity: 1, price: 1000, sum: 1000 }],
@@ -68,6 +71,16 @@ describe('Order page', () => {
     const payload = JSON.parse(post[1].body)
     expect(payload).toMatchObject({ name: 'Иван', e_mail: 'a@b.ru', consent: true, address_delivery: true })
     expect(router.currentRoute.value.path).toBe('/order/77')
+  })
+
+  it('does not post the order while the cookies are not accepted', async () => {
+    vi.mocked(consent.requireConsent).mockResolvedValueOnce(false)
+    const { w, fetchMock } = await setup((u) => base(u) as any)
+    await fill(w, true)
+    await w.find('form').trigger('submit')
+    await flushPromises()
+    expect(consent.requireConsent).toHaveBeenCalled()
+    expect(fetchMock.mock.calls.some(([u]) => u.endsWith('/orders'))).toBe(false)
   })
 
   it('shows a message on rate limit and stays on the form', async () => {

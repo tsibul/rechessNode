@@ -69,7 +69,7 @@ test('counters start only after consent in the cookie banner', async ({ page, br
   await site.waitForLoadState('networkidle')
   await expect(site.getByTestId('cookie-consent')).toBeVisible()
   expect(external, 'before consent').toEqual([])
-  await site.getByTestId('cookie-consent').getByRole('button').click()
+  await site.getByTestId('cookie-accept').click()
   await expect.poll(() => external.length).toBeGreaterThan(0)
   expect(external.some((u) => u.includes('mc.yandex.ru/metrika/tag.js'))).toBeTruthy()
 

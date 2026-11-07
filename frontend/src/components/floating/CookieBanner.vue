@@ -6,32 +6,32 @@
  */
 -->
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted } from 'vue'
 import { getSetting } from '@/data/content'
-import { startCounters } from '@/services/counters'
+import { acceptCookies, bannerMode, closeBanner, declineCookies, initConsent } from '@/services/consent'
 
-const COOKIE = 'cookieConsent'
-const visible = ref(false)
-const text = getSetting('cookie.banner.text', 'Этот сайт использует файлы cookie. Подробнее — в <a href="/privacy#cookie">политике использования файлов cookie</a>.')
-const button = getSetting('cookie.banner.button', 'Принять')
-
-onMounted(async () => {
-  const Cookies = (await import('js-cookie')).default
-  visible.value = Cookies.get(COOKIE) !== 'accepted'
-})
-
-async function accept() {
-  const Cookies = (await import('js-cookie')).default
-  Cookies.set(COOKIE, 'accepted', { expires: 365, path: '/', secure: location.protocol === 'https:', sameSite: 'Strict' })
-  visible.value = false
-  startCounters()
+const TEXT = {
+  ask: getSetting('cookie.banner.text', 'Этот сайт использует файлы cookie. Подробнее — в <a href="/privacy#cookie">политике использования файлов cookie</a>.'),
+  declined: 'Вы отказались от файлов cookie. Аналитика (Яндекс Метрика, VK) не загружается. Без cookie нельзя оформить заказ: при оформлении мы предложим принять их ещё раз.',
+  order: 'Для оформления заказа нужны файлы cookie: они связывают вас с вашей корзиной. Принять и продолжить? Подробнее — в <a href="/privacy#cookie">политике использования файлов cookie</a>.'
 }
+const accept = getSetting('cookie.banner.button', 'Принять')
+const decline = getSetting('cookie.banner.decline', 'Отклонить')
+
+const text = computed(() => (bannerMode.value ? TEXT[bannerMode.value] : ''))
+
+onMounted(initConsent)
 </script>
 
 <template>
-  <div v-if="visible" class="cookie" role="dialog" aria-label="Cookie" data-testid="cookie-consent">
+  <div v-if="bannerMode" class="cookie" role="dialog" aria-label="Cookie" data-testid="cookie-consent" :data-mode="bannerMode">
     <p class="cookie__text" v-html="text" />
-    <button type="button" class="cookie__button" @click="accept">{{ button }}</button>
+    <div class="cookie__buttons">
+      <button v-if="bannerMode === 'ask'" type="button" class="cookie__button cookie__button--plain" data-testid="cookie-decline" @click="declineCookies">{{ decline }}</button>
+      <button v-if="bannerMode === 'order'" type="button" class="cookie__button cookie__button--plain" data-testid="cookie-cancel" @click="closeBanner">Отмена</button>
+      <button v-if="bannerMode === 'declined'" type="button" class="cookie__button cookie__button--plain" data-testid="cookie-close" @click="closeBanner">Понятно</button>
+      <button type="button" class="cookie__button" data-testid="cookie-accept" @click="acceptCookies">{{ accept }}</button>
+    </div>
   </div>
 </template>
 
@@ -61,6 +61,17 @@ async function accept() {
 
   &__text :deep(a) {
     text-decoration: underline;
+  }
+
+  &__buttons {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  &__button--plain {
+    background: transparent;
+    box-shadow: inset 0 0 0 1px $colorPrimary500;
   }
 
   &__button {
@@ -103,7 +114,7 @@ async function accept() {
     }
 
     // The button goes under the text: the text gets the whole width, the banner is lower.
-    &__button { align-self: flex-end; }
+    &__buttons { align-self: flex-end; }
   }
 }
 </style>
