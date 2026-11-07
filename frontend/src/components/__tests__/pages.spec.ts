@@ -122,7 +122,21 @@ describe('public pages', () => {
     expect(text).toContain('необходимые')
     expect(text).toContain('аналитические')
     expect(w.find('.cookie__text a').attributes('href')).toBe('/privacy#cookie')
-    expect(w.find('.cookie__button').text()).toBe('Принять')
+    expect(w.find('[data-testid="cookie-accept"]').text()).toBe('Принять')
+    expect(w.find('[data-testid="cookie-decline"]').text()).toBe('Отклонить')
+  })
+
+  it('personal data page holds its own policy, not a copy of the cookie policy', async () => {
+    const w = await render('personal-data')
+    expect(w.find('h1').text()).toContain('Политика обработки')
+    expect(w.text()).toContain('Срок хранения')
+    expect(w.text()).toContain('Ваши права')
+    expect(w.text()).not.toContain('rc_client')
+    expect(w.text()).not.toContain('{{')
+    const privacy = await render('privacy')
+    expect(privacy.find('#cookie').text()).toContain('rc_client')
+    expect(privacy.find('#cookie').text()).toContain('«Отклонить»')
+    expect(privacy.text()).toContain('владение')
   })
 
   it('the cookie policy column is the anchor of the banner link', async () => {
@@ -134,7 +148,7 @@ describe('public pages', () => {
     document.cookie = 'cookieConsent=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/'
     const w = mount(CookieBanner)
     await vi.waitFor(() => expect(w.find('[data-testid="cookie-consent"]').exists()).toBe(true))
-    await w.find('button').trigger('click')
+    await w.find('[data-testid="cookie-accept"]').trigger('click')
     await vi.waitFor(() => expect(w.find('[data-testid="cookie-consent"]').exists()).toBe(false))
   })
 })
