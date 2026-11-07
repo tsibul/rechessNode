@@ -13,17 +13,21 @@ import { ensureVariants } from './services/images'
 import { uploadDir } from './routes/cms/uploads'
 
 const PORT = process.env.PORT || 3001
-// Only the local proxy reaches the backend by default; set HOST=0.0.0.0 to open it.
-const HOST = process.env.HOST || '127.0.0.1'
+// HOST=127.0.0.1 on the server keeps the backend reachable only through the local proxy.
+// Unset: all addresses (so `localhost` works for both IPv4 and IPv6 in development).
+const HOST = process.env.HOST
 
 assertConfig()
 
 failStalePublications()
   .catch((e) => console.error('Could not reset stale publications:', e))
   .finally(() => {
-    createApp().listen(Number(PORT), HOST, () => {
+    const onListening = () => {
       console.log(`Server is running on port ${PORT}`)
       // Photos uploaded before WebP/AVIF conversion existed.
       void ensureVariants(uploadDir()).catch((e) => console.error('Image conversion failed:', e))
-    })
+    }
+    const app = createApp()
+    if (HOST) app.listen(Number(PORT), HOST, onListening)
+    else app.listen(Number(PORT), onListening)
   })
