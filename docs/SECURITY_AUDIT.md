@@ -45,6 +45,38 @@
 
 Проверка после исправлений: jest 132 теста, vitest 106, `tsc`, `vue-tsc`, сборка frontend (`vite-ssg`) — зелёные; Playwright 72 из 72 в пяти прогонах подряд (нестабильность устранена: опрос публикации ждёт конкретный запуск по id, таблица «Публикация» прокручивается внутри обёртки).
 
+## Зависимости инструментов разработки (ноябрь 2026)
+
+Обновлены инструменты разработки без изменения поведения сайта. Ограничение: Node 22.22.1 и npm 9.2.0, версии с `engines` выше (например, `^22.22.2`) не ставились, `npm ci` проходит без EBADENGINE.
+
+| Пакет | Было | Стало |
+|---|---|---|
+| `eslint` (backend, frontend) | 8.57 | 9.39 (flat config `eslint.config.js`, правила jsdoc и `noInlineConfig` сохранены) |
+| `@typescript-eslint/parser` | 7.18 | заменён на `typescript-eslint` 8.72 |
+| `eslint-plugin-vue` (frontend) | 9.33 | 10.12 (+ `vue-eslint-parser` 10); в конфиг не подключён, как и раньше |
+| `@vue/eslint-config-typescript` (frontend) | 12 | удалён (в конфиге не использовался, тянул уязвимые пакеты) |
+| `eslint-plugin-jsdoc` | 63.3.3 | без изменений (следующие версии требуют Node ^22.22.2) |
+| `jest` (backend) | 29.7 | 30.5 (`ts-jest` 29, `@types/jest` 30) |
+| `vitest` (frontend) | 3.2 | 5.1 (`@types/node` frontend 20 → 22) |
+| `@vue/test-utils` | 2.5.1 | закреплён на `~2.4.11`: 2.5.x тянет `js-beautify` 2 → `nopt` 10 с engines `^22.22.2` |
+| `playwright` (e2e) | <1.55.1 | 1.65 |
+| `minimatch`, `glob` (dev-цепочки) | 9–10 | `overrides` в `backend/package.json` и `frontend/package.json`: `minimatch` 11.0.5, `glob` 14.0.4; для `typedoc` минимум `minimatch` остаётся 10.2.6, потому что typedoc 0.28 несовместим с 11 (`matchOne is not a function`) |
+
+`npm audit` до → после:
+
+| Папка | До | После (все) | После (`--omit=dev`) |
+|---|---|---|---|
+| backend | 12 (7 low, 5 moderate) | 9 (6 low, 3 moderate) | 2 (1 low, 1 moderate) |
+| frontend | 17 (1 low, 7 moderate, 7 high, 2 critical) | 2 moderate | 0 |
+| e2e | 2 high | 0 | 0 |
+
+high и critical устранены везде. Остались:
+
+- **backend, `deepmerge` ≥4.2.0 (prototype poisoning в `mergeObject()`)**: приходит из `sanitize-html` (prod) и из `jest-config` (dev). Исправленной версии `deepmerge` нет (4.3.1 последняя). В `sanitize-html` 2.18.1 зависимость убрана, но эта версия ESM-only и ломает jest (6 из 12 наборов падают), поэтому остаётся закреплённая 2.17.1 (см. H-1). Эксплуатация требует передать недоверенный объект в `mergeObject()`; `sanitize-html` вызывает его только со своими опциями.
+- **backend и frontend, `minimatch`/`typedoc` (DoS при разборе glob-шаблонов)**: `typedoc` 0.28 не работает с `minimatch` 11. Только dev-инструмент документации, шаблоны задаёт `typedoc.json`, не пользователь.
+
+Корневой `package.json` не менялся.
+
 ## Находки
 
 ### Высоко
