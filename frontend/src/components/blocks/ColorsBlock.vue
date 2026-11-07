@@ -176,16 +176,18 @@ async function change(id: number, delta: 1 | -1) {
 
   &__incart { margin-top: 8px; font-weight: 600; }
 
-  // The frame hugs the photo and the text; the edge of the next slide stays outside of it.
-  &--in-cart::after {
+  // The frame sits exactly on the photo (a slide is 88% of the strip); the next slide stays outside of it.
+  &--in-cart &__media::after {
     content: '';
     position: absolute;
-    inset: -8px;
+    inset: 0;
+    box-sizing: border-box;
     border: 2px solid #000;
     pointer-events: none;
+    z-index: 1;
   }
 
-  &--in-cart.card--multi::after { right: calc(12% - 8px); }
+  &--in-cart.card--multi &__media::after { right: 12%; }
 }
 
 .colors__error {
