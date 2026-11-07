@@ -445,6 +445,15 @@ describe('publish', () => {
 
 const uniq = () => `${String.fromCharCode(65 + Math.floor(Math.random() * 26))}${Math.floor(Math.random() * 10)}`
 
+/** Creates a colour through the CMS; a 2-character code can clash with other rows, so retry on 409. */
+async function createColor(a: ReturnType<typeof request.agent>, name: string, hex: string): Promise<number> {
+  for (let attempt = 0; ; attempt++) {
+    const res = await a.post('/api/cms/tables/color').send({ name, code: uniq(), hex })
+    if (res.status === 201) return res.body.row.id
+    if (res.status !== 409 || attempt > 30) throw new Error(`colour was not created: ${res.status} ${res.text}`)
+  }
+}
+
 describe('manager edits photos and pairs without code', () => {
   async function jpg(width: number, height: number) {
     const sharp = (await import('sharp')).default
@@ -479,8 +488,8 @@ describe('manager edits photos and pairs without code', () => {
 
   it('adds a new pair with colours and slides; slides can be replaced, reordered and removed', async () => {
     const a = await login('refs')
-    const c1 = (await a.post('/api/cms/tables/color').send({ name: `${prefix} new c1`, code: uniq(), hex: 'aa0000' }).expect(201)).body.row.id
-    const c2 = (await a.post('/api/cms/tables/color').send({ name: `${prefix} new c2`, code: uniq(), hex: '00aa00' }).expect(201)).body.row.id
+    const c1 = await createColor(a, `${prefix} new c1`, 'aa0000')
+    const c2 = await createColor(a, `${prefix} new c2`, '00aa00')
     extraIds.color.push(c1, c2)
     const pair = (await a.post('/api/cms/tables/item').send({ name: `${prefix} new pair`, product_id: cat.productId, main_color: c1, second_color: c2 }).expect(201)).body.row
     const side = await upload(a, 50, 40)
