@@ -114,6 +114,35 @@ describe('session', () => {
     await db('user').where({ id }).update({ deleted: false })
   })
 
+  it('revokes the token at logout: a copied cookie stops working', async () => {
+    const res = await request(app).post('/api/cms/login').send({ login: `${prefix}-${prefix}-orders`, password: TEST_PASSWORD }).expect(200)
+    const cookie = ([] as string[]).concat(res.headers['set-cookie']).find((c) => c.startsWith('rc_cms='))!.split(';')[0]
+    await request(app).get('/api/cms/me').set('Cookie', cookie).expect(200)
+    await request(app).post('/api/cms/logout').set('Cookie', cookie).expect(204)
+    await request(app).get('/api/cms/me').set('Cookie', cookie).expect(401)
+  })
+
+  it('ends the sessions of a user whose password was changed', async () => {
+    const admin = await login('all')
+    const victim = await login('prices')
+    await victim.get('/api/cms/me').expect(200)
+    await admin.patch(`/api/cms/tables/user/${userIds[6]}`).send({ password: 'another-password-2' }).expect(200)
+    await victim.get('/api/cms/me').expect(401)
+    await admin.patch(`/api/cms/tables/user/${userIds[6]}`).send({ password: TEST_PASSWORD }).expect(200)
+  })
+
+  it('limits failed logins per address across different logins', async () => {
+    for (let i = 0; i < 20; i++) await request(app).post('/api/cms/login').send({ login: `nobody-${i}`, password: 'x' }).expect(401)
+    await request(app).post('/api/cms/login').send({ login: 'nobody-next', password: 'x' }).expect(429)
+  })
+
+  it('sends security headers and hides the framework', async () => {
+    const res = await request(app).get('/api/cms/me')
+    expect(res.headers['x-content-type-options']).toBe('nosniff')
+    expect(res.headers['x-powered-by']).toBeUndefined()
+    expect(res.headers['content-security-policy']).toContain("default-src 'none'")
+  })
+
   it('applies permission changes at once', async () => {
     const a = await login('refs')
     await a.get('/api/cms/tables/color').expect(200)
@@ -212,6 +241,9 @@ describe('tables', () => {
     const block = await a.post('/api/cms/tables/page_block').send({ page_id: page.body.row.id, code: 'hero', priority: 1, content }).expect(201)
     extraIds.page_block.push(block.body.row.id)
     expect(block.body.row.content).toEqual(content)
+    const dirty = await a.post('/api/cms/tables/page_block').send({ page_id: page.body.row.id, code: 'text', priority: 2, content: { html: '<p onclick="x()">a</p><script>alert(1)</script>' } }).expect(201)
+    extraIds.page_block.push(dirty.body.row.id)
+    expect(dirty.body.row.content.html).toBe('<p>a</p>')
     const pub = await request(app).get(`/api/pages/${prefix}-p`).expect(200)
     expect(pub.body.blocks[0].content).toEqual(content)
     await a.post('/api/cms/tables/page_block').send({ page_id: page.body.row.id, code: 'x', priority: 1 }).expect(400)

@@ -8,6 +8,7 @@ import { db } from '../../db'
 import { Permission, requireAuth, requirePermission } from '../../middleware/cmsAuth'
 import { ApiError } from '../../middleware/error'
 import { wrap } from '../../utils/async'
+import crypto from 'crypto'
 import { notDeleted } from '../../utils/db'
 import { sendOrderMail } from '../../services/mail'
 import { hashPassword } from '../../utils/password'
@@ -44,7 +45,7 @@ const fk = z.number().int().positive()
 
 export const PAYMENT_STATES = ['not_paid', 'pending', 'paid', 'failed', 'refunded'] as const
 export const PHOTO_SLOTS = ['side', 'top', 'board'] as const
-const photoName = req(255).regex(/^[A-Za-z0-9._-]+$/, 'Invalid file name')
+const photoName = req(255).regex(/^(?!\.+$)[A-Za-z0-9._-]+$/, 'Invalid file name')
 
 const REGISTRY: Record<string, Spec> = {
   color: {
@@ -153,7 +154,11 @@ const REGISTRY: Record<string, Spec> = {
       if (!ctx.creating && ctx.id === ctx.userId && 'role_id' in data) {
         throw new ApiError(400, 'Cannot change own role')
       }
-      if ('password' in data) data.password = await hashPassword(data.password)
+      if ('password' in data) {
+        data.password = await hashPassword(data.password)
+        // A new password ends every session of the user (the token stamp changes).
+        if (!ctx.creating) data.hashToken = crypto.randomBytes(24).toString('hex')
+      }
       return data
     },
     beforeRemove: async (id, userId) => {

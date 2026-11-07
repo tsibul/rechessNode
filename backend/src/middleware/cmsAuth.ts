@@ -3,6 +3,7 @@
  * database on every request, so role changes and deletions apply at once.
  * @module middleware/cmsAuth
  */
+import crypto from 'crypto'
 import jwt from 'jsonwebtoken'
 import type { NextFunction, Request, RequestHandler, Response } from 'express'
 import { db } from '../db'
@@ -37,8 +38,20 @@ function secret(): string {
   return s
 }
 
-export function issueSession(res: Response, userId: number): void {
-  const token = jwt.sign({ uid: userId }, secret(), { expiresIn: `${SESSION_HOURS}h` })
+/**
+ * Session stamp: `user.hashToken` (a legacy nullable column, unused otherwise) holds a random value that
+ * every token carries. Replacing it (logout, password change) revokes all tokens of the user at once.
+ */
+export function sessionStamp(user: { hashToken?: string | null }): string {
+  return user.hashToken ?? ''
+}
+
+export async function revokeSessions(userId: number): Promise<void> {
+  await db('user').where({ id: userId }).update({ hashToken: crypto.randomBytes(24).toString('hex') })
+}
+
+export function issueSession(res: Response, userId: number, stamp: string): void {
+  const token = jwt.sign({ uid: userId, sv: stamp }, secret(), { algorithm: 'HS256', expiresIn: `${SESSION_HOURS}h` })
   res.cookie(CMS_COOKIE, token, {
     httpOnly: true, sameSite: 'strict', secure: process.env.NODE_ENV === 'production',
     maxAge: SESSION_HOURS * 3600 * 1000
@@ -49,9 +62,11 @@ export function clearSession(res: Response): void {
   res.clearCookie(CMS_COOKIE, { httpOnly: true, sameSite: 'strict', secure: process.env.NODE_ENV === 'production' })
 }
 
-export async function loadCmsUser(userId: number): Promise<CmsUser | null> {
+/** With `stamp`, a token issued before the last revocation gets no user. */
+export async function loadCmsUser(userId: number, stamp?: string): Promise<CmsUser | null> {
   const user = await notDeleted(db('user').where({ id: userId })).first()
   if (!user) return null
+  if (stamp !== undefined && stamp !== sessionStamp(user)) return null
   const role = await notDeleted(db('role').where({ id: user.role_id })).first()
   if (!role) return null
   const perms = await db('role_permission').where({ role_id: role.id }).pluck('permission')
@@ -62,18 +77,22 @@ export async function loadCmsUser(userId: number): Promise<CmsUser | null> {
   }
 }
 
+export function readToken(token: string): { uid: number; sv: string } | null {
+  try {
+    const payload = jwt.verify(token, secret(), { algorithms: ['HS256'] }) as { uid?: unknown; sv?: unknown }
+    if (typeof payload.uid !== 'number' || typeof payload.sv !== 'string') return null
+    return { uid: payload.uid, sv: payload.sv }
+  } catch {
+    return null
+  }
+}
+
 export const requireAuth: RequestHandler = (req: Request, _res: Response, next: NextFunction) => {
   const token = req.cookies?.[CMS_COOKIE]
   if (typeof token !== 'string') return next(new ApiError(401, 'Unauthorized'))
-  let uid: number
-  try {
-    const payload = jwt.verify(token, secret()) as { uid?: unknown }
-    if (typeof payload.uid !== 'number') throw new Error('bad payload')
-    uid = payload.uid
-  } catch {
-    return next(new ApiError(401, 'Unauthorized'))
-  }
-  loadCmsUser(uid).then((user) => {
+  const claims = readToken(token)
+  if (!claims) return next(new ApiError(401, 'Unauthorized'))
+  loadCmsUser(claims.uid, claims.sv).then((user) => {
     if (!user) return next(new ApiError(401, 'Unauthorized'))
     req.cmsUser = user
     next()
