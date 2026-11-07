@@ -83,7 +83,7 @@ test('the next arrow sits on the photo and the frame is exactly the photo', asyn
     expect(a.x).toBeGreaterThanOrEqual(photo.x)
   }
   await card.evaluate((el) => el.classList.add('card--in-cart'))
-  const frame = await card.locator('.card__media').evaluate((el) => {
+  const frame = await card.evaluate((el) => {
     const f = getComputedStyle(el, '::after')
     return { width: parseFloat(f.width) }
   })
