@@ -23,7 +23,7 @@ interface Order {
 const route = useRoute()
 const order = ref<Order | null>(null)
 const state = ref<'loading' | 'ok' | 'missing' | 'error'>('loading')
-const stubText = getSetting('shop.order_stub_text', 'Оплата на сайте пока не подключена. Мы свяжемся с вами по телефону или почте, уточним детали заказа и расскажем, как оплатить.')
+const stubText = getSetting('shop.order_stub_text', 'Оплата на сайте пока не подключена: после заказа мы свяжемся с вами по телефону или почте и уточним детали. Нажмите «Оплатить», если вы согласны.')
 const rub = (n: number) => `${new Intl.NumberFormat('ru-RU').format(n)} ₽`
 
 onMounted(async () => {
@@ -52,11 +52,13 @@ onMounted(async () => {
       <p v-if="order.delivery_cost !== null">Доставка: {{ rub(order.delivery_cost) }}</p>
       <p>Итого: {{ rub(order.sum) }}</p>
       <p v-if="order.payment_state === 'paid'" data-testid="order-paid">Оплата получена.</p>
-      <p v-else-if="order.payment" data-testid="order-unpaid">
+      <template v-else-if="order.payment">
+      <p v-if="order.payment.state !== 'failed'" data-testid="order-contact-note">{{ stubText }}</p>
+      <p data-testid="order-unpaid">
         {{ order.payment.state === 'failed' ? 'Оплата не прошла.' : 'Заказ ещё не оплачен.' }}
-        <router-link v-if="order.payment.url" :to="order.payment.url" data-testid="order-pay-link">Перейти к оплате</router-link>
+        <router-link v-if="order.payment.url" :to="order.payment.url" data-testid="order-pay-link">Оплатить</router-link>
       </p>
-      <p v-if="order.payment_state !== 'paid' && (!order.payment || order.payment.state !== 'failed')" data-testid="order-contact-note">{{ stubText }}</p>
+      </template>
       <!-- Place for the 54-FZ receipt (stage 11 does not issue receipts). -->
       <p class="receipt" data-testid="receipt-slot" hidden></p>
       <p v-if="order.tracking_url" data-testid="order-tracking">

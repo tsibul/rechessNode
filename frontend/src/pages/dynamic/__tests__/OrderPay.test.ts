@@ -29,6 +29,11 @@ describe('OrderPay stub page', () => {
   it('says that no money is charged and shows the server amount', async () => {
     const { w } = await setup(() => res(200, { payment: pay() }))
     expect(w.find('[data-testid=pay-stub-note]').text()).toContain('свяжемся')
+    // The text ends with the call to press the button, and it stands before the button.
+    expect(w.find('[data-testid=pay-stub-note]').text()).toContain('Нажмите «Оплатить»')
+    expect(w.find('[data-testid=pay-ok]').text()).toBe('Оплатить')
+    const html = w.html()
+    expect(html.indexOf('pay-stub-note')).toBeLessThan(html.indexOf('pay-ok'))
     expect(w.find('[data-testid=pay-amount]').text()).toContain('2')
   })
 

@@ -23,7 +23,7 @@ const busy = ref(false)
 const declined = ref(false)
 const message = ref<string | null>(null)
 /** Text from the CMS (setting shop.order_stub_text). */
-const stubText = getSetting('shop.order_stub_text', 'Оплата на сайте пока не подключена. Мы свяжемся с вами по телефону или почте, уточним детали заказа и расскажем, как оплатить.')
+const stubText = getSetting('shop.order_stub_text', 'Оплата на сайте пока не подключена: после заказа мы свяжемся с вами по телефону или почте и уточним детали. Нажмите «Оплатить», если вы согласны.')
 const rub = (n: number) => `${new Intl.NumberFormat('ru-RU').format(n)} ₽`
 
 async function load() {
@@ -88,7 +88,7 @@ onMounted(load)
         </p>
       </div>
       <p v-else-if="payment.ref" class="actions">
-        <button type="button" class="btn" :disabled="busy" data-testid="pay-ok" @click="answer('paid')">Оплачено</button>
+        <button type="button" class="btn" :disabled="busy" data-testid="pay-ok" @click="answer('paid')">Оплатить</button>
         <button type="button" class="btn" :disabled="busy" data-testid="pay-fail" @click="answer('failed')">Отказ</button>
       </p>
       <p v-else>Для этого заказа оплата не ожидается. <router-link :to="`/order/${number}`">К заказу</router-link></p>
