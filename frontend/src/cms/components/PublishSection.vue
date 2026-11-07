@@ -54,6 +54,8 @@ onBeforeUnmount(() => { if (timer) clearInterval(timer) })
     </header>
     <p class="cms-muted">Публикация пересобирает сайт из текущих данных CMS. Журнал показывает последние запуски.</p>
     <p v-if="error" class="cms-error cms-error--box">{{ error }}</p>
+    <!-- Scrolls inside the wrapper: a long badge ("идёт сборка") must not widen the whole page on a phone. -->
+    <div class="cms-tablewrap">
     <table class="cms-table">
       <thead><tr><th>№</th><th>Состояние</th><th>Начало</th><th>Конец</th><th /></tr></thead>
       <tbody>
@@ -70,5 +72,6 @@ onBeforeUnmount(() => { if (timer) clearInterval(timer) })
         <tr v-if="!list.length"><td colspan="5" class="cms-muted">Запусков ещё не было</td></tr>
       </tbody>
     </table>
+    </div>
   </div>
 </template>
