@@ -1,0 +1,23 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "name": "reChess backend",
+  "entryPointStrategy": "expand",
+  "entryPoints": ["src"],
+  "exclude": [
+    "**/__tests__/**",
+    "**/testing/**",
+    "**/db/migrations/**",
+    "**/db/seeds/**",
+    "**/models/**",
+    "**/repositories/**",
+    "**/types/**",
+    "**/*.test.ts"
+  ],
+  "tsconfig": "tsconfig.json",
+  "out": "../docs/generated/backend",
+  "readme": "none",
+  "excludePrivate": true,
+  "excludeInternal": true,
+  "validation": { "notExported": true, "invalidLink": true, "notDocumented": false },
+  "treatWarningsAsErrors": false
+}

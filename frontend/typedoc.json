@@ -1,0 +1,12 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "name": "reChess frontend (TypeScript modules)",
+  "entryPointStrategy": "expand",
+  "entryPoints": ["src", "build"],
+  "exclude": ["**/__tests__/**", "**/*.test.ts", "**/*.d.ts", "src/main.ts", "src/entry-client.ts"],
+  "tsconfig": "tsconfig.typedoc.json",
+  "out": "../docs/generated/frontend",
+  "readme": "none",
+  "excludeInternal": true,
+  "validation": { "notExported": true, "invalidLink": true, "notDocumented": false }
+}

@@ -93,3 +93,6 @@ debug.log
 /e2e/.tmp/
 /e2e/test-results/
 /e2e/playwright-report/
+
+# Generated documentation (npm run docs)
+docs/generated/

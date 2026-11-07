@@ -1,0 +1,6 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "noUnusedLocals": false, "noUnusedParameters": false },
+  "include": ["src/**/*.ts", "src/**/*.d.ts", "build/**/*.ts", "typedoc-shims.d.ts"],
+  "exclude": ["**/__tests__/**"]
+}
