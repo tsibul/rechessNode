@@ -7,7 +7,7 @@ import { api } from '@/services/api'
 import { devContent } from './fixtures'
 import type { ColorPair, PageBlock, PageContent, Photo, Product, Seller, Shop, SiteContent } from './types'
 
-interface ApiPhoto { name: string; photo: string; slot?: string }
+interface ApiPhoto { name: string; photo: string; slot?: string; ratio?: number }
 interface ApiSite {
   settings: Record<string, string | number | boolean | null>
   pages: Array<{
@@ -33,7 +33,7 @@ export function uploadUrl(file: string): string {
   return `/uploads/${file}`
 }
 
-const photo = (p: ApiPhoto, ratio = 1): Photo => ({ src: uploadUrl(p.photo), alt: p.name, ratio })
+const photo = (p: ApiPhoto, ratio = 1): Photo => ({ src: uploadUrl(p.photo), alt: p.name, ratio: p.ratio ?? ratio })
 const hex = (h: string) => (h.startsWith('#') ? h : `#${h}`)
 
 const SLOTS = ['side', 'top', 'board']

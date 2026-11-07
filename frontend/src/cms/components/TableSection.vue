@@ -2,6 +2,7 @@
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { cmsApi, errorMessage, ListParams, Row } from '../api'
 import { invalidateRef, loadRef, refOptions } from '../refs'
+import { movePriority } from '../logic'
 import type { Section } from '../registry'
 import Cell from './Cell.vue'
 import ChildTable from './ChildTable.vue'
@@ -85,6 +86,17 @@ async function saved(row: Row) {
   await load()
 }
 
+const canReorder = computed(() => props.section.sort === 'priority' && sort.value === 'priority' && dir.value === 'asc' && !q.value && !!props.section.ops?.update)
+
+async function move(i: number, delta: -1 | 1) {
+  try {
+    for (const p of movePriority(rows.value, i, delta)) await cmsApi.update(props.section.table!, p.id, { priority: p.priority })
+    await load()
+  } catch (e) {
+    error.value = errorMessage(e)
+  }
+}
+
 async function remove(row: Row) {
   if (!confirm('Удалить запись?')) return
   try {
@@ -163,9 +175,13 @@ watch([q, deleted], resetAndLoad)
           </tr>
         </thead>
         <tbody>
-          <tr v-for="r in rows" :key="r.id" :class="{ 'cms-row--deleted': r.deleted }" @click="open(r)">
+          <tr v-for="(r, i) in rows" :key="r.id" :class="{ 'cms-row--deleted': r.deleted }" @click="open(r)">
             <td v-for="c in section.columns" :key="c.key"><Cell :column="c" :row="r" /></td>
             <td class="cms-actions" @click.stop>
+              <template v-if="canReorder && !r.deleted">
+                <button class="cms-link" title="Выше" aria-label="Выше" data-move="up" :disabled="i === 0" @click="move(i, -1)">↑</button>
+                <button class="cms-link" title="Ниже" aria-label="Ниже" data-move="down" :disabled="i === rows.length - 1" @click="move(i, 1)">↓</button>
+              </template>
               <button v-if="r.deleted && ops.remove" class="cms-link" @click="restore(r)">Восстановить</button>
               <button v-else-if="ops.remove" class="cms-link cms-link--danger" @click="remove(r)">Удалить</button>
             </td>

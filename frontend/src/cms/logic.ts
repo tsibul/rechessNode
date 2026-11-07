@@ -186,3 +186,22 @@ export function groupSettings<T extends Record<string, any>>(rows: T[]): { group
 export function photoUrl(name: string | null | undefined): string | null {
   return name ? `/uploads/${name}` : null
 }
+
+/**
+ * New `priority` values after moving the row at `index` by `delta` (-1 up, +1 down) in a list sorted by priority.
+ * Neighbours swap values; when they are equal (or the values are not distinct) the whole list is renumbered 10, 20, 30…
+ * Returns only the rows that change.
+ */
+export function movePriority(rows: Row[], index: number, delta: -1 | 1): Array<{ id: number; priority: number }> {
+  const j = index + delta
+  if (index < 0 || j < 0 || index >= rows.length || j >= rows.length) return []
+  const a = rows[index], b = rows[j]
+  if (Number(a.priority) !== Number(b.priority)) {
+    return [{ id: a.id, priority: Number(b.priority) }, { id: b.id, priority: Number(a.priority) }]
+  }
+  const order = rows.map((r) => r.id)
+  ;[order[index], order[j]] = [order[j], order[index]]
+  return order
+    .map((id, k) => ({ id, priority: (k + 1) * 10 }))
+    .filter((n) => Number(rows.find((r) => r.id === n.id)!.priority) !== n.priority)
+}

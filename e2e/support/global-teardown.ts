@@ -38,6 +38,12 @@ async function clean() {
     }
     await db('page_block').where('code', 'like', 'e2e-%').delete()
     await db('index_photo').where('name', 'like', 'e2e-%').delete()
+    const pairs = await db('item').where('name', 'like', 'e2e-%').pluck('id')
+    if (pairs.length) {
+      await db('item_photo').whereIn('item_id', pairs).delete()
+      await db('item').whereIn('id', pairs).delete()
+    }
+    await db('color').where('name', 'like', 'e2e-%').delete()
     await db('delivery_tariff').where('name', 'like', 'e2e-%').delete()
   } finally {
     await db.destroy()
