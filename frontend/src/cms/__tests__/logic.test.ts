@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   buildPayload, formatMoney, groupSettings, initialValues, parseJson, seoPreview, settingFromInput, settingToInput,
-  toInputDateTime, truncate, validate
+  toInputDateTime, truncate, validate, movePriority
 } from '../logic'
 import { sectionByKey } from '../registry'
 
@@ -119,5 +119,23 @@ describe('settings helpers', () => {
     ])
     expect(g.map((x) => x.group)).toEqual(['SEO', 'Прочее'])
     expect(g[0].rows.map((r) => r.code)).toEqual(['a', 'b'])
+  })
+})
+
+describe('movePriority', () => {
+  const rows = [{ id: 1, priority: 10 }, { id: 2, priority: 20 }, { id: 3, priority: 30 }]
+  it('swaps the values of neighbours', () => {
+    expect(movePriority(rows, 1, -1)).toEqual([{ id: 2, priority: 10 }, { id: 1, priority: 20 }])
+    expect(movePriority(rows, 1, 1)).toEqual([{ id: 2, priority: 30 }, { id: 3, priority: 20 }])
+  })
+  it('does nothing at the edges', () => {
+    expect(movePriority(rows, 0, -1)).toEqual([])
+    expect(movePriority(rows, 2, 1)).toEqual([])
+  })
+  it('renumbers the list when the values are equal', () => {
+    const tied = [{ id: 1, priority: 10 }, { id: 2, priority: 10 }, { id: 3, priority: 10 }]
+    const patches = movePriority(tied, 1, -1)
+    const result = tied.map((r) => ({ ...r, priority: patches.find((p) => p.id === r.id)?.priority ?? r.priority }))
+    expect(result.sort((a, b) => a.priority - b.priority).map((r) => r.id)).toEqual([2, 1, 3])
   })
 })

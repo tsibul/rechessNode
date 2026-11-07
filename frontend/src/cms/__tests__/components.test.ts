@@ -103,6 +103,32 @@ describe('TableSection', () => {
   })
 })
 
+describe('photo order', () => {
+  it('moves a home page photo down with the arrow button', async () => {
+    api.list.mockResolvedValue({
+      rows: [{ id: 1, name: 'A', priority: 10, photo: 'a.jpg' }, { id: 2, name: 'B', priority: 20, photo: 'b.jpg' }],
+      total: 2, page: 1, limit: 25
+    })
+    api.update.mockResolvedValue({})
+    const w = mount(TableSection, { props: { section: sectionByKey('index-photos')! } })
+    await flushPromises()
+    const down = w.findAll('[data-move="down"]')
+    expect(down).toHaveLength(2)
+    expect(w.findAll('[data-move="up"]')[0].attributes('disabled')).toBeDefined()
+    await down[0].trigger('click')
+    await flushPromises()
+    expect(api.update).toHaveBeenCalledWith('index_photo', 1, { priority: 20 })
+    expect(api.update).toHaveBeenCalledWith('index_photo', 2, { priority: 10 })
+  })
+
+  it('has no arrows in a list that is not ordered by priority', async () => {
+    api.list.mockResolvedValue({ rows: [{ id: 1, name: 'x' }], total: 1, page: 1, limit: 25 })
+    const w = mount(TableSection, { props: { section: sectionByKey('orders')! } })
+    await flushPromises()
+    expect(w.find('[data-move]').exists()).toBe(false)
+  })
+})
+
 describe('SeoPreview', () => {
   it('renders the snippet and social card from the form values', () => {
     const w = mount(SeoPreview, {

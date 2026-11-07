@@ -3,6 +3,7 @@ import { onMounted, ref } from 'vue'
 import { cmsApi, errorMessage, Row } from '../api'
 import { sectionByKey, type Child } from '../registry'
 import { invalidateRef } from '../refs'
+import { movePriority } from '../logic'
 import RecordForm from './RecordForm.vue'
 import Cell from './Cell.vue'
 
@@ -32,6 +33,15 @@ async function remove(row: Row) {
   }
 }
 
+async function move(i: number, delta: -1 | 1) {
+  try {
+    for (const p of movePriority(rows.value, i, delta)) await cmsApi.update(section.table!, p.id, { priority: p.priority })
+    await load()
+  } catch (e) {
+    error.value = errorMessage(e)
+  }
+}
+
 async function saved() {
   editing.value = null
   adding.value = false
@@ -51,9 +61,13 @@ onMounted(load)
     <table v-if="rows.length" class="cms-table cms-table--compact">
       <thead><tr><th v-for="c in section.columns" :key="c.key">{{ c.label }}</th><th /></tr></thead>
       <tbody>
-        <tr v-for="r in rows" :key="r.id">
+        <tr v-for="(r, i) in rows" :key="r.id">
           <td v-for="c in section.columns" :key="c.key"><Cell :column="c" :row="r" /></td>
           <td class="cms-actions">
+            <template v-if="section.sort === 'priority'">
+              <button type="button" class="cms-link" title="Выше" aria-label="Выше" data-move="up" :disabled="i === 0" @click="move(i, -1)">↑</button>
+              <button type="button" class="cms-link" title="Ниже" aria-label="Ниже" data-move="down" :disabled="i === rows.length - 1" @click="move(i, 1)">↓</button>
+            </template>
             <button type="button" class="cms-link" @click="editing = r; adding = false">Правка</button>
             <button type="button" class="cms-link cms-link--danger" @click="remove(r)">Удалить</button>
           </td>
