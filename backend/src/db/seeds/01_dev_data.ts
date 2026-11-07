@@ -50,6 +50,12 @@ export async function seed(knex: Knex): Promise<void> {
   if (process.env.NODE_ENV === 'production') {
     throw new Error('Development seed must not run in production')
   }
+  // The seed empties tables and creates users with a known password: only on a local database,
+  // whatever NODE_ENV says. A remote database needs ALLOW_DEV_SEED=1 on purpose.
+  const host = String(process.env.DB_HOST ?? 'localhost')
+  if (!['localhost', '127.0.0.1', '::1'].includes(host) && process.env.ALLOW_DEV_SEED !== '1') {
+    throw new Error(`Development seed refuses to run on database host ${host} (set ALLOW_DEV_SEED=1 to force)`)
+  }
 
   copyMedia()
   await knex.raw('SET FOREIGN_KEY_CHECKS = 0')
