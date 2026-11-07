@@ -51,8 +51,8 @@
 
 | Пакет | Было | Стало |
 |---|---|---|
-| `eslint` (backend, frontend) | 8.57 | 9.39 (flat config `eslint.config.js`, правила jsdoc и `noInlineConfig` сохранены) |
-| `@typescript-eslint/parser` | 7.18 | заменён на `typescript-eslint` 8.72 |
+| `eslint` (backend, frontend) | 8.57 | 10.14 (flat config `eslint.config.js`, правила jsdoc и `noInlineConfig` сохранены) |
+| `@typescript-eslint/parser` | 7.18 | заменён на `typescript-eslint` 8.72 (peer eslint ^10) |
 | `eslint-plugin-vue` (frontend) | 9.33 | 10.12 (+ `vue-eslint-parser` 10); в конфиг не подключён, как и раньше |
 | `@vue/eslint-config-typescript` (frontend) | 12 | удалён (в конфиге не использовался, тянул уязвимые пакеты) |
 | `eslint-plugin-jsdoc` | 63.3.3 | без изменений (следующие версии требуют Node ^22.22.2) |
