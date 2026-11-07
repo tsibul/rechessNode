@@ -62,7 +62,7 @@ async function change(id: number, delta: 1 | -1) {
 
 <template>
   <section class="colors" data-testid="colors">
-    <article v-for="pair in pairs" :key="pair.id" class="card" :class="{ 'card--in-cart': inCart(pair.id) }">
+    <article v-for="pair in pairs" :key="pair.id" class="card" :class="{ 'card--in-cart': inCart(pair.id), 'card--multi': pair.photos.length > 1 }">
       <div class="card__media">
       <div class="card__slides" :class="{ 'card__slides--single': pair.photos.length < 2 }" data-testid="pair-slides" tabindex="0" @pointerdown="dragStart" @pointermove="dragMove" @pointerup="dragEnd" @pointercancel="dragEnd" :aria-label="`Фото: ${pair.name}`">
         <div v-for="(p, i) in pair.photos" :key="i" class="card__slide">
@@ -127,7 +127,8 @@ async function change(id: number, delta: 1 | -1) {
     position: absolute;
     top: 0;
     bottom: 0;
-    right: 0;
+    // The arrow sits on the photo (a slide is 88% of the strip), not on the edge of the next one.
+    right: 12%;
     width: 36px;
     padding: 0;
     border: none;
@@ -175,10 +176,16 @@ async function change(id: number, delta: 1 | -1) {
 
   &__incart { margin-top: 8px; font-weight: 600; }
 
-  &--in-cart {
-    outline: 2px solid #000;
-    outline-offset: 8px;
+  // The frame hugs the photo and the text; the edge of the next slide stays outside of it.
+  &--in-cart::after {
+    content: '';
+    position: absolute;
+    inset: -8px;
+    border: 2px solid #000;
+    pointer-events: none;
   }
+
+  &--in-cart.card--multi::after { right: calc(12% - 8px); }
 }
 
 .colors__error {
