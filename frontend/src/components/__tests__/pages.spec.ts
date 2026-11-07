@@ -114,6 +114,22 @@ describe('public pages', () => {
     expect(routes.some((r) => r.path === '/cabinet')).toBe(false)
   })
 
+  it('cookie banner names the cookies and links to the cookie policy', async () => {
+    document.cookie = 'cookieConsent=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/'
+    const w = mount(CookieBanner)
+    await vi.waitFor(() => expect(w.find('[data-testid="cookie-consent"]').exists()).toBe(true))
+    const text = w.find('.cookie__text').text()
+    expect(text).toContain('необходимые')
+    expect(text).toContain('аналитические')
+    expect(w.find('.cookie__text a').attributes('href')).toBe('/privacy#cookie')
+    expect(w.find('.cookie__button').text()).toBe('Принять')
+  })
+
+  it('the cookie policy column is the anchor of the banner link', async () => {
+    const privacy = await render('privacy')
+    expect(privacy.find('#cookie').text()).toContain('Политика использования файлов cookie')
+  })
+
   it('cookie banner shows until accepted', async () => {
     document.cookie = 'cookieConsent=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/'
     const w = mount(CookieBanner)

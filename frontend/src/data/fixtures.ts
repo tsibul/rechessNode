@@ -76,8 +76,9 @@ export const devContent: SiteContent = {
     // Numbers from the old IndexSeo.vue, rendering is stage 9
     'counter.metrika': '101425217',
     'counter.vk': 'VK-RTRG-1949091-cI2FI',
-    'cookie.banner.text': 'Этот сайт использует файлы cookie. Подробнее — в <a href="/privacy">политике конфиденциальности</a>.',
-    'cookie.banner.button': 'Ок'
+    'cookie.banner.text': 'Мы используем файлы cookie: необходимые для работы сайта и корзины, а с вашего согласия — аналитические (Яндекс Метрика, VK). Нажимая «Принять», вы соглашаетесь на их использование. Подробнее — в <a href="/privacy#cookie">политике использования файлов cookie</a>.',
+    'cookie.banner.button': 'Принять',
+    'legal.email': 'info@rechess.ru'
   },
   seller: {
     name: 'ООО «Вики Восток Сувенир»', ogrn: '', inn: '5001021228',

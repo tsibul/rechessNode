@@ -12,8 +12,8 @@ import { startCounters } from '@/services/counters'
 
 const COOKIE = 'cookieConsent'
 const visible = ref(false)
-const text = getSetting('cookie.banner.text', 'Этот сайт использует файлы cookie.')
-const button = getSetting('cookie.banner.button', 'Ок')
+const text = getSetting('cookie.banner.text', 'Этот сайт использует файлы cookie. Подробнее — в <a href="/privacy#cookie">политике использования файлов cookie</a>.')
+const button = getSetting('cookie.banner.button', 'Принять')
 
 onMounted(async () => {
   const Cookies = (await import('js-cookie')).default
@@ -91,7 +91,9 @@ async function accept() {
     left: 15px;
     right: 90px;
     bottom: 30px;
-    gap: 10px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
     padding: 10px;
 
     &__text,
@@ -99,6 +101,9 @@ async function accept() {
       font-size: 12px;
       line-height: 15px;
     }
+
+    // The button goes under the text: the text gets the whole width, the banner is lower.
+    &__button { align-self: flex-end; }
   }
 }
 </style>
