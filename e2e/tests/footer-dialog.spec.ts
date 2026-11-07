@@ -71,7 +71,7 @@ test('each colour pair is a three-slide carousel with one next arrow', async ({ 
   await expect(page.getByTestId('pair-next')).toHaveCount(7)
 })
 
-test('the next arrow sits on the photo and the frame hugs it', async ({ page }) => {
+test('the next arrow sits on the photo and the frame is exactly the photo', async ({ page }) => {
   await page.goto('/colors')
   const card = page.locator('.card').first()
   const photo = (await card.locator('.card__slide').first().boundingBox())!
@@ -83,10 +83,10 @@ test('the next arrow sits on the photo and the frame hugs it', async ({ page }) 
     expect(a.x).toBeGreaterThanOrEqual(photo.x)
   }
   await card.evaluate((el) => el.classList.add('card--in-cart'))
-  const frame = await card.evaluate((el) => {
+  const frame = await card.locator('.card__media').evaluate((el) => {
     const f = getComputedStyle(el, '::after')
-    return { right: parseFloat(f.right), width: parseFloat(f.width), card: el.getBoundingClientRect().width }
+    return { width: parseFloat(f.width) }
   })
-  // The frame ends near the photo edge, not at the edge of the next slide.
-  expect(frame.width).toBeLessThan(frame.card * 0.95)
+  // The frame is exactly the photo: it neither includes the next slide nor sticks out of the photo.
+  expect(Math.abs(frame.width - photo.width)).toBeLessThanOrEqual(1)
 })
