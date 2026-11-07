@@ -9,6 +9,9 @@ import { promises as fs } from 'fs'
 import path from 'path'
 import sharp from 'sharp'
 
+/**
+ * Formats of the derived copies made for every uploaded image.
+ */
 export const VARIANT_FORMATS = ['webp', 'avif'] as const
 const ORIGINALS = /\.(jpe?g|png|webp|avif)$/i
 

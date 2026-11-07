@@ -12,6 +12,9 @@ import { cmsUploadsRouter } from './cms/uploads'
 import { cmsPublishRouter } from './cms/publish'
 import { cartWriteLimit, orderEmailLimit, orderLimit, publicReadLimit } from '../middleware/rateLimit'
 
+/**
+ * Root `/api` router: public and shop routes, CMS routes under `/cms`, 404 for the rest.
+ */
 export const router = Router()
 
 router.get('/health', (_req, res) => {

@@ -10,14 +10,26 @@ import { db } from '../db'
 import { notDeleted } from '../utils/db'
 import { ApiError } from './error'
 
+/**
+ * Name of the CMS session cookie.
+ */
 export const CMS_COOKIE = 'rc_cms'
 const SESSION_HOURS = 12
 
+/**
+ * Permission codes a CMS role can grant.
+ */
 export const PERMISSIONS = [
   'orders', 'clients', 'carts', 'references', 'prices', 'seo', 'pages', 'settings', 'users', 'publish'
 ] as const
+/**
+ * One of {@link PERMISSIONS}.
+ */
 export type Permission = typeof PERMISSIONS[number]
 
+/**
+ * The authenticated CMS user attached to the request.
+ */
 export interface CmsUser {
   id: number
   name: string
@@ -46,10 +58,20 @@ export function sessionStamp(user: { hashToken?: string | null }): string {
   return user.hashToken ?? ''
 }
 
+/**
+ * Invalidates every session of a user by rotating the stored session stamp.
+ * @param userId - CMS user id.
+ */
 export async function revokeSessions(userId: number): Promise<void> {
   await db('user').where({ id: userId }).update({ hashToken: crypto.randomBytes(24).toString('hex') })
 }
 
+/**
+ * Signs a session token and sets it as an httpOnly cookie.
+ * @param res - Response to set the cookie on.
+ * @param userId - CMS user id.
+ * @param stamp - Current session stamp of the user.
+ */
 export function issueSession(res: Response, userId: number, stamp: string): void {
   const token = jwt.sign({ uid: userId, sv: stamp }, secret(), { algorithm: 'HS256', expiresIn: `${SESSION_HOURS}h` })
   res.cookie(CMS_COOKIE, token, {
@@ -58,6 +80,10 @@ export function issueSession(res: Response, userId: number, stamp: string): void
   })
 }
 
+/**
+ * Removes the CMS session cookie.
+ * @param res - Response to clear the cookie on.
+ */
 export function clearSession(res: Response): void {
   res.clearCookie(CMS_COOKIE, { httpOnly: true, sameSite: 'strict', secure: process.env.NODE_ENV === 'production' })
 }
@@ -77,6 +103,11 @@ export async function loadCmsUser(userId: number, stamp?: string): Promise<CmsUs
   }
 }
 
+/**
+ * Verifies a session token.
+ * @param token - JWT from the session cookie.
+ * @returns The token payload, or null when it is invalid or expired.
+ */
 export function readToken(token: string): { uid: number; sv: string } | null {
   try {
     const payload = jwt.verify(token, secret(), { algorithms: ['HS256'] }) as { uid?: unknown; sv?: unknown }
@@ -87,6 +118,9 @@ export function readToken(token: string): { uid: number; sv: string } | null {
   }
 }
 
+/**
+ * Middleware that requires a valid CMS session and loads the user into `req.cmsUser`; answers 401 otherwise.
+ */
 export const requireAuth: RequestHandler = (req: Request, _res: Response, next: NextFunction) => {
   const token = req.cookies?.[CMS_COOKIE]
   if (typeof token !== 'string') return next(new ApiError(401, 'Unauthorized'))

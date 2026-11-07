@@ -8,6 +8,9 @@ import { ApiError } from '../../middleware/error'
 import { getPublication, listPublications, startPublication } from '../../services/publish'
 import { wrap } from '../../utils/async'
 
+/**
+ * CMS routes that start a site build and show the publication journal.
+ */
 export const cmsPublishRouter = Router()
 cmsPublishRouter.use(requireAuth, requirePermission('publish'))
 

@@ -14,6 +14,9 @@ const providers: Record<string, PaymentProvider> = {
   [stubProvider.code]: stubProvider
 }
 
+/**
+ * Message shown when no payment provider can accept payments.
+ */
 export const PAYMENT_UNAVAILABLE = 'Оплата временно недоступна, заказ не принят. Попробуйте позже или свяжитесь с нами.'
 
 const configured = () => (process.env.PAYMENT_PROVIDER || '').trim().toLowerCase()
@@ -27,6 +30,11 @@ export function getProvider(): PaymentProvider | null {
   return p
 }
 
+/**
+ * Looks up a provider by its code.
+ * @param code - Provider code.
+ * @returns The provider, or null when unknown.
+ */
 export function getProviderByCode(code: string): PaymentProvider | null {
   return providers[code] ?? null
 }

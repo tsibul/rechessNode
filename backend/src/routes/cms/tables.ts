@@ -43,7 +43,13 @@ const opt = (max: number) => str(max).nullish().transform((v) => (v === '' ? nul
 const priority = z.number().int().min(-32768).max(32767)
 const fk = z.number().int().positive()
 
+/**
+ * Payment states an order can have.
+ */
 export const PAYMENT_STATES = ['not_paid', 'pending', 'paid', 'failed', 'refunded'] as const
+/**
+ * Photo slots of a product (side view, top view, board).
+ */
 export const PHOTO_SLOTS = ['side', 'top', 'board'] as const
 const photoName = req(255).regex(/^(?!\.+$)[A-Za-z0-9._-]+$/, 'Invalid file name')
 
@@ -247,6 +253,9 @@ const REGISTRY: Record<string, Spec> = {
   }
 }
 
+/**
+ * CMS routes for editing the reference tables; access depends on the permission of each table.
+ */
 export const cmsTablesRouter = Router()
 cmsTablesRouter.use(requireAuth)
 

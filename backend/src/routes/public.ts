@@ -11,6 +11,9 @@ import { wrap } from '../utils/async'
 import { db } from '../db'
 import { notDeleted } from '../utils/db'
 
+/**
+ * Public read-only routes: catalog, pages, settings, shops and delivery data.
+ */
 export const publicRouter = Router()
 
 publicRouter.get('/products', wrap(async (_req, res) => {

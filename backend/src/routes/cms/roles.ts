@@ -10,6 +10,9 @@ import { ApiError } from '../../middleware/error'
 import { wrap } from '../../utils/async'
 import { notDeleted } from '../../utils/db'
 
+/**
+ * CMS routes for roles and their permissions.
+ */
 export const cmsRolesRouter = Router()
 cmsRolesRouter.use(requireAuth, requirePermission('users'))
 

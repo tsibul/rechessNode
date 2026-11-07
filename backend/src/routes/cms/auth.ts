@@ -11,6 +11,9 @@ import { wrap } from '../../utils/async'
 import { notDeleted } from '../../utils/db'
 import { hashPassword, verifyPassword } from '../../utils/password'
 
+/**
+ * CMS authentication routes: login, logout, current user and password change.
+ */
 export const cmsAuthRouter = Router()
 
 const MAX_FAILS = 5

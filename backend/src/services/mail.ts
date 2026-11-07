@@ -12,19 +12,30 @@ import { db } from '../db'
 import { shortProductName } from '../utils/productName'
 import { uploadDir } from '../routes/cms/uploads'
 
+/**
+ * Kind of an e-mail the shop sends.
+ */
 export type MailKind = 'confirmation' | 'track' | 'manager'
 
 /** Picture embedded in the mail (`<img src="cid:…">`): shown without any public site. */
 export interface MailImage { cid: string; filename: string; content: Buffer }
 
+/**
+ * An e-mail ready to be sent or saved to the outbox.
+ */
 export interface MailMessage { to: string; subject: string; html: string; text: string; from: string; attachments?: MailImage[] }
 
-type Sender = (message: MailMessage) => Promise<void>
+/** Function that delivers a prepared e-mail (replaceable in tests). */
+export type Sender = (message: MailMessage) => Promise<void>
 
 let senderOverride: Sender | null = null
 /** For tests: replaces the transport. Pass null to restore. */
 export function setMailSender(s: Sender | null) { senderOverride = s }
 
+/**
+ * Directory where e-mails are saved when sending is disabled.
+ * @returns Absolute path (`MAIL_OUTBOX_DIR` or default).
+ */
 export const outboxDir = () => process.env.MAIL_OUTBOX_DIR || path.join(__dirname, '../../outbox')
 
 let smtp: { key: string; transport: Transporter } | null = null
@@ -79,6 +90,11 @@ async function deliver(m: MailMessage): Promise<void> {
   await smtpTransport().sendMail(mailOptions(m))
 }
 
+/**
+ * Escapes text for use inside HTML.
+ * @param s - Plain text.
+ * @returns Escaped text.
+ */
 export const escapeHtml = (s: string) =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 
@@ -89,6 +105,11 @@ export function fill(template: string, values: Record<string, string>): string {
   return template.replace(/\{\{\s*([a-z_]+)\s*\}\}/g, (_m, k: string) => values[k] ?? '')
 }
 
+/**
+ * Converts HTML to plain text for the text part of an e-mail.
+ * @param html - HTML fragment.
+ * @returns Plain text.
+ */
 export const htmlToText = (html: string) =>
   html.replace(/<\/td>\s*<td[^>]*>/gi, ' — ').replace(/<br\s*\/?>/gi, '\n').replace(/<\/(p|tr|li|h\d)>/gi, '\n')
     .replace(/<a [^>]*href="([^"]+)"[^>]*>([^<]*)<\/a>/gi, '$2 ($1)').replace(/<[^>]+>/g, '')
@@ -117,6 +138,12 @@ export function managerRecipients(value: string | null | undefined): string[] {
   return (value ?? '').split(/[\s,;]+/).map((a) => a.trim()).filter((a) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(a))
 }
 
+/**
+ * Builds a tracking link from a template.
+ * @param template - URL template with a track number placeholder.
+ * @param track - Track number.
+ * @returns The link, or null when there is no track number or template.
+ */
 export function trackingUrl(template: string, track: string | null | undefined): string | null {
   if (!track || !template) return null
   const url = template.replace(/\{\{\s*track\s*\}\}/g, encodeURIComponent(track))

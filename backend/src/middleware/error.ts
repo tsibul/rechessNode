@@ -11,6 +11,11 @@ import { ZodError } from 'zod'
  * Custom error class for API errors
  */
 export class ApiError extends Error {
+  /**
+   * Creates an API error.
+   * @param statusCode - HTTP status sent to the client.
+   * @param message - Message sent to the client.
+   */
   constructor(
     public statusCode: number,
     message: string

@@ -12,6 +12,9 @@ import type { PaymentNotification, PaymentProvider, PaymentStatus } from './type
 
 const body = z.object({ ref: z.string().min(8).max(64), result: z.enum(['paid', 'failed']) }).strict()
 
+/**
+ * Stub provider for development: moves no money, payment is confirmed on a site page.
+ */
 export const stubProvider: PaymentProvider = {
   code: 'stub',
   isStub: true,

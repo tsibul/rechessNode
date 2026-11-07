@@ -5,8 +5,14 @@
  */
 import type { Request } from 'express'
 
+/**
+ * Payment status reported by a provider.
+ */
 export type PaymentStatus = 'pending' | 'paid' | 'failed'
 
+/**
+ * Data needed to create a payment.
+ */
 export interface CreatePaymentInput {
   orderNumber: number
   /** Whole roubles, always taken from the order in the database. */
@@ -14,6 +20,9 @@ export interface CreatePaymentInput {
   description: string
 }
 
+/**
+ * Result of creating a payment at the provider.
+ */
 export interface CreatedPayment {
   /** Reference of the payment at the provider (unique). */
   ref: string
@@ -21,6 +30,9 @@ export interface CreatedPayment {
   url: string
 }
 
+/**
+ * Parsed incoming provider notification.
+ */
 export interface PaymentNotification {
   ref: string
   status: PaymentStatus
@@ -28,6 +40,9 @@ export interface PaymentNotification {
   amount?: number
 }
 
+/**
+ * Contract implemented by every payment provider.
+ */
 export interface PaymentProvider {
   readonly code: string
   /** The stub moves no money and must never run in production. */

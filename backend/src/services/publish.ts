@@ -13,6 +13,9 @@ const LOG_LIMIT = 4000
 /** Runs a build; resolves with the output tail and success flag. */
 export type PublishRunner = () => Promise<{ ok: boolean; log: string }>
 
+/**
+ * Default runner: executes `PUBLISH_COMMAND` in a shell with a timeout.
+ */
 export const shellRunner: PublishRunner = () => new Promise((resolve) => {
   const command = process.env.PUBLISH_COMMAND
   if (!command) return resolve({ ok: false, log: 'PUBLISH_COMMAND is not set' })
@@ -50,6 +53,12 @@ export async function failStalePublications(): Promise<void> {
     .update({ state: 'failed', finished_at: db.fn.now(), log: 'Interrupted by server restart' })
 }
 
+/**
+ * Starts a site build unless one is already running; the build continues in the background.
+ * @param userId - CMS user who started it.
+ * @returns The new publication record.
+ * @throws ApiError 409 when a build is in progress.
+ */
 export async function startPublication(userId: number) {
   const id = await db.transaction(async (trx) => {
     // Lock the table's active rows so two requests cannot both start.
@@ -80,10 +89,20 @@ async function run(id: number): Promise<void> {
   }
 }
 
+/**
+ * Returns a publication record.
+ * @param id - Publication id.
+ * @returns The record, or null.
+ */
 export async function getPublication(id: number) {
   return (await db('publication').where({ id }).first()) ?? null
 }
 
+/**
+ * Returns the latest publications, newest first.
+ * @param limit - Maximum number of records.
+ * @returns Publication records.
+ */
 export async function listPublications(limit: number) {
   return db('publication').orderBy('id', 'desc').limit(limit)
 }

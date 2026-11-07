@@ -19,6 +19,10 @@ function trustProxy(): string | number | boolean {
   return /^\d+$/.test(v) ? Number(v) : v
 }
 
+/**
+ * Builds the Express application: security headers, CORS, cookies, JSON body, uploads and the `/api` router.
+ * @returns The configured app (not yet listening).
+ */
 export function createApp() {
   const app = express()
   app.disable('x-powered-by')

@@ -16,6 +16,9 @@ import { wrap } from '../utils/async'
 import { normalizePhone } from '../utils/phone'
 import { readToken, setClientCookie, setCountCookie } from '../utils/visitor'
 
+/**
+ * Anonymous shopping routes: cart, delivery options, order creation and payment.
+ */
 export const shopRouter = Router()
 
 const itemId = (v: string) => {

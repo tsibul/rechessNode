@@ -20,6 +20,11 @@ const OPTIONS: sanitizeHtml.IOptions = {
   }
 }
 
+/**
+ * Removes everything outside the allowed tag and attribute list from CMS-entered HTML.
+ * @param html - Untrusted HTML.
+ * @returns Safe HTML.
+ */
 export function cleanHtml(html: string): string {
   return sanitizeHtml(html, OPTIONS)
 }

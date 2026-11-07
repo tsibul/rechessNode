@@ -13,7 +13,6 @@ import * as path from 'path'
 config({ path: path.join(__dirname, '../../.env') })
 
 // Import knexfile configuration
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const knexConfig = require(path.join(__dirname, '../../knexfile')).default as { [key: string]: Knex.Config }
 
 // Determine current environment
@@ -30,7 +29,7 @@ export { knex }
 
 /**
  * Initialize database connection
- * @returns {Promise<void>}
+ * @returns Resolves when done
  */
 export async function initializeDatabase(): Promise<void> {
   try {
@@ -44,7 +43,7 @@ export async function initializeDatabase(): Promise<void> {
 
 /**
  * Close database connection
- * @returns {Promise<void>}
+ * @returns Resolves when done
  */
 export async function closeDatabase(): Promise<void> {
   try {

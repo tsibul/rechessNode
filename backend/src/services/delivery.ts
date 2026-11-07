@@ -6,6 +6,9 @@ import type { Knex } from 'knex'
 import { db } from '../db'
 import { notDeleted } from '../utils/db'
 
+/**
+ * Delivery price calculated for a cart.
+ */
 export interface DeliveryQuote {
   cost: number
   tariff_id: number
@@ -13,6 +16,11 @@ export interface DeliveryQuote {
   weight_g: number
 }
 
+/**
+ * Normalizes a city name for comparison (trim, lower case, `ё` → `е`).
+ * @param city - City as typed.
+ * @returns Normalized name.
+ */
 export const normCity = (city: string | null | undefined) => (city ?? '').trim().toLowerCase().replace(/ё/g, 'е')
 
 /** Weight of a cart in grams; a product without weight counts as 0. */

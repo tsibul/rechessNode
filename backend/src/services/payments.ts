@@ -9,9 +9,18 @@ import { ApiError } from '../middleware/error'
 import { assertPaymentAvailable, getProvider, getProviderByCode } from './payment'
 import type { PaymentNotification, PaymentStatus } from './payment/types'
 
+/**
+ * Payment states of an order.
+ */
 export const PAYMENT_STATES = ['not_paid', 'pending', 'paid', 'failed', 'refunded'] as const
+/**
+ * One of {@link PAYMENT_STATES}.
+ */
 export type PaymentState = (typeof PAYMENT_STATES)[number]
 
+/**
+ * Payment data of an order as sent to the client.
+ */
 export interface PaymentView {
   provider: string | null
   state: PaymentState
@@ -87,6 +96,9 @@ export async function retryPayment(clientId: number, number: number): Promise<Pa
   return view
 }
 
+/**
+ * Result of handling a provider notification.
+ */
 export interface NotificationResult { state: PaymentState; changed: boolean; ignored: boolean }
 
 /**

@@ -18,6 +18,11 @@ export async function currentPrice(productId: number, k: Knex | Knex.Transaction
   return row ? Number(row.price) : null
 }
 
+/**
+ * Returns published products with prices and photos.
+ * @param onlyId - Return only this product.
+ * @returns Product list.
+ */
 export async function getProducts(onlyId?: number) {
   const products = await notDeleted(db('product'))
     .modify((q) => { if (onlyId) q.where('id', onlyId) })
@@ -71,6 +76,11 @@ function seoOf(row: Record<string, unknown> | undefined) {
   }
 }
 
+/**
+ * Returns published pages.
+ * @param slug - Return only the page with this slug.
+ * @returns Page list.
+ */
 export async function getPages(slug?: string) {
   const pages: Record<string, any>[] = await notDeleted(db("page")).modify((q) => { if (slug) q.where('slug', slug) }).orderBy('id')
   if (!pages.length) return []
@@ -89,6 +99,10 @@ export async function getPages(slug?: string) {
 /** Settings that stay in the CMS and never go to the public API (manager addresses). */
 const PRIVATE_SETTINGS = new Set(['mail.manager.to'])
 
+/**
+ * Returns site settings as a key-value map.
+ * @returns Settings by key.
+ */
 export async function getSettings(): Promise<Record<string, string | number | boolean | null>> {
   const rows = await notDeleted(db('setting')).orderBy('group_name').orderBy('priority')
   const out: Record<string, string | number | boolean | null> = {}
@@ -103,6 +117,10 @@ export async function getSettings(): Promise<Record<string, string | number | bo
   return out
 }
 
+/**
+ * Returns shops shown on the site.
+ * @returns Shop list.
+ */
 export async function getShops() {
   const shops = await notDeleted(db('shops')).orderBy('id')
   const photos = shops.length
@@ -115,11 +133,19 @@ export async function getShops() {
   }))
 }
 
+/**
+ * Returns photos of the home page.
+ * @returns Photo list.
+ */
 export async function getIndexPhotos() {
   const rows = await withRatio(uploadDir(), await notDeleted(db('index_photo')).orderBy('priority').orderBy('id'))
   return rows.map((r) => ({ name: r.name, priority: r.priority, photo: r.photo, ratio: r.ratio }))
 }
 
+/**
+ * Returns seller details shown in the footer and documents.
+ * @returns Seller record.
+ */
 export async function getSeller() {
   const r = await notDeleted(db('seller')).orderBy('id').first()
   return r ? { name: r.name, ogrn: r.ogrn, inn: r.inn, kpp: r.kpp, address: r.address, phone: r.phone } : null

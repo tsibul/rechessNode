@@ -14,12 +14,23 @@ function derive(password: string, salt: string): Promise<Buffer> {
   })
 }
 
+/**
+ * Hashes a password for storage.
+ * @param password - Plain password.
+ * @returns Hash string including the salt.
+ */
 export async function hashPassword(password: string): Promise<string> {
   const salt = randomBytes(16).toString('hex')
   const key = await derive(password, salt)
   return `scrypt$${salt}$${key.toString('hex')}`
 }
 
+/**
+ * Checks a password against a stored hash.
+ * @param password - Plain password.
+ * @param stored - Stored hash.
+ * @returns True when they match.
+ */
 export async function verifyPassword(password: string, stored: string): Promise<boolean> {
   const parts = stored.split('$')
   if (parts.length !== 3 || parts[0] !== 'scrypt') return false

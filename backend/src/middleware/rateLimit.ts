@@ -5,6 +5,9 @@
  */
 import type { NextFunction, Request, Response } from 'express'
 
+/**
+ * Options of {@link rateLimit}.
+ */
 export interface RateLimitOptions {
   /** Window length in milliseconds. */
   windowMs: number
@@ -16,6 +19,15 @@ export interface RateLimitOptions {
   key?: (req: Request) => string | undefined
 }
 
+/**
+ * Creates a fixed-window rate limiting middleware; answers 429 with `Retry-After` when exceeded.
+ * @param options - Limit configuration.
+ * @param options.windowMs - Window length in milliseconds.
+ * @param options.max - Requests allowed per window and key.
+ * @param options.inTest - Apply the limit under `NODE_ENV=test` too.
+ * @param options.key - Counting key; default is the client IP.
+ * @returns Express middleware.
+ */
 export function rateLimit({ windowMs, max, inTest = false, key: keyOf }: RateLimitOptions) {
   const hits = new Map<string, { count: number; reset: number }>()
   return (req: Request, res: Response, next: NextFunction) => {

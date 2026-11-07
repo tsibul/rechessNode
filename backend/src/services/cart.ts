@@ -12,24 +12,45 @@ import { currentPrice } from './catalog'
 import { cartWeight, quoteDelivery } from './delivery'
 import { trackingUrl } from './mail'
 
+/**
+ * Maximum quantity of one product in a cart line.
+ */
 export const MAX_QUANTITY = 99
 /** Recorded when the setting `legal.consent_version` is empty. */
 export const DEFAULT_CONSENT_VERSION = 'v1'
 
+/**
+ * Cart as sent to the client.
+ */
 export interface CartView {
   items: { item_id: number; name: string; product_name: string; article: string; photo: string | null; quantity: number; price: number; sum: number }[]
   count: number
   total: number
 }
 
+/**
+ * Cart view of a visitor without a cart.
+ */
 export const EMPTY_CART: CartView = { items: [], count: 0, total: 0 }
 
+/**
+ * Finds the client by the visitor token.
+ * @param token - Visitor token from the cookie.
+ * @param k - Knex instance or transaction.
+ * @returns The client row, or undefined.
+ */
 export async function findClient(token: string | null, k: Knex | Knex.Transaction = db) {
   if (!token) return null
   const row = await notDeleted(k('client').where({ tokenHash: hashToken(token) })).first()
   return row ?? null
 }
 
+/**
+ * Finds the open (not ordered) cart of a client.
+ * @param clientId - Client id.
+ * @param k - Knex instance or transaction.
+ * @returns The cart row, or undefined.
+ */
 export async function findOpenCart(clientId: number, k: Knex | Knex.Transaction = db) {
   const row = await notDeleted(k('cart').where({ client_id: clientId }).whereNull('ordered'))
     .orderBy('id', 'desc').first()
@@ -51,6 +72,12 @@ async function lines(cartId: number, k: Knex | Knex.Transaction) {
     .orderBy('ci.id')
 }
 
+/**
+ * Builds the client view of a cart with current prices.
+ * @param cartId - Cart id.
+ * @param k - Knex instance or transaction.
+ * @returns Lines, count and total.
+ */
 export async function buildCartView(cartId: number, k: Knex | Knex.Transaction = db): Promise<CartView> {
   const rows = await lines(cartId, k)
   const prices = new Map<number, number | null>()
@@ -79,6 +106,11 @@ async function syncCartSum(cartId: number, k: Knex | Knex.Transaction): Promise<
   return view
 }
 
+/**
+ * Returns the cart of a visitor.
+ * @param token - Visitor token from the cookie.
+ * @returns The cart view (empty when there is none).
+ */
 export async function getCartView(token: string | null): Promise<CartView> {
   const client = await findClient(token)
   if (!client) return EMPTY_CART
@@ -126,6 +158,14 @@ async function requireCart(token: string | null, k: Knex | Knex.Transaction) {
   return cart
 }
 
+/**
+ * Sets the quantity of a cart line; zero removes it.
+ * @param token - Visitor token.
+ * @param itemId - Product id.
+ * @param quantity - New quantity.
+ * @returns The updated cart view.
+ * @throws ApiError 404 when the line does not exist.
+ */
 export async function setQuantity(token: string | null, itemId: number, quantity: number): Promise<CartView> {
   return db.transaction(async (trx) => {
     const cart = await requireCart(token, trx)
@@ -137,10 +177,19 @@ export async function setQuantity(token: string | null, itemId: number, quantity
   })
 }
 
+/**
+ * Removes a cart line.
+ * @param token - Visitor token.
+ * @param itemId - Product id.
+ * @returns The updated cart view.
+ */
 export async function removeItem(token: string | null, itemId: number): Promise<CartView> {
   return setQuantity(token, itemId, 0)
 }
 
+/**
+ * Checkout data entered by the buyer.
+ */
 export interface OrderInput {
   name: string
   family_name?: string | null
@@ -153,6 +202,13 @@ export interface OrderInput {
   comment?: string | null
 }
 
+/**
+ * Turns the open cart into an order inside a transaction.
+ * @param token - Visitor token.
+ * @param input - Checkout data.
+ * @returns The created order.
+ * @throws ApiError 400 when the cart is empty.
+ */
 export async function createOrder(token: string | null, input: OrderInput) {
   for (let attempt = 0; ; attempt++) {
     try {
@@ -238,6 +294,11 @@ export async function getOrderView(token: string | null, number: number) {
   }
 }
 
+/**
+ * Returns checkout data remembered from the previous order.
+ * @param token - Visitor token.
+ * @returns Saved checkout fields, or null when there are none.
+ */
 export async function getPrefill(token: string | null) {
   const c = await findClient(token)
   if (!c || !c.phone) return null
