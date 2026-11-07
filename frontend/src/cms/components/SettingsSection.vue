@@ -88,7 +88,7 @@ onMounted(load)
           <label v-if="r.type === 'boolean'" class="cms-check">
             <input v-model="values[r.id]" type="checkbox" /> включено
           </label>
-          <PhotoField v-else-if="r.type === 'photo'" v-model="values[r.id] as any" />
+          <PhotoField v-else-if="r.type === 'photo'" v-model="values[r.id] as string | null" />
           <textarea v-else-if="r.type === 'html'" v-model="values[r.id] as string" class="cms-input" rows="5" />
           <input v-else v-model="values[r.id] as string" class="cms-input" :type="r.type === 'number' ? 'number' : 'text'" />
         </div>

@@ -10,7 +10,7 @@ defineOptions({ name: 'FieldInput' })
 const props = defineProps<{
   /** Field definition. */
   field: Field
-  /** Current value (v-model). */
+  /** Current value (v-model). `any` is deliberate: the type depends on the field type (text, number, flag, list of ids). */
   modelValue: any
   /** Validation error to show. */
   error?: string

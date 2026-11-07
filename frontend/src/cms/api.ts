@@ -8,6 +8,7 @@ import axios, { AxiosError } from 'axios'
 /**
  * A table row as the CMS API returns it.
  */
+/** Table row of dynamic shape: columns come from the server per table, so they have no static type (`any` is deliberate; `unknown` would need a cast on every column read). */
 export type Row = Record<string, any>
 
 /**

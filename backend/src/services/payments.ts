@@ -69,12 +69,21 @@ export async function startPayment(orderId: number): Promise<PaymentView | null>
   })
 }
 
-function toView(o: Record<string, any>, stub: boolean, url: string | null = null): PaymentView {
+/** The order columns the payment view reads. */
+interface PaymentOrderFields {
+  number: string
+  sum: number
+  payment_provider?: string | null
+  payment_ref?: string | null
+  payment_state: PaymentState
+}
+
+function toView(o: PaymentOrderFields, stub: boolean, url: string | null = null): PaymentView {
   const open = o.payment_state === 'pending' || o.payment_state === 'failed' || o.payment_state === 'not_paid'
   return {
     provider: o.payment_provider ?? null, state: o.payment_state, amount: o.sum,
     url: open && o.payment_provider ? url ?? (stub ? `/order/${o.number}/pay` : null) : null,
-    ref: stub && o.payment_state === 'pending' ? o.payment_ref : null,
+    ref: stub && o.payment_state === 'pending' ? o.payment_ref ?? null : null,
     stub
   }
 }

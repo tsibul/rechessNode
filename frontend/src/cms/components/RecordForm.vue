@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue'
 import { cmsApi, errorMessage, Row } from '../api'
-import { buildPayload, initialValues, validate } from '../logic'
+import { buildPayload, initialValues, validate, type FormValues } from '../logic'
 import { invalidateRef } from '../refs'
 import type { Section } from '../registry'
 import FieldInput from './FieldInput.vue'
@@ -23,12 +23,12 @@ const emit = defineEmits<{
   /** Emitted when editing is cancelled. */
   (e: 'cancel'): void
   /** Emitted with the form values when they change. */
-  (e: 'values', v: Record<string, any>): void
+  (e: 'values', v: FormValues): void
 }>()
 
 const fields = computed(() => (props.section.fields ?? []).filter((f) => !(props.fixed && f.key in props.fixed)))
 const creating = computed(() => !props.row)
-const values = reactive<Record<string, any>>({})
+const values = reactive<FormValues>({})
 const errors = ref<Record<string, string>>({})
 const serverError = ref('')
 const saving = ref(false)
