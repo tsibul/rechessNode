@@ -7,7 +7,7 @@ const jsdoc = require('eslint-plugin-jsdoc')
 
 module.exports = [
   {
-    ignores: ['dist/**', 'node_modules/**', 'src/__tests__/**', 'src/testing/**', 'src/db/migrations/**', 'src/db/seeds/**', 'src/models/**', 'src/repositories/**', 'src/types/**']
+    ignores: ['dist/**', 'node_modules/**', 'src/__tests__/**', 'src/testing/**', 'src/db/migrations/**', 'src/db/seeds/**']
   },
   {
     files: ['**/*.ts'],
