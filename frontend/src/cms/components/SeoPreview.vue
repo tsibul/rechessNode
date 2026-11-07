@@ -3,7 +3,15 @@ import { computed } from 'vue'
 import { photoUrl, seoPreview } from '../logic'
 import { useSiteUrl } from '../siteUrl'
 
-const props = defineProps<{ values: Record<string, any>; pageSlugs: Record<number, string> }>()
+/** Preview of how a page looks in search results and social networks. */
+defineOptions({ name: 'SeoPreview' })
+
+const props = defineProps<{
+  /** Current SEO form values. */
+  values: Record<string, any>
+  /** Page slugs by page id. */
+  pageSlugs: Record<number, string>
+}>()
 
 const siteUrl = useSiteUrl()
 const preview = computed(() => seoPreview(props.values, siteUrl.value, props.pageSlugs[props.values.page_id] ?? ''))

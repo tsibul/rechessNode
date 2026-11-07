@@ -5,6 +5,9 @@ import { PERMISSIONS, PERMISSION_LABELS } from '../registry'
 import RecordForm from './RecordForm.vue'
 import { invalidateRef } from '../refs'
 
+/** CMS section for editing the permissions of roles. */
+defineOptions({ name: 'RolesSection' })
+
 const roles = ref<RoleWithPermissions[]>([])
 const error = ref('')
 const message = ref('')

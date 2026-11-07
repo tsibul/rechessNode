@@ -9,8 +9,21 @@
 import { safeHtml } from '@/seo/sanitize'
 import { nextTick, onBeforeUnmount, ref, watch } from 'vue'
 
-const props = defineProps<{ open: boolean; label: string; html: string }>()
-const emit = defineEmits<{ close: [] }>()
+/** Modal dialog that shows an HTML document. */
+defineOptions({ name: 'InfoDialog' })
+
+const props = defineProps<{
+  /** Whether the dialog is open. */
+  open: boolean
+  /** Accessible name of the dialog. */
+  label: string
+  /** HTML shown inside. */
+  html: string
+}>()
+const emit = defineEmits<{
+  /** Emitted when the dialog is closed. */
+  close: []
+}>()
 
 const panel = ref<HTMLElement | null>(null)
 let opener: HTMLElement | null = null

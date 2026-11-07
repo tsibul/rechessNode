@@ -9,6 +9,9 @@
 <script setup lang="ts">
 import { useHead } from '@unhead/vue'
 
+/** Shell of client-rendered pages. */
+defineOptions({ name: 'AppShell' })
+
 useHead({ title: 'reChess', meta: [{ name: 'robots', content: 'noindex, nofollow' }] })
 </script>
 

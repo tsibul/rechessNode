@@ -2,8 +2,16 @@
 import type { Photo } from '@/data/types'
 import PhotoItem from './PhotoItem.vue'
 
+/** Grid of photos. */
+defineOptions({ name: 'PhotoGrid' })
+
 // `column`: one column of a page grid (shop); default: two columns, row by row (home).
-defineProps<{ photos: Photo[]; column?: boolean }>()
+defineProps<{
+  /** Photos to show. */
+  photos: Photo[]
+  /** Show in a single column. */
+  column?: boolean
+}>()
 </script>
 
 <template>

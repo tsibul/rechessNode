@@ -10,5 +10,8 @@ import ClientOnly from '../../components/utils/ClientOnly.vue'
 import CmsApp from '../../cms/components/CmsApp.vue'
 import '../../cms/cms.scss'
 
+/** Entry page of the CMS. */
+defineOptions({ name: 'CMS' })
+
 useHead({ title: 'CMS — reChess', meta: [{ name: 'robots', content: 'noindex, nofollow' }] })
 </script>

@@ -4,6 +4,9 @@ import { getProduct, getSetting, getShops } from '@/data/content'
 import { livePrice } from '@/data/livePrice'
 import { api } from '@/services/api'
 
+/** Product card with price and the add-to-cart button. */
+defineOptions({ name: 'ProductBlock' })
+
 const product = getProduct()
 const shops = getShops()
 const buyNote = getSetting('shop.buy_note')

@@ -3,6 +3,9 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { cmsApi, errorMessage, Publication } from '../api'
 import { formatDate } from '../logic'
 
+/** CMS section that starts a site build and shows the build journal. */
+defineOptions({ name: 'PublishSection' })
+
 const list = ref<Publication[]>([])
 const error = ref('')
 const busy = ref(false)

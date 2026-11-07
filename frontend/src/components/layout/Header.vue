@@ -1,4 +1,5 @@
 <script setup lang="ts">
+/** Site header with navigation. */
 defineOptions({ name: 'SiteHeader' })
 </script>
 

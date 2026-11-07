@@ -12,6 +12,9 @@ import ClientOnly from '@/components/utils/ClientOnly.vue'
 import CartBadge from '@/components/floating/CartBadge.vue'
 import CookieBanner from '@/components/floating/CookieBanner.vue'
 
+/** Root component: picks the page layout and renders the routed view. */
+defineOptions({ name: 'App' })
+
 // The CMS is not a public page: no banner and no cart there.
 const route = useRoute()
 const isPublic = computed(() => !route.path.startsWith('/cms'))

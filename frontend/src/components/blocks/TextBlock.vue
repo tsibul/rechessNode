@@ -1,7 +1,17 @@
 <script setup lang="ts">
 import { safeHtml } from '@/seo/sanitize'
+
+/** Page block with a title and HTML text. */
+defineOptions({ name: 'TextBlock' })
 // `html` is written in the CMS; it is cleaned on save and again here before rendering.
-defineProps<{ title?: string; hideTitle?: boolean; html: string }>()
+defineProps<{
+  /** Heading. */
+  title?: string
+  /** Hide the heading visually, keep it for screen readers. */
+  hideTitle?: boolean
+  /** HTML text, sanitized before output. */
+  html: string
+}>()
 </script>
 
 <template>

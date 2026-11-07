@@ -12,6 +12,9 @@ import ShopPage from '@/components/layout/ShopPage.vue'
 import { api, ApiError } from '@/services/api'
 import { useCartStore } from '@/store/cart'
 
+/** Checkout page with the order form and delivery choice. */
+defineOptions({ name: 'Order' })
+
 interface Prefill {
   name: string | null; family_name: string | null; city: string | null; phone: string | null; e_mail: string | null
   address_delivery: boolean; delivery_address: string | null; delivery_point_code: string | null

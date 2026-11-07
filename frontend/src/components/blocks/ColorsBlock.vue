@@ -4,6 +4,9 @@ import { getProduct } from '@/data/content'
 import { useCartStore } from '@/store/cart'
 import PhotoItem from './PhotoItem.vue'
 
+/** Product colour picker with the matching photos. */
+defineOptions({ name: 'ColorsBlock' })
+
 const pairs = getProduct().pairs
 const cart = useCartStore()
 const busy = ref(0)

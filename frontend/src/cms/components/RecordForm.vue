@@ -6,8 +6,25 @@ import { invalidateRef } from '../refs'
 import type { Section } from '../registry'
 import FieldInput from './FieldInput.vue'
 
-const props = defineProps<{ section: Section; row?: Row | null; fixed?: Row }>()
-const emit = defineEmits<{ (e: 'saved', row: Row): void; (e: 'cancel'): void; (e: 'values', v: Record<string, any>): void }>()
+/** Create/edit form for a CMS record, built from the section fields. */
+defineOptions({ name: 'RecordForm' })
+
+const props = defineProps<{
+  /** Section whose fields are edited. */
+  section: Section
+  /** Record to edit; empty to create. */
+  row?: Row | null
+  /** Field values that are set and hidden (parent link). */
+  fixed?: Row
+}>()
+const emit = defineEmits<{
+  /** Emitted with the saved row. */
+  (e: 'saved', row: Row): void
+  /** Emitted when editing is cancelled. */
+  (e: 'cancel'): void
+  /** Emitted with the form values when they change. */
+  (e: 'values', v: Record<string, any>): void
+}>()
 
 const fields = computed(() => (props.section.fields ?? []).filter((f) => !(props.fixed && f.key in props.fixed)))
 const creating = computed(() => !props.row)

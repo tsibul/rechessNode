@@ -5,7 +5,15 @@ import { formatDate, formatMoney, photoUrl, truncate } from '../logic'
 import { loadRef, refHex, refLabel } from '../refs'
 import { PAYMENT_STATES, type Column } from '../registry'
 
-const props = defineProps<{ column: Column; row: Row }>()
+/** Table cell of a CMS list; formats the value by the column kind. */
+defineOptions({ name: 'Cell' })
+
+const props = defineProps<{
+  /** Column definition. */
+  column: Column
+  /** Row to show. */
+  row: Row
+}>()
 const value = computed(() => props.row[props.column.key])
 
 onMounted(() => {

@@ -4,8 +4,21 @@ import type { Field } from '../registry'
 import { loadRef, refOptions } from '../refs'
 import PhotoField from './PhotoField.vue'
 
-const props = defineProps<{ field: Field; modelValue: any; error?: string }>()
-const emit = defineEmits<{ (e: 'update:modelValue', v: any): void }>()
+/** Input for one CMS form field, chosen by the field type. */
+defineOptions({ name: 'FieldInput' })
+
+const props = defineProps<{
+  /** Field definition. */
+  field: Field
+  /** Current value (v-model). */
+  modelValue: any
+  /** Validation error to show. */
+  error?: string
+}>()
+const emit = defineEmits<{
+  /** Emitted when the value changes. */
+  (e: 'update:modelValue', v: any): void
+}>()
 
 onMounted(() => {
   if (props.field.ref) loadRef(props.field.ref, props.field.refLabel)

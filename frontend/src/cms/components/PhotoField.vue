@@ -3,8 +3,17 @@ import { ref } from 'vue'
 import { cmsApi, errorMessage } from '../api'
 import { photoUrl } from '../logic'
 
-const props = defineProps<{ modelValue: string | null }>()
-const emit = defineEmits<{ (e: 'update:modelValue', v: string | null): void }>()
+/** Image field with upload and preview. */
+defineOptions({ name: 'PhotoField' })
+
+const props = defineProps<{
+  /** Stored file name (v-model). */
+  modelValue: string | null
+}>()
+const emit = defineEmits<{
+  /** Emitted with the new file name or null. */
+  (e: 'update:modelValue', v: string | null): void
+}>()
 
 const busy = ref(false)
 const error = ref('')

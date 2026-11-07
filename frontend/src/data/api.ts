@@ -7,7 +7,8 @@ import { api } from '@/services/api'
 import { devContent } from './fixtures'
 import type { ColorPair, PageBlock, PageContent, Photo, Product, Seller, Shop, SiteContent } from './types'
 
-interface ApiPhoto { name: string; photo: string; slot?: string; ratio?: number }
+/** Photo as the API returns it. */
+export interface ApiPhoto { name: string; photo: string; slot?: string; ratio?: number }
 /** Shape of the `/api/site` response. */
 export interface ApiSite {
   settings: Record<string, string | number | boolean | null>

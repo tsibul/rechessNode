@@ -1,7 +1,15 @@
 <script setup lang="ts">
 import { safeHtml } from '@/seo/sanitize'
+
+/** Page block with text columns (company details, cookie policy, ...). */
+defineOptions({ name: 'ColumnsBlock' })
 // Several text columns side by side (legal page). `html` is written in the CMS, cleaned on save and again before rendering.
-defineProps<{ title?: string; columns: string[] }>()
+defineProps<{
+  /** Hidden page heading. */
+  title?: string
+  /** HTML of each column. */
+  columns: string[]
+}>()
 </script>
 
 <template>

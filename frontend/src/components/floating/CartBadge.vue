@@ -9,6 +9,9 @@
 import {onMounted} from 'vue'
 import {useCartStore} from '@/store/cart'
 
+/** Floating cart link with the number of items. */
+defineOptions({ name: 'CartBadge' })
+
 const cart = useCartStore()
 
 onMounted(() => {

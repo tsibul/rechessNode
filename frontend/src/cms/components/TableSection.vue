@@ -10,7 +10,15 @@ import Details from './Details.vue'
 import RecordForm from './RecordForm.vue'
 import SeoPreview from './SeoPreview.vue'
 
-const props = defineProps<{ section: Section; openId?: number | null }>()
+/** CMS section with a searchable, sortable, paged list and a record form. */
+defineOptions({ name: 'TableSection' })
+
+const props = defineProps<{
+  /** Section definition. */
+  section: Section
+  /** Id of the record to open at once. */
+  openId?: number | null
+}>()
 
 const rows = ref<Row[]>([])
 const total = ref(0)

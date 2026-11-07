@@ -6,6 +6,9 @@ import { SETTING_TYPES } from '../registry'
 import PhotoField from './PhotoField.vue'
 import RecordForm from './RecordForm.vue'
 
+/** CMS section for editing site settings grouped by topic. */
+defineOptions({ name: 'SettingsSection' })
+
 const rows = ref<Row[]>([])
 const values = reactive<Record<number, string | boolean>>({})
 const saved = ref<Record<number, boolean>>({})

@@ -7,7 +7,15 @@ import { movePriority } from '../logic'
 import RecordForm from './RecordForm.vue'
 import Cell from './Cell.vue'
 
-const props = defineProps<{ child: Child; parentId: number }>()
+/** Editable table of child rows shown inside a parent record form. */
+defineOptions({ name: 'ChildTable' })
+
+const props = defineProps<{
+  /** Child table definition. */
+  child: Child
+  /** Id of the parent record. */
+  parentId: number
+}>()
 const section = sectionByKey(props.child.section)!
 const rows = ref<Row[]>([])
 const editing = ref<Row | null>(null)

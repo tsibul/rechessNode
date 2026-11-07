@@ -4,7 +4,15 @@ import { cmsApi, type Row } from '../api'
 import { formatDate, formatMoney } from '../logic'
 import { PAYMENT_STATES } from '../registry'
 
-const props = defineProps<{ kind: 'order' | 'cart' | 'client'; row: Row }>()
+/** Read-only details of an order, cart or client with order actions. */
+defineOptions({ name: 'Details' })
+
+const props = defineProps<{
+  /** What the row is: order, cart or client. */
+  kind: 'order' | 'cart' | 'client'
+  /** Row to show. */
+  row: Row
+}>()
 const mail = ref<Row | null>(null)
 const mailError = ref('')
 const m = (k: string) => (mail.value ?? props.row)[k]

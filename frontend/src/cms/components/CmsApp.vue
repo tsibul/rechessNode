@@ -8,6 +8,9 @@ import RolesSection from './RolesSection.vue'
 import SettingsSection from './SettingsSection.vue'
 import TableSection from './TableSection.vue'
 
+/** CMS shell: menu of sections available to the user and the open section. */
+defineOptions({ name: 'CmsApp' })
+
 const store = useCmsStore()
 const hash = ref('')
 const groups = computed(() => groupSections(store.sections))

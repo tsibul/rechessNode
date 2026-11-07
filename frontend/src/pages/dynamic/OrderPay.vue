@@ -12,6 +12,9 @@ import ShopPage from '@/components/layout/ShopPage.vue'
 import { api } from '@/services/api'
 import { getSetting } from '@/data/content'
 
+/** Order payment page. */
+defineOptions({ name: 'OrderPay' })
+
 interface Payment { provider: string | null; state: string; amount: number; url: string | null; ref: string | null; stub: boolean }
 
 const route = useRoute()

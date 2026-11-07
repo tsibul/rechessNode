@@ -15,7 +15,7 @@
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
     "docs": "npm run docs:lint && npm run docs:ts && npm run docs:vue",
     "docs:ts": "typedoc",
-    "docs:vue": "vue-docgen -c docgen.config.cjs",
+    "docs:vue": "node scripts/gen-vue-docs.mjs",
     "docs:lint": "eslint src build --ext .ts && node scripts/check-vue-docs.mjs"
   },
   "dependencies": {
@@ -47,7 +47,7 @@
     "vite": "^7.0.4",
     "vite-plugin-pages": "^0.33.1",
     "vitest": "^3.2.4",
-    "vue-docgen-cli": "^4.79.0",
+    "vue-docgen-api": "^4.79.2",
     "vue-tsc": "^3.0.1"
   }
 }

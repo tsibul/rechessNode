@@ -11,6 +11,9 @@ import { onMounted } from 'vue'
 import { getSetting } from '@/data/content'
 import { acceptCookies, bannerOpen, declineCookies, initConsent } from '@/services/consent'
 
+/** Cookie consent banner. */
+defineOptions({ name: 'CookieBanner' })
+
 const text = getSetting('cookie.banner.text', 'Мы используем технические файлы cookie: они нужны для работы сайта и корзины. Аналитические (Яндекс Метрика, VK) включаются только с вашего согласия: от них можно отказаться, сайт и заказ работают в любом случае. Подробнее — в <a href="/privacy#cookie">политике использования файлов cookie</a>.')
 const accept = getSetting('cookie.banner.button', 'Принять')
 const decline = getSetting('cookie.banner.decline', 'Отклонить')

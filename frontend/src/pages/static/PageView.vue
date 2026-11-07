@@ -15,7 +15,13 @@ import ProductBlock from '@/components/blocks/ProductBlock.vue'
 import ColorsBlock from '@/components/blocks/ColorsBlock.vue'
 import ColumnsBlock from '@/components/blocks/ColumnsBlock.vue'
 
-const props = defineProps<{ slug: string }>()
+/** Renders a prerendered page from its blocks. */
+defineOptions({ name: 'PageView' })
+
+const props = defineProps<{
+  /** Slug of the page to render. */
+  slug: string
+}>()
 const page = computed(() => getPage(props.slug))
 const withProduct = computed(() => page.value.blocks.some((b) => b.code === 'product'))
 // Photos of the page, the first one is the social card when the SEO has no image.

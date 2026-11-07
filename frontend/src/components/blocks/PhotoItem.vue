@@ -3,7 +3,13 @@ import { computed } from 'vue'
 import type { Photo } from '@/data/types'
 import { pictureSources } from '@/seo/picture'
 
-const props = defineProps<{ photo: Photo }>()
+/** One photo with WebP/AVIF sources. */
+defineOptions({ name: 'PhotoItem' })
+
+const props = defineProps<{
+  /** Photo to show. */
+  photo: Photo
+}>()
 const sources = computed(() => pictureSources(props.photo.src))
 </script>
 

@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { getPage, getSetting } from '@/data/content'
 import InfoDialog from '@/components/layout/InfoDialog.vue'
 
+/** Site footer with contacts and legal links. */
 defineOptions({ name: 'SiteFooter' })
 
 const phone = getSetting('contact.phone')

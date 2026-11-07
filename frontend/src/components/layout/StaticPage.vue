@@ -10,7 +10,19 @@ import Header from '@/components/layout/Header.vue'
 import Footer from '@/components/layout/Footer.vue'
 import PageSeo from '@/components/layout/PageSeo.vue'
 
-defineProps<{ seo: Seo; path: string; withProduct?: boolean; photos?: Photo[] }>()
+/** Page layout: SEO tags, header, content and footer. */
+defineOptions({ name: 'StaticPage' })
+
+defineProps<{
+  /** SEO fields of the page. */
+  seo: Seo
+  /** Path of the page. */
+  path: string
+  /** Add product structured data. */
+  withProduct?: boolean
+  /** Photos used for the share image. */
+  photos?: Photo[]
+}>()
 </script>
 
 <template>
@@ -18,6 +30,7 @@ defineProps<{ seo: Seo; path: string; withProduct?: boolean; photos?: Photo[] }>
     <PageSeo :seo="seo" :path="path" :with-product="withProduct" :photos="photos" />
     <Header />
     <main class="content">
+      <!-- @slot Main content of the page. -->
       <slot />
     </main>
     <Footer />

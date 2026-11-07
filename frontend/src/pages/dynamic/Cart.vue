@@ -10,6 +10,9 @@ import ShopPage from '@/components/layout/ShopPage.vue'
 import { uploadUrl } from '@/data/api'
 import { useCartStore } from '@/store/cart'
 
+/** Cart page. */
+defineOptions({ name: 'Cart' })
+
 const cart = useCartStore()
 const failed = ref<string | null>(null)
 const rub = (n: number) => `${new Intl.NumberFormat('ru-RU').format(n)} ₽`

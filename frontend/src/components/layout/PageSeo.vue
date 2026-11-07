@@ -6,7 +6,19 @@ import { getProduct, getSeller, getSettings } from '@/data/content'
 import { livePrice } from '@/data/livePrice'
 import { buildHead } from '@/seo/head'
 
-const props = defineProps<{ seo: Seo; path: string; withProduct?: boolean; photos?: Photo[] }>()
+/** Sets title, meta tags and structured data of a page. */
+defineOptions({ name: 'PageSeo' })
+
+const props = defineProps<{
+  /** SEO fields of the page. */
+  seo: Seo
+  /** Path of the page. */
+  path: string
+  /** Add product structured data. */
+  withProduct?: boolean
+  /** Photos used for the share image. */
+  photos?: Photo[]
+}>()
 
 const fallbackImage = computed(() => props.photos?.find((p) => p.src)?.src ?? null)
 

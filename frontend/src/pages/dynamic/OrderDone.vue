@@ -12,6 +12,9 @@ import { api } from '@/services/api'
 import { uploadUrl } from '@/data/api'
 import { getSetting } from '@/data/content'
 
+/** Page shown after an order is placed. */
+defineOptions({ name: 'OrderDone' })
+
 interface Order {
   number: number; sum: number; delivery_cost: number | null; state: string | null
   tracking_url?: string | null; delivery_reference?: string | null

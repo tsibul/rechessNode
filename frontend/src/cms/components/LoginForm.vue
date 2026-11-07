@@ -2,6 +2,9 @@
 import { ref } from 'vue'
 import { useCmsStore } from '../../store/cms'
 
+/** CMS sign-in form. */
+defineOptions({ name: 'LoginForm' })
+
 const store = useCmsStore()
 const login = ref('')
 const password = ref('')
