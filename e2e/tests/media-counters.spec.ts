@@ -1,19 +1,9 @@
 import { test, expect } from '@playwright/test'
-import { login, PNG } from '../support/cms'
+import { login, PNG, publishAndWait } from '../support/cms'
 import { connect } from '../support/db'
 import { readState } from '../support/state'
 
-/** Publishes from the CMS (real PUBLISH_COMMAND) and waits for the journal to say done. */
-async function publish(page: import('@playwright/test').Page) {
-  await page.locator('.cms-nav__link', { hasText: 'Публикация' }).click()
-  page.once('dialog', (d) => d.accept())
-  await page.getByRole('button', { name: 'Опубликовать' }).click()
-  await expect.poll(async () => {
-    const r = await (await page.request.get('/api/cms/publications?limit=1')).json()
-    const p = r.publications[0]
-    return p ? `${p.state}${p.state === 'failed' ? ': ' + p.log : ''}` : 'none'
-  }, { timeout: 150_000, intervals: [1000] }).toBe('done')
-}
+const publish = (page: import('@playwright/test').Page) => publishAndWait(page)
 
 test('uploaded photo is served as AVIF/WebP in a real browser', async ({ page, browser }) => {
   test.setTimeout(240_000)

@@ -1,17 +1,8 @@
 import { test, expect, type Page } from '@playwright/test'
-import { login, PNG } from '../support/cms'
+import { login, PNG, publishAndWait } from '../support/cms'
 import { readState } from '../support/state'
 
-async function publish(page: Page) {
-  await page.locator('.cms-nav__link', { hasText: 'Публикация' }).click()
-  page.once('dialog', (d) => d.accept())
-  await page.getByRole('button', { name: 'Опубликовать' }).click()
-  await expect.poll(async () => {
-    const r = await (await page.request.get('/api/cms/publications?limit=1')).json()
-    const p = r.publications[0]
-    return p ? `${p.state}${p.state === 'failed' ? ': ' + p.log : ''}` : 'none'
-  }, { timeout: 150_000, intervals: [1000] }).toBe('done')
-}
+const publish = (page: import('@playwright/test').Page) => publishAndWait(page)
 
 async function uploadPhoto(page: Page): Promise<string> {
   const res = await page.request.post('/api/cms/uploads', { multipart: { file: { name: 'dot.png', mimeType: 'image/png', buffer: PNG } } })

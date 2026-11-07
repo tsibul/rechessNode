@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { login, menu } from '../support/cms'
+import { login, menu, publishAndWait } from '../support/cms'
 import { readState } from '../support/state'
 
 const MANAGER = ['Заказы', 'Клиенты', 'Корзины']
@@ -170,14 +170,7 @@ test.describe('CMS work', () => {
     await expect(row.getByRole('button', { name: 'Сохранено' })).toBeVisible()
 
     try {
-      await page.locator('.cms-nav__link', { hasText: 'Публикация' }).click()
-      page.once('dialog', (d) => d.accept())
-      await page.getByRole('button', { name: 'Опубликовать' }).click()
-      await expect.poll(async () => {
-        const r = await (await page.request.get('/api/cms/publications?limit=1')).json()
-        const p = r.publications[0]
-        return p ? `${p.state}${p.state === 'failed' ? ': ' + p.log : ''}` : 'none'
-      }, { timeout: 120_000, intervals: [1000] }).toBe('done')
+      await publishAndWait(page, 120_000)
       await expect(page.locator('.cms-badge--done').first()).toBeVisible()
 
       const pub = await browser.newContext()

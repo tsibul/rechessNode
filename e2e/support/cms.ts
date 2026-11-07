@@ -26,3 +26,23 @@ export const PNG = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
   'base64'
 )
+
+/**
+ * Starts a publication from the "Публикация" section and waits until THAT publication is done.
+ * Polling "the latest publication" is racy: right after the click it can still be the previous build, already
+ * "done", so the test would go on before the new site exists. The id comes from the POST response instead.
+ */
+export async function publishAndWait(page: Page, timeout = 150_000) {
+  await page.locator('.cms-nav__link', { hasText: 'Публикация' }).click()
+  page.once('dialog', (d) => d.accept())
+  const [res] = await Promise.all([
+    page.waitForResponse((r) => r.url().endsWith('/api/cms/publish') && r.request().method() === 'POST'),
+    page.getByRole('button', { name: 'Опубликовать' }).click()
+  ])
+  expect(res.status()).toBe(202)
+  const id = (await res.json()).publication.id as number
+  await expect.poll(async () => {
+    const p = (await (await page.request.get(`/api/cms/publications/${id}`)).json()).publication
+    return `${p.state}${p.state === 'failed' ? ': ' + p.log : ''}`
+  }, { timeout, intervals: [1000] }).toBe('done')
+}
