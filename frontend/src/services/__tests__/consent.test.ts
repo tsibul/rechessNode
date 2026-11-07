@@ -13,53 +13,29 @@ async function load() {
 describe('cookie consent', () => {
   beforeEach(() => { clear(); startCounters.mockClear() })
 
-  it('asks at the first visit and stays quiet afterwards', async () => {
+  it('asks at the first visit, starts the counters on accept and stays quiet afterwards', async () => {
     const c = await load()
     await c.initConsent()
-    expect(c.bannerMode.value).toBe('ask')
+    expect(c.bannerOpen.value).toBe(true)
     await c.acceptCookies()
     expect(document.cookie).toContain('cookieConsent=accepted')
-    expect(c.bannerMode.value).toBeNull()
+    expect(c.bannerOpen.value).toBe(false)
     expect(startCounters).toHaveBeenCalledTimes(1)
     const again = await load()
     await again.initConsent()
-    expect(again.bannerMode.value).toBeNull()
+    expect(again.bannerOpen.value).toBe(false)
   })
 
-  it('a refusal is remembered, shows the warning and starts no counters', async () => {
+  it('a refusal is remembered, closes the banner and starts no counters', async () => {
     const c = await load()
     await c.initConsent()
     await c.declineCookies()
     expect(document.cookie).toContain('cookieConsent=declined')
-    expect(c.bannerMode.value).toBe('declined')
+    expect(c.bannerOpen.value).toBe(false)
     expect(startCounters).not.toHaveBeenCalled()
-    c.closeBanner()
-    expect(c.bannerMode.value).toBeNull()
     const again = await load()
     await again.initConsent()
     expect(again.consent.value).toBe('declined')
-    expect(again.bannerMode.value).toBeNull()
-  })
-
-  it('an order after a refusal asks again and goes on after the consent', async () => {
-    const c = await load()
-    await c.initConsent()
-    await c.declineCookies()
-    const answer = c.requireConsent()
-    expect(c.bannerMode.value).toBe('order')
-    await c.acceptCookies()
-    expect(await answer).toBe(true)
-    expect(startCounters).toHaveBeenCalledTimes(1)
-    expect(await c.requireConsent()).toBe(true)
-  })
-
-  it('cancelling the question on the order form keeps the refusal', async () => {
-    const c = await load()
-    await c.initConsent()
-    await c.declineCookies()
-    const answer = c.requireConsent()
-    c.closeBanner()
-    expect(await answer).toBe(false)
-    expect(c.consent.value).toBe('declined')
+    expect(again.bannerOpen.value).toBe(false)
   })
 })

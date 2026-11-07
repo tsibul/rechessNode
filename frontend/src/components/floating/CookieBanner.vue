@@ -6,30 +6,22 @@
  */
 -->
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { onMounted } from 'vue'
 import { getSetting } from '@/data/content'
-import { acceptCookies, bannerMode, closeBanner, declineCookies, initConsent } from '@/services/consent'
+import { acceptCookies, bannerOpen, declineCookies, initConsent } from '@/services/consent'
 
-const TEXT = {
-  ask: getSetting('cookie.banner.text', 'Этот сайт использует файлы cookie. Подробнее — в <a href="/privacy#cookie">политике использования файлов cookie</a>.'),
-  declined: 'Вы отказались от файлов cookie. Аналитика (Яндекс Метрика, VK) не загружается. Без cookie нельзя оформить заказ: при оформлении мы предложим принять их ещё раз.',
-  order: 'Для оформления заказа нужны файлы cookie: они связывают вас с вашей корзиной. Принять и продолжить? Подробнее — в <a href="/privacy#cookie">политике использования файлов cookie</a>.'
-}
+const text = getSetting('cookie.banner.text', 'Мы используем технические файлы cookie: они нужны для работы сайта и корзины. Аналитические (Яндекс Метрика, VK) включаются только с вашего согласия: от них можно отказаться, сайт и заказ работают в любом случае. Подробнее — в <a href="/privacy#cookie">политике использования файлов cookie</a>.')
 const accept = getSetting('cookie.banner.button', 'Принять')
 const decline = getSetting('cookie.banner.decline', 'Отклонить')
-
-const text = computed(() => (bannerMode.value ? TEXT[bannerMode.value] : ''))
 
 onMounted(initConsent)
 </script>
 
 <template>
-  <div v-if="bannerMode" class="cookie" role="dialog" aria-label="Cookie" data-testid="cookie-consent" :data-mode="bannerMode">
+  <div v-if="bannerOpen" class="cookie" role="dialog" aria-label="Cookie" data-testid="cookie-consent">
     <p class="cookie__text" v-html="text" />
     <div class="cookie__buttons">
-      <button v-if="bannerMode === 'ask'" type="button" class="cookie__button cookie__button--plain" data-testid="cookie-decline" @click="declineCookies">{{ decline }}</button>
-      <button v-if="bannerMode === 'order'" type="button" class="cookie__button cookie__button--plain" data-testid="cookie-cancel" @click="closeBanner">Отмена</button>
-      <button v-if="bannerMode === 'declined'" type="button" class="cookie__button cookie__button--plain" data-testid="cookie-close" @click="closeBanner">Понятно</button>
+      <button type="button" class="cookie__button cookie__button--plain" data-testid="cookie-decline" @click="declineCookies">{{ decline }}</button>
       <button type="button" class="cookie__button" data-testid="cookie-accept" @click="acceptCookies">{{ accept }}</button>
     </div>
   </div>

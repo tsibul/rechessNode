@@ -7,7 +7,7 @@
 - `frontend/src/data/` — слой данных. `content.ts` отдаёт страницы, настройки, товар, магазины и продавца синхронно; по умолчанию берёт `fixtures.ts` (данные по форме таблиц `page`, `page_block`, `seo`, `setting`, `shops`, `product`). Когда появится API, сборка заполняет ту же структуру через `setSiteContent()`.
 - `pages/static/PageView.vue` — одна страница для всех маршрутов; рисует блоки `gallery`, `text`, `columns`, `product`, `colors` (`components/blocks/`). SEO — `layout/PageSeo.vue` (`useHead`).
 - Маршруты: `/`, `/about`, `/shop`, `/colors`, `/privacy`, `/personal-data` (все в `includedRoutes` vite-ssg), `/cart`, `/cms`.
-- Cookie-баннер: `floating/CookieBanner.vue`, текст и кнопка «Принять» из настроек, кнопка «Отклонить», выбор в cookie `cookieConsent` (`accepted`/`declined`). Состояние — `services/consent.ts`: после отказа баннер предупреждает, что без cookie нельзя оформить заказ; форма заказа (`Order.vue`) при нажатии «Оформить заказ» без согласия снова спрашивает и продолжает после «Принять». Тексты предупреждения и вопроса — в компоненте.
+- Cookie-баннер: `floating/CookieBanner.vue`, текст и кнопка «Принять» из настроек, кнопка «Отклонить», выбор в cookie `cookieConsent` (`accepted`/`declined`). Состояние — `services/consent.ts`. «Отклонить» отказывает только в аналитике (Метрика и VK не загружаются); технические cookie корзины и заказа работают всегда, заказ после отказа оформляется как обычно. Это сказано в тексте баннера и в политике cookie.
 - Брейкпоинты: ≤1160 px (iPad), ≤660 px (мобильная); сетка по макету: три колонки по 540 px, зазор 30, поля 15 (iPad 20).
 
 ## Решения

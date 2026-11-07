@@ -107,22 +107,20 @@ test('empty cart and form validation', async ({ page }) => {
   await expect(page.getByTestId('order-form')).toHaveCount(0)
 })
 
-test('after a refusal of cookies the order asks to accept them and goes on', async ({ page }) => {
+test('after a refusal of the analytics the order is placed as usual', async ({ page }) => {
   const { tag } = readState()
   const email = `e2e-${tag}-${test.info().project.name}-cookies@example.com`
-  const post = page.waitForRequest((r) => r.url().endsWith('/api/orders') && r.method() === 'POST', { timeout: 5000 }).catch(() => null)
 
   await page.goto('/colors')
   const banner = page.getByTestId('cookie-consent')
-  await expect(banner).toHaveAttribute('data-mode', 'ask')
+  await expect(banner).toBeVisible()
+  await expect(banner).toContainText('можно отказаться')
   await banner.getByTestId('cookie-decline').click()
-  await expect(banner).toHaveAttribute('data-mode', 'declined')
-  await expect(banner).toContainText('нельзя оформить заказ')
-  await banner.getByTestId('cookie-close').click()
   await expect(banner).toBeHidden()
   // The refusal is remembered: the banner does not come back after a reload.
   await page.reload()
   await expect(page.getByTestId('cookie-consent')).toHaveCount(0)
+  expect((await page.context().cookies()).find((c) => c.name === 'cookieConsent')?.value).toBe('declined')
 
   await page.getByRole('button', { name: /добавить/ }).nth(2).click()
   await expect(page.getByTestId('pair-in-cart')).toHaveText('в корзине: 1')
@@ -134,18 +132,7 @@ test('after a refusal of cookies the order asks to accept them and goes on', asy
   await page.locator('input[name="city"]').fill('Москва')
   await page.locator('input[name="delivery_address"]').fill('Москва, ул. Тестовая, 2')
   await page.locator('input[name="consent"]').check()
-
-  // First try: the question comes back, the order is not sent; cancelling keeps the form.
   await page.getByTestId('submit').click()
-  await expect(banner).toHaveAttribute('data-mode', 'order')
-  await banner.getByTestId('cookie-cancel').click()
-  await expect(banner).toBeHidden()
-  await expect(page).toHaveURL(/\/order$/)
-  expect(await post).toBeNull()
-
-  // Second try: after «Принять и продолжить» the order goes on.
-  await page.getByTestId('submit').click()
-  await expect(banner).toHaveAttribute('data-mode', 'order')
-  await banner.getByTestId('cookie-accept').click()
   await expect(page).toHaveURL(/\/order\/\d+\/pay$/)
+  await expect(page.getByTestId('cookie-consent')).toHaveCount(0)
 })

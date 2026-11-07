@@ -76,7 +76,7 @@ export const devContent: SiteContent = {
     // Numbers from the old IndexSeo.vue, rendering is stage 9
     'counter.metrika': '101425217',
     'counter.vk': 'VK-RTRG-1949091-cI2FI',
-    'cookie.banner.text': 'Мы используем файлы cookie: необходимые для работы сайта и корзины, а с вашего согласия — аналитические (Яндекс Метрика, VK). Нажимая «Принять», вы соглашаетесь на их использование. Подробнее — в <a href="/privacy#cookie">политике использования файлов cookie</a>.',
+    'cookie.banner.text': 'Мы используем технические файлы cookie: они нужны для работы сайта и корзины. Аналитические (Яндекс Метрика, VK) включаются только с вашего согласия: от них можно отказаться, сайт и заказ работают в любом случае. Подробнее — в <a href="/privacy#cookie">политике использования файлов cookie</a>.',
     'cookie.banner.button': 'Принять',
     'legal.email': 'info@rechess.ru'
   },
