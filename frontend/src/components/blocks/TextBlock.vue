@@ -1,12 +1,13 @@
 <script setup lang="ts">
-// `html` is written by the site editor in the CMS and is trusted.
+import { safeHtml } from '@/seo/sanitize'
+// `html` is written in the CMS; it is cleaned on save and again here before rendering.
 defineProps<{ title?: string; hideTitle?: boolean; html: string }>()
 </script>
 
 <template>
   <article class="text">
     <h1 v-if="title" class="text__title" :class="{ 'visually-hidden': hideTitle }">{{ title }}</h1>
-    <div class="text__body" v-html="html" />
+    <div class="text__body" v-html="safeHtml(html)" />
   </article>
 </template>
 

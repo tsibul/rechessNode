@@ -11,6 +11,7 @@ import { wrap } from '../../utils/async'
 import { notDeleted } from '../../utils/db'
 import { sendOrderMail } from '../../services/mail'
 import { hashPassword } from '../../utils/password'
+import { cleanHtml, cleanJson } from '../../utils/sanitizeHtml'
 
 type Row = Record<string, any>
 
@@ -117,7 +118,7 @@ const REGISTRY: Record<string, Spec> = {
       content: z.unknown().refine((v) => v !== undefined, 'Required')
     },
     prepare: async (data) => {
-      if ('content' in data) data.content = JSON.stringify(data.content)
+      if ('content' in data) data.content = JSON.stringify(cleanJson(data.content))
       return data
     },
     decorate: async (rows) => {
@@ -135,7 +136,14 @@ const REGISTRY: Record<string, Spec> = {
       name: req(255), type: z.enum(['text', 'html', 'number', 'boolean', 'photo']),
       value: z.string().max(65000).nullish(), group_name: opt(100), priority
     },
-    updateOmit: ['code']
+    updateOmit: ['code'],
+    prepare: async (data, ctx) => {
+      if (typeof data.value === 'string') {
+        const type = 'type' in data ? data.type : ctx.id ? (await db('setting').where({ id: ctx.id }).first('type'))?.type : undefined
+        if (type === 'html') data.value = cleanHtml(data.value)
+      }
+      return data
+    }
   },
   user: {
     table: 'user', permission: 'users', ops: { create: true, update: true, remove: true }, searchColumn: 'name',

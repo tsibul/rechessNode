@@ -1,12 +1,13 @@
 <script setup lang="ts">
-// Several text columns side by side (legal page). `html` is written in the CMS and is trusted.
+import { safeHtml } from '@/seo/sanitize'
+// Several text columns side by side (legal page). `html` is written in the CMS, cleaned on save and again before rendering.
 defineProps<{ title?: string; columns: string[] }>()
 </script>
 
 <template>
   <section class="columns" data-testid="columns">
     <h1 v-if="title" class="visually-hidden">{{ title }}</h1>
-    <div v-for="(html, i) in columns" :id="i === 0 ? 'company' : i === 1 ? 'cookie' : undefined" :key="i" class="columns__col" v-html="html" />
+    <div v-for="(html, i) in columns" :id="i === 0 ? 'company' : i === 1 ? 'cookie' : undefined" :key="i" class="columns__col" v-html="safeHtml(html)" />
   </section>
 </template>
 

@@ -23,6 +23,7 @@
     "@vueuse/components": "^13.5.0",
     "@vueuse/core": "^10.9.0",
     "axios": "^1.6.7",
+    "dompurify": "^3.4.17",
     "js-cookie": "^3.0.5",
     "pinia": "^2.1.7",
     "vite-ssg": "^28.0.0",

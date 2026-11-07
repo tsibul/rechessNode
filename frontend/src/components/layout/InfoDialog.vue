@@ -6,6 +6,7 @@
  */
 -->
 <script setup lang="ts">
+import { safeHtml } from '@/seo/sanitize'
 import { nextTick, onBeforeUnmount, ref, watch } from 'vue'
 
 const props = defineProps<{ open: boolean; label: string; html: string }>()
@@ -45,7 +46,7 @@ onBeforeUnmount(() => {
     <div v-if="open" class="info-dialog" data-testid="info-dialog" @click.self="emit('close')">
       <div ref="panel" class="info-dialog__panel" role="dialog" aria-modal="true" :aria-label="label" tabindex="-1">
         <button type="button" class="info-dialog__close" aria-label="Закрыть" data-testid="info-dialog-close" @click="emit('close')">×</button>
-        <div class="info-dialog__body" v-html="html" />
+        <div class="info-dialog__body" v-html="safeHtml(html)" />
       </div>
     </div>
   </Teleport>

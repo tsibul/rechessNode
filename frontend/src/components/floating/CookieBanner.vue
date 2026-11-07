@@ -6,6 +6,7 @@
  */
 -->
 <script setup lang="ts">
+import { safeHtml } from '@/seo/sanitize'
 import { onMounted } from 'vue'
 import { getSetting } from '@/data/content'
 import { acceptCookies, bannerOpen, declineCookies, initConsent } from '@/services/consent'
@@ -19,7 +20,7 @@ onMounted(initConsent)
 
 <template>
   <div v-if="bannerOpen" class="cookie" role="dialog" aria-label="Cookie" data-testid="cookie-consent">
-    <p class="cookie__text" v-html="text" />
+    <p class="cookie__text" v-html="safeHtml(text)" />
     <div class="cookie__buttons">
       <button type="button" class="cookie__button cookie__button--plain" data-testid="cookie-decline" @click="declineCookies">{{ decline }}</button>
       <button type="button" class="cookie__button" data-testid="cookie-accept" @click="acceptCookies">{{ accept }}</button>
