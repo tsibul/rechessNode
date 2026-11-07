@@ -5,6 +5,8 @@
 import type { Knex } from 'knex'
 import { db } from '../db'
 import { notDeleted } from '../utils/db'
+import { withRatio } from './images'
+import { uploadDir } from '../routes/cms/uploads'
 
 /** Current price of a product: latest non-deleted price not later than now. */
 export async function currentPrice(productId: number, k: Knex | Knex.Transaction = db): Promise<number | null> {
@@ -34,8 +36,8 @@ export async function getProducts(onlyId?: number) {
         's.id as s_id', 's.name as s_name', 's.code as s_code', 's.hex as s_hex')
       .orderBy('i.id')
     const photos = items.length
-      ? await notDeleted(db('item_photo').whereIn('item_id', items.map((i) => i.id)))
-          .orderBy('priority').orderBy('id').select('item_id', 'name', 'photo', 'slot')
+      ? await withRatio(uploadDir(), await notDeleted(db('item_photo').whereIn('item_id', items.map((i) => i.id)))
+          .orderBy('priority').orderBy('id').select('item_id', 'name', 'photo', 'slot'))
       : []
     result.push({
       id: p.id,
@@ -48,7 +50,7 @@ export async function getProducts(onlyId?: number) {
         article: `${i.m_code}${i.s_code}`,
         main_color: { id: i.m_id, name: i.m_name, code: i.m_code, hex: i.m_hex },
         second_color: { id: i.s_id, name: i.s_name, code: i.s_code, hex: i.s_hex },
-        photos: photos.filter((ph) => ph.item_id === i.id).map((ph) => ({ name: ph.name, photo: ph.photo, slot: ph.slot }))
+        photos: photos.filter((ph) => ph.item_id === i.id).map((ph) => ({ name: ph.name, photo: ph.photo, slot: ph.slot, ratio: ph.ratio }))
       }))
     })
   }
@@ -100,18 +102,18 @@ export async function getSettings(): Promise<Record<string, string | number | bo
 export async function getShops() {
   const shops = await notDeleted(db('shops')).orderBy('id')
   const photos = shops.length
-    ? await notDeleted(db('shop_photo').whereIn('shop_id', shops.map((s) => s.id))).orderBy('priority').orderBy('id')
+    ? await withRatio(uploadDir(), await notDeleted(db('shop_photo').whereIn('shop_id', shops.map((s) => s.id))).orderBy('priority').orderBy('id'))
     : []
   return shops.map((s) => ({
     id: s.id, name: s.name, address: s.address, working_hours: s.working_hours ?? null,
     phone: s.phone ?? null, web_site: s.web_site ?? null,
-    photos: photos.filter((p) => p.shop_id === s.id).map((p) => ({ name: p.name, photo: p.photo }))
+    photos: photos.filter((p) => p.shop_id === s.id).map((p) => ({ name: p.name, photo: p.photo, ratio: p.ratio }))
   }))
 }
 
 export async function getIndexPhotos() {
-  const rows = await notDeleted(db('index_photo')).orderBy('priority').orderBy('id')
-  return rows.map((r) => ({ name: r.name, priority: r.priority, photo: r.photo }))
+  const rows = await withRatio(uploadDir(), await notDeleted(db('index_photo')).orderBy('priority').orderBy('id'))
+  return rows.map((r) => ({ name: r.name, priority: r.priority, photo: r.photo, ratio: r.ratio }))
 }
 
 export async function getSeller() {

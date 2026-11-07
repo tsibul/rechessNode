@@ -52,3 +52,30 @@ export async function ensureVariants(dir: string): Promise<number> {
   }
   return made
 }
+
+const ratios = new Map<string, number>()
+
+/** Width / height of an uploaded file (EXIF rotation applied), `null` when it cannot be read. Cached by path. */
+export async function photoRatio(dir: string, name: string): Promise<number | null> {
+  const file = path.join(dir, path.basename(name))
+  const hit = ratios.get(file)
+  if (hit) return hit
+  try {
+    const m = await sharp(file, { failOn: 'none' }).metadata()
+    if (!m.width || !m.height) return null
+    const swap = (m.orientation ?? 1) >= 5
+    const r = Math.round((swap ? m.height / m.width : m.width / m.height) * 1000) / 1000
+    ratios.set(file, r)
+    return r
+  } catch {
+    return null
+  }
+}
+
+/** Adds `ratio` to photo rows so a new picture of any shape is not squeezed into a square. */
+export async function withRatio<T extends { photo: string }>(dir: string, rows: T[]): Promise<Array<T & { ratio?: number }>> {
+  return Promise.all(rows.map(async (r) => {
+    const ratio = await photoRatio(dir, r.photo)
+    return ratio ? { ...r, ratio } : r
+  }))
+}

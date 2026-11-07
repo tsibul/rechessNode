@@ -39,7 +39,7 @@
     "id": 1, "name": "Чёрный и белый", "article": "0102",
     "main_color": { "id": 1, "name": "Чёрный", "code": "01", "hex": "1A1A1A" },
     "second_color": { "id": 2, "name": "Белый", "code": "02", "hex": "F2F2F2" },
-    "photos": [{ "name": "Фото пары 1", "photo": "item-1.jpg", "slot": "side" }]
+    "photos": [{ "name": "Фото пары 1", "photo": "item-1.jpg", "slot": "side", "ratio": 1.255 }]
   }]
 }] }
 ```
@@ -64,7 +64,7 @@
 
 - `GET /api/settings` → `{ "settings": { "site.url": "…", "counter.metrika": "…" } }`. Значения `number` и `boolean` приходят приведёнными (числом и булевым), пустое — `null`. Секретов в таблице нет, отдаются все неудалённые.
 - `GET /api/shops` → `{ "shops": [{ "id", "name", "address", "working_hours", "phone", "web_site", "photos": [{ "name", "photo" }] }] }`.
-- `GET /api/index-photos` → `{ "photos": [{ "name", "priority", "photo" }] }`.
+- `GET /api/index-photos` → `{ "photos": [{ "name", "priority", "photo", "ratio" }] }`. `ratio` — ширина/высота файла (сервер читает его сам; поля нет, если файл не найден), у фото пар, магазинов и главной.
 - `GET /api/seller` → `{ "seller": { "name", "ogrn", "inn", "kpp", "address", "phone" } | null }`.
 - `GET /api/site` — всё для сборки одним запросом: `{ "settings", "pages" (с блоками и seo), "products", "shops", "index_photos", "seller" }`, формы те же.
 

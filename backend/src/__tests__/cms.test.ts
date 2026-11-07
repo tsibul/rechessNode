@@ -53,6 +53,12 @@ beforeAll(async () => {
 beforeEach(() => resetLoginThrottle())
 
 afterAll(async () => {
+  await db('index_photo').where('name', 'like', `${prefix}%`).delete()
+  const extraItems = await db('item').where('name', 'like', `${prefix} new%`).pluck('id')
+  if (extraItems.length) {
+    await db('item_photo').whereIn('item_id', extraItems).delete()
+    await db('item').whereIn('id', extraItems).delete()
+  }
   await db('publication').whereIn('started_by', userIds).delete()
   for (const t of ['page_block', 'page', 'setting', 'color', 'user'] as const) {
     if (extraIds[t].length) await db(t).whereIn('id', extraIds[t]).delete()
@@ -434,5 +440,69 @@ describe('publish', () => {
     await orders.post('/api/cms/publish').expect(403)
     await orders.get('/api/cms/publications').expect(403)
     await request(app).post('/api/cms/publish').expect(401)
+  })
+})
+
+const uniq = () => `${String.fromCharCode(65 + Math.floor(Math.random() * 26))}${Math.floor(Math.random() * 10)}`
+
+describe('manager edits photos and pairs without code', () => {
+  async function jpg(width: number, height: number) {
+    const sharp = (await import('sharp')).default
+    return sharp({ create: { width, height, channels: 3, background: '#336699' } }).jpeg().toBuffer()
+  }
+  async function upload(a: ReturnType<typeof request.agent>, w: number, h: number) {
+    return (await a.post('/api/cms/uploads').attach('file', await jpg(w, h), 'x.jpg').expect(201)).body.photo as string
+  }
+  const homeNames = async () => (await request(app).get('/api/index-photos').expect(200)).body.photos.filter((p: any) => String(p.name).startsWith(prefix))
+
+  it('adds, replaces, reorders and removes home page photos; the API shows the real shape', async () => {
+    const a = await login('refs')
+    const wide = await upload(a, 60, 30)
+    const tall = await upload(a, 30, 60)
+    const first = (await a.post('/api/cms/tables/index_photo').send({ name: `${prefix} a`, priority: 10, photo: wide }).expect(201)).body.row
+    const second = (await a.post('/api/cms/tables/index_photo').send({ name: `${prefix} b`, priority: 20, photo: tall }).expect(201)).body.row
+    let list = await homeNames()
+    expect(list.map((p: any) => p.name)).toEqual([`${prefix} a`, `${prefix} b`])
+    expect(list.map((p: any) => p.ratio)).toEqual([2, 0.5])
+    // order: swap by priority
+    await a.patch(`/api/cms/tables/index_photo/${first.id}`).send({ priority: 30 }).expect(200)
+    expect((await homeNames()).map((p: any) => p.name)).toEqual([`${prefix} b`, `${prefix} a`])
+    // replace the file
+    const square = await upload(a, 40, 40)
+    await a.patch(`/api/cms/tables/index_photo/${second.id}`).send({ photo: square }).expect(200)
+    list = await homeNames()
+    expect(list[0]).toMatchObject({ name: `${prefix} b`, photo: square, ratio: 1 })
+    // remove: the count follows
+    await a.delete(`/api/cms/tables/index_photo/${first.id}`).expect(204)
+    expect((await homeNames()).map((p: any) => p.name)).toEqual([`${prefix} b`])
+  })
+
+  it('adds a new pair with colours and slides; slides can be replaced, reordered and removed', async () => {
+    const a = await login('refs')
+    const c1 = (await a.post('/api/cms/tables/color').send({ name: `${prefix} new c1`, code: uniq(), hex: 'aa0000' }).expect(201)).body.row.id
+    const c2 = (await a.post('/api/cms/tables/color').send({ name: `${prefix} new c2`, code: uniq(), hex: '00aa00' }).expect(201)).body.row.id
+    extraIds.color.push(c1, c2)
+    const pair = (await a.post('/api/cms/tables/item').send({ name: `${prefix} new pair`, product_id: cat.productId, main_color: c1, second_color: c2 }).expect(201)).body.row
+    const side = await upload(a, 50, 40)
+    const top = await upload(a, 50, 40)
+    const board = await upload(a, 50, 40)
+    const add = async (slot: string, photo: string, priority: number) =>
+      (await a.post('/api/cms/tables/item_photo').send({ name: `${prefix} ${slot}`, priority, photo, slot, item_id: pair.id }).expect(201)).body.row
+    const rowBoard = await add('board', board, 10)
+    const rowTop = await add('top', top, 20)
+    const rowSide = await add('side', side, 30)
+    const slides = async () => {
+      const res = await request(app).get('/api/products').expect(200)
+      const p = (res.body.products ?? res.body).find((x: any) => x.id === cat.productId).items.find((i: any) => i.id === pair.id)
+      return p.photos.map((x: any) => x.slot)
+    }
+    expect(await slides()).toEqual(['board', 'top', 'side'])
+    // the site sorts a pair's slides side, top, board on its own (frontend); the API keeps the manager's order
+    await a.patch(`/api/cms/tables/item_photo/${rowBoard.id}`).send({ priority: 40 }).expect(200)
+    expect(await slides()).toEqual(['top', 'side', 'board'])
+    await a.patch(`/api/cms/tables/item_photo/${rowTop.id}`).send({ photo: await upload(a, 50, 40) }).expect(200)
+    await a.delete(`/api/cms/tables/item_photo/${rowSide.id}`).expect(204)
+    expect(await slides()).toEqual(['top', 'board'])
+    await a.post('/api/cms/tables/item_photo').send({ name: 'x', priority: 1, photo: side, slot: 'bogus', item_id: pair.id }).expect(400)
   })
 })
