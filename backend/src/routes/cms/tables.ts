@@ -377,6 +377,11 @@ cmsTablesRouter.patch('/:name/:id', wrap(async (req, res) => {
   const id = idOf(req.params.id)
   const shape = { ...spec.fields }
   for (const k of spec.updateOmit ?? []) delete shape[k]
+  // zod 4 applies defaults inside partial(); an update must not reset omitted fields, so unwrap them.
+  for (const k of Object.keys(shape)) {
+    const f = shape[k]
+    if (f instanceof z.ZodDefault) shape[k] = f.unwrap() as typeof f
+  }
   let data: Row = z.object(shape).partial().strict().parse(req.body)
   if (!Object.keys(data).length) throw new ApiError(400, 'Nothing to update')
   if (!(await db(spec.table).where({ id }).first('id'))) throw new ApiError(404, 'Not found')
