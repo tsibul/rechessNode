@@ -62,6 +62,9 @@ $ok: #1b6e3c;
 .cms-toolbar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 16px;
   &__search { max-width: 220px; } &__deleted { max-width: 140px; } &__filter { display: flex; align-items: center; gap: 6px; }
   .cms-title { margin-right: auto; } }
+.cms-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.cms-chip { border: 1px solid $colorPrimary900; border-radius: 16px; background: transparent; padding: 4px 12px; cursor: pointer; font: inherit;
+  &--active { background: $colorPrimary900; color: $colorNeutral100; } }
 .cms-title { font-size: 22px; }
 .cms-tablewrap { overflow-x: auto; }
 .cms-table {

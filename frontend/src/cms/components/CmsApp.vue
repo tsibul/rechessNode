@@ -11,7 +11,10 @@ import TableSection from './TableSection.vue'
 const store = useCmsStore()
 const hash = ref('')
 const groups = computed(() => groupSections(store.sections))
-const current = computed(() => store.sections.find((s) => s.key === hash.value) ?? store.sections[0] ?? null)
+const sectionKey = computed(() => hash.value.split('/')[0])
+/** `#orders/15`: opens the card of record 15 (the link in the manager mail). */
+const openId = computed(() => Number(hash.value.split('/')[1]) || null)
+const current = computed(() => store.sections.find((s) => s.key === sectionKey.value) ?? store.sections[0] ?? null)
 
 function syncHash() {
   hash.value = window.location.hash.replace(/^#/, '')
@@ -54,7 +57,7 @@ onBeforeUnmount(() => window.removeEventListener('hashchange', syncHash))
         <SettingsSection v-else-if="current.kind === 'settings'" :key="current.key" />
         <RolesSection v-else-if="current.kind === 'roles'" :key="current.key" />
         <PublishSection v-else-if="current.kind === 'publish'" :key="current.key" />
-        <TableSection v-else :key="current.key" :section="current" />
+        <TableSection v-else :key="current.key" :section="current" :open-id="openId" />
       </main>
     </div>
   </div>

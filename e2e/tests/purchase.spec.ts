@@ -60,7 +60,7 @@ test('buyer buys a pair of colours and gets the confirmation', async ({ page }) 
 
   // Payment stub: the page says that no money is charged. First decline, repeat, then pay.
   await expect(page).toHaveURL(/\/order\/\d+\/pay$/)
-  await expect(page.getByTestId('pay-stub-note')).toContainText('деньги не списываются')
+  await expect(page.getByTestId('pay-stub-note')).toContainText('свяжемся')
   await expect(page.getByTestId('pay-amount')).toContainText('₽')
   await page.getByTestId('pay-fail').click()
   await expect(page.getByTestId('pay-declined')).toBeVisible()

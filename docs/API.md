@@ -187,7 +187,9 @@
 ### Доставка и письма
 
 - Таблица `delivery_tariff` (право `prices`): `name`, `address_delivery`, `city` (пусто — любой), `weight_to` (г, пусто — без предела), `price`, `priority`.
-- `POST /api/cms/tables/order/:id/send-mail` с `{ "kind": "confirmation" | "track" }` — повторная отправка письма, ответ `{ ok, row }`. Письмо с треком уходит само при смене `delivery_reference`.
+- `POST /api/cms/tables/order/:id/send-mail` с `{ "kind": "confirmation" | "track" | "manager" }` — повторная отправка письма, ответ `{ ok, row }`. Письмо с треком уходит само при смене `delivery_reference`; письмо менеджерам — при создании заказа.
+- `GET /api/cms/tables/order/state-counts` — счётчики заказов по статусам `{ total, states: [{ id, name, count }] }` (право `orders`). Список фильтруется параметром `order_state_id`.
+- Настройка `mail.manager.to` (адреса менеджеров) не отдаётся в `GET /api/settings` и `/api/site`.
 - `delivery_cost` в заказе из CMS не правится: сумму считает сервер.
 
 ### Права роли

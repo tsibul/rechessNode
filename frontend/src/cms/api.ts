@@ -90,6 +90,8 @@ export const cmsApi = {
     for (const [k, v] of Object.entries(params)) if (v !== undefined && v !== '') clean[k] = v
     return (await http.get(`/tables/${table}`, { params: clean })).data
   },
+  orderStateCounts: async (): Promise<{ total: number; states: Array<{ id: number; name: string; count: number }> }> =>
+    (await http.get('/tables/order/state-counts')).data,
   get: async (table: string, id: number): Promise<Row> => (await http.get(`/tables/${table}/${id}`)).data.row,
   create: async (table: string, body: Row): Promise<Row> => (await http.post(`/tables/${table}`, body)).data.row,
   update: async (table: string, id: number, body: Row): Promise<Row> =>
@@ -100,7 +102,7 @@ export const cmsApi = {
   restore: async (table: string, id: number): Promise<Row> =>
     (await http.post(`/tables/${table}/${id}/restore`)).data.row,
 
-  sendOrderMail: async (id: number, kind: 'confirmation' | 'track'): Promise<Row> =>
+  sendOrderMail: async (id: number, kind: 'confirmation' | 'track' | 'manager'): Promise<Row> =>
     (await http.post(`/tables/order/${id}/send-mail`, { kind })).data.row,
 
   roles: async (): Promise<RoleWithPermissions[]> => (await http.get('/roles')).data.roles,

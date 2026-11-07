@@ -86,10 +86,14 @@ export async function getPages(slug?: string) {
   }))
 }
 
+/** Settings that stay in the CMS and never go to the public API (manager addresses). */
+const PRIVATE_SETTINGS = new Set(['mail.manager.to'])
+
 export async function getSettings(): Promise<Record<string, string | number | boolean | null>> {
   const rows = await notDeleted(db('setting')).orderBy('group_name').orderBy('priority')
   const out: Record<string, string | number | boolean | null> = {}
   for (const r of rows) {
+    if (PRIVATE_SETTINGS.has(r.code)) continue
     const v: string | null = r.value === undefined || r.value === '' ? null : r.value
     if (v === null) out[r.code] = null
     else if (r.type === 'number') out[r.code] = Number.isNaN(Number(v)) ? null : Number(v)

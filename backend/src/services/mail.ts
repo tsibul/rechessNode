@@ -12,7 +12,7 @@ import { db } from '../db'
 import { shortProductName } from '../utils/productName'
 import { uploadDir } from '../routes/cms/uploads'
 
-export type MailKind = 'confirmation' | 'track'
+export type MailKind = 'confirmation' | 'track' | 'manager'
 
 /** Picture embedded in the mail (`<img src="cid:…">`): shown without any public site. */
 export interface MailImage { cid: string; filename: string; content: Buffer }
@@ -112,6 +112,11 @@ async function settings(): Promise<Record<string, string>> {
   return Object.fromEntries(rows.map((r) => [r.code, r.value ?? '']))
 }
 
+/** Addresses of the managers from the setting: separated by comma, semicolon or space. */
+export function managerRecipients(value: string | null | undefined): string[] {
+  return (value ?? '').split(/[\s,;]+/).map((a) => a.trim()).filter((a) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(a))
+}
+
 export function trackingUrl(template: string, track: string | null | undefined): string | null {
   if (!track || !template) return null
   return template.replace(/\{\{\s*track\s*\}\}/g, encodeURIComponent(track))
@@ -152,16 +157,30 @@ async function build(orderId: number, kind: MailKind): Promise<MailMessage> {
     items: `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:12px 0;border-top:1px solid #888888;border-bottom:1px solid #888888">${rows}</table>`
   }
   const siteName = s['site.name'] || 'reChess'
-  const subjectTpl = s[`mail.${kind === 'confirmation' ? 'order' : 'track'}.subject`]
-  const bodyTpl = s[`mail.${kind === 'confirmation' ? 'order' : 'track'}.body`]
+  const tplKey = kind === 'confirmation' ? 'order' : kind === 'track' ? 'track' : 'manager'
+  const subjectTpl = s[`mail.${tplKey}.subject`]
+  const bodyTpl = s[`mail.${tplKey}.body`]
+  let to = order.e_mail
+  if (kind === 'manager') {
+    to = managerRecipients(s['mail.manager.to']).join(', ')
+    if (!to) throw new Error('Не заданы адреса менеджеров (Настройки → Письма)')
+    const base = (process.env.FRONTEND_URL || 'http://localhost:3000').replace(/\/+$/, '')
+    Object.assign(values, {
+      phone: escapeHtml(order.phone ?? ''), email: escapeHtml(order.e_mail ?? ''),
+      name: escapeHtml(`${order.name ?? ''} ${order.family_name ?? ''}`.trim()),
+      comment: escapeHtml(order.comment || '—'), cms_link: escapeHtml(`${base}/cms#orders/${order.id}`),
+      date: new Date(order.date).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' }),
+      payment: escapeHtml(order.payment_state === 'paid' ? 'оплачен' : 'не оплачен')
+    })
+  }
   const body = fill(bodyTpl, values)
   const contacts = [s['contact.email'], s['contact.phone']].filter(Boolean).map(escapeHtml).join(' · ')
   const html = layout(siteName, body, contacts || escapeHtml(siteName))
   const fromName = s['mail.from_name'] || siteName
   const fromAddr = process.env.MAIL_FROM || 'noreply@localhost'
   return {
-    to: order.e_mail,
-    subject: fill(subjectTpl, { ...values, name: order.name }).replace(/&amp;/g, '&'),
+    to,
+    subject: fill(subjectTpl, { ...values, name: kind === 'manager' ? values.name : order.name }).replace(/&amp;/g, '&'),
     html, text: htmlToText(body), attachments,
     from: `"${fromName.replace(/"/g, '')}" <${fromAddr}>`
   }
@@ -169,7 +188,7 @@ async function build(orderId: number, kind: MailKind): Promise<MailMessage> {
 
 /** Sends the mail and stores the result in the order. Never throws. Returns true on success. */
 export async function sendOrderMail(orderId: number, kind: MailKind): Promise<boolean> {
-  const column = kind === 'confirmation' ? 'confirmation' : 'track'
+  const column = kind
   try {
     const message = await build(orderId, kind)
     await deliver(message)

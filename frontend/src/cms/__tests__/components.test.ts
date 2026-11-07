@@ -8,7 +8,7 @@ vi.mock('../api', async (orig) => {
     ...actual,
     cmsApi: {
       me: vi.fn(), login: vi.fn(), logout: vi.fn(), list: vi.fn(), create: vi.fn(), update: vi.fn(), remove: vi.fn(),
-      restore: vi.fn(), roles: vi.fn(), setPermissions: vi.fn(), upload: vi.fn(), publish: vi.fn(), publications: vi.fn()
+      restore: vi.fn(), orderStateCounts: vi.fn(), get: vi.fn(), sendOrderMail: vi.fn(), roles: vi.fn(), setPermissions: vi.fn(), upload: vi.fn(), publish: vi.fn(), publications: vi.fn()
     }
   }
 })
@@ -126,6 +126,40 @@ describe('photo order', () => {
     const w = mount(TableSection, { props: { section: sectionByKey('orders')! } })
     await flushPromises()
     expect(w.find('[data-move]').exists()).toBe(false)
+  })
+})
+
+describe('order statuses', () => {
+  const counts = { total: 5, states: [{ id: 1, name: 'Новый', count: 3 }, { id: 2, name: 'Подтверждён', count: 2 }] }
+
+  it('shows the counters per status and filters the list by a chip', async () => {
+    api.orderStateCounts.mockResolvedValue(counts)
+    const w = mount(TableSection, { props: { section: sectionByKey('orders')! } })
+    await flushPromises()
+    expect(w.find('[data-testid=state-chip-all]').text()).toContain('5')
+    expect(w.find('[data-testid=state-chip-1]').text()).toContain('Новый')
+    expect(w.find('[data-testid=state-chip-1]').text()).toContain('3')
+    await w.find('[data-testid=state-chip-2]').trigger('click')
+    await flushPromises()
+    expect(api.list).toHaveBeenLastCalledWith('order', expect.objectContaining({ order_state_id: '2', page: 1 }))
+    await w.find('[data-testid=state-chip-all]').trigger('click')
+    await flushPromises()
+    expect(api.list.mock.lastCall![1]).not.toHaveProperty('order_state_id')
+  })
+
+  it('has no chips outside the orders', async () => {
+    const w = mount(TableSection, { props: { section: sectionByKey('colors')! } })
+    await flushPromises()
+    expect(w.find('[data-testid=state-chips]').exists()).toBe(false)
+  })
+
+  it('opens the order card from the link in the manager mail', async () => {
+    api.orderStateCounts.mockResolvedValue(counts)
+    api.get.mockResolvedValue({ id: 7, number: 1007, name: 'Иван', state: 'Новый', payment_state: 'not_paid', items: [], sum: 1, date: '2026-11-06T10:00:00' })
+    const w = mount(TableSection, { props: { section: sectionByKey('orders')!, openId: 7 } })
+    await flushPromises()
+    expect(api.get).toHaveBeenCalledWith('order', 7)
+    expect(w.find('[data-testid=order-manager-mail]').exists()).toBe(true)
   })
 })
 

@@ -83,9 +83,54 @@ test.describe('CMS work', () => {
     await dialog.getByRole('button', { name: 'Сохранить' }).click()
     // The card stays open after saving (it shows the saved record); the track is in the details.
     await expect(dialog).toContainText('E2E123456')
+    // The failed or missing manager mail is visible in the card.
+    await expect(dialog.getByTestId('order-manager-mail')).toBeVisible()
     await dialog.getByRole('button', { name: 'Закрыть' }).click()
     await expect(dialog).toBeHidden()
     await expect(page.locator('tbody tr', { hasText: String(number) }).first()).toBeVisible()
+  })
+
+  test('orders by status: chips with counters, status change in the card, link from the mail', async ({ page, request }) => {
+    const add = await request.post('/api/cart/items', { data: { item_id: 1, quantity: 1 } })
+    expect(add.ok()).toBeTruthy()
+    const { tag } = readState()
+    const res = await request.post('/api/orders', {
+      data: {
+        name: 'Анна', family_name: 'Статусова', phone: '+7 999 000-00-03', e_mail: `e2e-${tag}-state@example.com`,
+        city: 'Москва', delivery_address: 'Москва, ул. Тестовая, 3', address_delivery: true, consent: true
+      }
+    })
+    expect(res.status(), await res.text()).toBe(201)
+    const number = (await res.json()).order.number
+
+    await login(page, 'manager')
+    await page.locator('.cms-nav__link', { hasText: 'Заказы' }).click()
+    const chips = page.getByTestId('state-chips')
+    await expect(chips).toBeVisible()
+    const newChip = chips.locator('.cms-chip', { hasText: 'Новый' })
+    const count = async (c: typeof newChip) => Number(await c.locator('b').innerText())
+    const before = await count(newChip)
+    expect(before).toBeGreaterThan(0)
+    await newChip.click()
+    await expect(page.locator('tbody tr', { hasText: String(number) }).first()).toBeVisible()
+
+    await page.locator('tbody tr', { hasText: String(number) }).first().click()
+    const dialog = page.getByRole('dialog')
+    await dialog.getByLabel('Статус').selectOption({ label: 'Подтверждён' })
+    await dialog.getByRole('button', { name: 'Сохранить' }).click()
+    await expect(dialog).toContainText('Подтверждён')
+    await dialog.getByRole('button', { name: 'Закрыть' }).click()
+    await expect.poll(() => count(newChip)).toBe(before - 1)
+    await expect(page.locator('tbody tr', { hasText: String(number) })).toHaveCount(0)
+    const listed = page.waitForResponse((r) => r.url().includes('/tables/order?') && r.url().includes('order_state_id'))
+    await chips.locator('.cms-chip', { hasText: 'Подтверждён' }).click()
+    const id = ((await (await listed).json()).rows as Array<{ id: number; number: number }>).find((r) => r.number === number)?.id
+    await expect(page.locator('tbody tr', { hasText: String(number) }).first()).toBeVisible()
+
+    // The link from the manager mail opens the card.
+    expect(id).toBeTruthy()
+    await page.goto(`/cms#orders/${id}`)
+    await expect(page.getByRole('dialog')).toContainText(`№ ${number}`)
   })
 
   test('tariffs: create, edit, delete', async ({ page }) => {

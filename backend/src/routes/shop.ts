@@ -94,7 +94,9 @@ shopRouter.post('/orders', wrap(async (req, res) => {
   setCountCookie(res, 0)
   const payment = await startPayment(await orderId(number))
   // A mail failure is stored in the order and does not fail it.
-  await sendOrderMail(await orderId(number), 'confirmation')
+  const id = await orderId(number)
+  await sendOrderMail(id, 'confirmation')
+  await sendOrderMail(id, 'manager')
   res.status(201).json({ order: { ...(await getOrderView(token, number)), payment } })
 }))
 

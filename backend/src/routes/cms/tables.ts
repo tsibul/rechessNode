@@ -326,6 +326,17 @@ cmsTablesRouter.get('/:name', wrap(async (req, res) => {
   res.json({ rows, total: Number(totalRow?.c ?? 0), page, limit })
 }))
 
+/** Orders per status for the filter chips (the same orders the list shows). Right `orders`. */
+cmsTablesRouter.get('/order/state-counts', wrap(async (_req, res) => {
+  const rows = await db('order').groupBy('order_state_id').select('order_state_id').count({ c: '*' })
+  const states = await db('order_state').orderBy('priority').orderBy('id').select('id', 'name', 'deleted')
+  const counts = new Map(rows.map((r: any) => [Number(r.order_state_id), Number(r.c)]))
+  res.json({
+    total: [...counts.values()].reduce((a, b) => a + b, 0),
+    states: states.filter((s) => !s.deleted || counts.get(s.id)).map((s) => ({ id: s.id, name: s.name, count: counts.get(s.id) ?? 0 }))
+  })
+}))
+
 cmsTablesRouter.get('/:name/:id', wrap(async (req, res) => {
   const spec = specOf(req.params.name)
   const [row] = await readRows(spec, [idOf(req.params.id)])
@@ -387,7 +398,7 @@ cmsTablesRouter.post('/:name/:id/restore', wrap(async (req, res) => {
 /** Sends a mail of the order again (after a failure or on request). Right `orders`. */
 cmsTablesRouter.post('/order/:id/send-mail', wrap(async (req, res) => {
   const id = idOf(req.params.id)
-  const { kind } = z.object({ kind: z.enum(['confirmation', 'track']) }).strict().parse(req.body)
+  const { kind } = z.object({ kind: z.enum(['confirmation', 'track', 'manager']) }).strict().parse(req.body)
   const order = await db('order').where({ id }).first('id', 'delivery_reference')
   if (!order) throw new ApiError(404, 'Not found')
   if (kind === 'track' && !order.delivery_reference) throw new ApiError(400, 'Order has no tracking number')

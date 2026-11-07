@@ -10,6 +10,7 @@ import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import ShopPage from '@/components/layout/ShopPage.vue'
 import { api } from '@/services/api'
+import { getSetting } from '@/data/content'
 
 interface Payment { provider: string | null; state: string; amount: number; url: string | null; ref: string | null; stub: boolean }
 
@@ -21,6 +22,8 @@ const state = ref<'loading' | 'ok' | 'missing' | 'error'>('loading')
 const busy = ref(false)
 const declined = ref(false)
 const message = ref<string | null>(null)
+/** Text from the CMS (setting shop.order_stub_text). */
+const stubText = getSetting('shop.order_stub_text', 'Оплата на сайте пока не подключена. Мы свяжемся с вами по телефону или почте, уточним детали заказа и расскажем, как оплатить.')
 const rub = (n: number) => `${new Intl.NumberFormat('ru-RU').format(n)} ₽`
 
 async function load() {
@@ -73,7 +76,7 @@ onMounted(load)
     <div v-else-if="state === 'ok' && payment" data-testid="pay">
       <h1>Оплата заказа № {{ number }}</h1>
       <p class="stub-note" data-testid="pay-stub-note">
-        Тестовая оплата: деньги не списываются. Это заглушка вместо платёжного сервиса.
+        {{ stubText }}
       </p>
       <p>К оплате: <b data-testid="pay-amount">{{ rub(payment.amount) }}</b></p>
 

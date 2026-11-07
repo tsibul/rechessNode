@@ -10,7 +10,7 @@ import Details from './Details.vue'
 import RecordForm from './RecordForm.vue'
 import SeoPreview from './SeoPreview.vue'
 
-const props = defineProps<{ section: Section }>()
+const props = defineProps<{ section: Section; openId?: number | null }>()
 
 const rows = ref<Row[]>([])
 const total = ref(0)
@@ -27,6 +27,17 @@ const selected = ref<Row | null>(null)
 const creating = ref(false)
 const formValues = ref<Record<string, any>>({})
 const pageSlugs = ref<Record<number, string>>({})
+
+const isOrders = computed(() => props.section.table === 'order')
+const stateCounts = ref<{ total: number; states: Array<{ id: number; name: string; count: number }> }>({ total: 0, states: [] })
+async function loadCounts() {
+  if (!isOrders.value) return
+  try { stateCounts.value = (await cmsApi.orderStateCounts()) ?? stateCounts.value } catch { /* the list works without the counters */ }
+}
+function pickState(id: number | '') {
+  filterValues.order_state_id = id === '' ? '' : String(id)
+  resetAndLoad()
+}
 
 const ops = computed(() => props.section.ops ?? {})
 const pages = computed(() => Math.max(1, Math.ceil(total.value / limit)))
@@ -57,6 +68,7 @@ async function load() {
   } finally {
     loading.value = false
   }
+  loadCounts()
 }
 
 function resetAndLoad() {
@@ -133,7 +145,12 @@ onMounted(() => {
   for (const f of props.section.filters ?? []) if (f.ref) loadRef(f.ref)
   loadPageSlugs()
   load()
+  openCard()
 })
+function openCard() {
+  if (props.openId) cmsApi.get(props.section.table!, props.openId).then((r) => { selected.value = r }).catch(() => { error.value = 'Запись не найдена' })
+}
+watch(() => props.openId, openCard)
 watch([q, deleted], resetAndLoad)
 </script>
 
@@ -161,6 +178,18 @@ watch([q, deleted], resetAndLoad)
       </select>
       <button v-if="ops.create" class="cms-btn cms-btn--primary" @click="creating = true; selected = null">Добавить</button>
     </header>
+
+    <div v-if="isOrders" class="cms-chips" data-testid="state-chips">
+      <button
+        type="button" class="cms-chip" :class="{ 'cms-chip--active': !filterValues.order_state_id }"
+        data-testid="state-chip-all" @click="pickState('')"
+      >Все <b>{{ stateCounts.total }}</b></button>
+      <button
+        v-for="s in stateCounts.states" :key="s.id" type="button" class="cms-chip"
+        :class="{ 'cms-chip--active': String(filterValues.order_state_id) === String(s.id) }"
+        :data-testid="`state-chip-${s.id}`" @click="pickState(s.id)"
+      >{{ s.name }} <b>{{ s.count }}</b></button>
+    </div>
 
     <p v-if="error" class="cms-error cms-error--box">{{ error }}</p>
 

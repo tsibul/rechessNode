@@ -8,7 +8,7 @@ const props = defineProps<{ kind: 'order' | 'cart' | 'client'; row: Row }>()
 const mail = ref<Row | null>(null)
 const mailError = ref('')
 const m = (k: string) => (mail.value ?? props.row)[k]
-async function resend(kind: 'confirmation' | 'track') {
+async function resend(kind: 'confirmation' | 'track' | 'manager') {
   mailError.value = ''
   try {
     mail.value = await cmsApi.sendOrderMail(props.row.id, kind)
@@ -47,6 +47,11 @@ const payment = (v: string) => PAYMENT_STATES.find((p) => p.value === v)?.label 
         <dd>
           {{ sent(m('track_sent_at'), m('track_error')) }}
           <button v-if="row.delivery_reference" type="button" class="cms-btn" @click="resend('track')">Отправить ещё раз</button>
+        </dd>
+        <dt>Письмо менеджерам</dt>
+        <dd data-testid="order-manager-mail">
+          {{ sent(m('manager_sent_at'), m('manager_error')) }}
+          <button type="button" class="cms-btn" @click="resend('manager')">Отправить ещё раз</button>
         </dd>
         <dt v-if="mailError">Ошибка</dt><dd v-if="mailError">{{ mailError }}</dd>
         <dt>Согласие</dt><dd>{{ row.consent_at ? formatDate(row.consent_at) : '—' }}</dd>

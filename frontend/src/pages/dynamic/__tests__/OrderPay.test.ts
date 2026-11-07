@@ -28,7 +28,7 @@ describe('OrderPay stub page', () => {
 
   it('says that no money is charged and shows the server amount', async () => {
     const { w } = await setup(() => res(200, { payment: pay() }))
-    expect(w.find('[data-testid=pay-stub-note]').text()).toContain('деньги не списываются')
+    expect(w.find('[data-testid=pay-stub-note]').text()).toContain('свяжемся')
     expect(w.find('[data-testid=pay-amount]').text()).toContain('2')
   })
 

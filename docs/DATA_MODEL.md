@@ -223,8 +223,8 @@ JSON выбран вместо полей-ключей, потому что бл
 
 - `delivery_tariff`: `name`, `address_delivery`, `city` (NULL — любой), `weight_to` (г, NULL — без предела), `price`, `priority`, `deleted`. Выбирается самый специфичный: тариф города раньше общего, затем меньший `weight_to`, `priority`, `price`.
 - `product`: `weight_g`, `length_mm`, `width_mm`, `height_mm` (NULL = 0 для расчёта).
-- `order`: `weight_g`, `delivery_tariff_id`, `confirmation_sent_at/error`, `track_sent_at/track_sent_ref/track_error`. Трек хранится в `delivery_reference`.
-- Настройка `delivery.tracking_url`; значения по умолчанию для `mail.*`.
+- `order`: `weight_g`, `delivery_tariff_id`, `confirmation_sent_at/error`, `track_sent_at/track_sent_ref/track_error`, `manager_sent_at/manager_error` (письмо менеджерам). Трек хранится в `delivery_reference`.
+- Настройка `delivery.tracking_url`; значения по умолчанию для `mail.*`, в т.ч. `mail.manager.to|subject|body` и `shop.order_stub_text` (текст заглушки оплаты).
 
 ## Принятые решения
 

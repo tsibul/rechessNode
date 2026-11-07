@@ -26,6 +26,12 @@ let userId: number
 const tokens: string[] = []
 const sent: MailMessage[] = []
 
+async function cms() {
+  const a = request.agent(app)
+  await a.post('/api/cms/login').send({ login: `${prefix}-admin`, password: TEST_PASSWORD }).expect(200)
+  return a
+}
+
 function tokenOf(res: request.Response): string {
   const c = ([] as string[]).concat(res.headers['set-cookie'] ?? []).find((x) => x.startsWith('rc_client='))!
   return c.split(';')[0].slice('rc_client='.length)
@@ -199,12 +205,6 @@ describe('mail', () => {
 })
 
 describe('tracking number in the CMS', () => {
-  async function cms() {
-    const a = request.agent(app)
-    await a.post('/api/cms/login').send({ login: `${prefix}-admin`, password: TEST_PASSWORD }).expect(200)
-    return a
-  }
-
   it('mails the track once, again only when it changes, and resends on request', async () => {
     const v = await buyer(1)
     const { body } = await v.post('/api/orders').send(contact()).expect(201)
@@ -271,5 +271,89 @@ describe('tracking number in the CMS', () => {
     expect((await quoteDelivery(true, `${prefix}-cms`, 10))?.cost).toBe(88)
     await a.patch(`/api/cms/tables/product/${cat.productId}`).send({ weight_g: 700, length_mm: 300, width_mm: 300, height_mm: 60 }).expect(200)
     expect(await db('product').where({ id: cat.productId }).first()).toMatchObject({ weight_g: 700, length_mm: 300 })
+  })
+})
+
+describe('mail to the managers and order statuses', () => {
+  const codes = ['mail.manager.to', 'mail.manager.subject', 'mail.manager.body']
+  let saved: Record<string, string | null> = {}
+
+  beforeAll(async () => {
+    const rows = await db('setting').whereIn('code', codes).select('code', 'value')
+    saved = Object.fromEntries(rows.map((r) => [r.code, r.value]))
+  })
+  afterEach(async () => {
+    for (const c of codes) await db('setting').where({ code: c }).update({ value: saved[c] ?? null })
+  })
+
+  const setTo = (v: string) => db('setting').where({ code: 'mail.manager.to' }).update({ value: v })
+
+  it('sends one mail to all managers with items, sum, buyer, delivery and the CMS link', async () => {
+    await setTo(`a-${prefix}@example.com, b-${prefix}@example.com;`)
+    const v = await buyer(2)
+    const { body } = await v.post('/api/orders').send(contact({ name: 'Пётр', comment: 'позвоните <утром>' })).expect(201)
+    const row = await db('order').where({ number: body.order.number }).first()
+    const m = sent.find((x) => x.to.includes(`a-${prefix}@`))!
+    expect(m.to).toBe(`a-${prefix}@example.com, b-${prefix}@example.com`)
+    expect(m.subject).toContain(`№ ${body.order.number}`)
+    expect(m.html).toContain('+79990000003')
+    expect(m.html).toContain(`${prefix}@example.com`)
+    expect(m.html).toContain('Москва, ул. 1')
+    expect(m.html).toContain('× 2')
+    expect(m.html).toContain('позвоните &lt;утром&gt;')
+    expect(m.html).toContain(`/cms#orders/${row.id}`)
+    expect(row.manager_error).toBeNull()
+    expect(row.manager_sent_at).not.toBeNull()
+    expect(sent.filter((x) => x.to === `${prefix}@example.com`)).toHaveLength(1) // buyer mail is separate
+  })
+
+  it('does not fail the order and stores the error when there are no addresses or the send fails', async () => {
+    await setTo('')
+    let v = await buyer(1)
+    let { body } = await v.post('/api/orders').send(contact()).expect(201)
+    expect((await db('order').where({ number: body.order.number }).first()).manager_error).toContain('Не заданы адреса')
+    await setTo(`m-${prefix}@example.com`)
+    setMailSender(async (m) => { if (m.to.startsWith('m-')) throw new Error('smtp down'); sent.push(m) })
+    v = await buyer(1)
+    ;({ body } = await v.post('/api/orders').send(contact()).expect(201))
+    const row = await db('order').where({ number: body.order.number }).first()
+    expect(row.manager_error).toBe('smtp down')
+    expect(row.confirmation_error).toBeNull()
+    const a = await cms()
+    setMailSender(async (m) => { sent.push(m) })
+    const r = await a.post(`/api/cms/tables/order/${row.id}/send-mail`).send({ kind: 'manager' }).expect(200)
+    expect(r.body.row).toMatchObject({ manager_error: null })
+  })
+
+  it('takes the subject and text from the settings and keeps the addresses out of the public API', async () => {
+    await setTo(`t-${prefix}@example.com`)
+    await db('setting').where({ code: 'mail.manager.subject' }).update({ value: 'Заказ {{number}} ({{name}})' })
+    await db('setting').where({ code: 'mail.manager.body' }).update({ value: '<p>Только {{sum}}</p>' })
+    const v = await buyer(1)
+    const { body } = await v.post('/api/orders').send(contact({ name: 'Ольга' })).expect(201)
+    const m = sent.find((x) => x.to === `t-${prefix}@example.com`)!
+    expect(m.subject).toBe(`Заказ ${body.order.number} (Ольга)`)
+    expect(m.text).toContain('Только')
+    const pub = await request(app).get('/api/settings').expect(200)
+    expect(pub.body.settings).not.toHaveProperty('mail.manager.to')
+  })
+
+  it('counts orders by status for the CMS filter', async () => {
+    const a = await cms()
+    const before = (await a.get('/api/cms/tables/order/state-counts').expect(200)).body
+    const v = await buyer(1)
+    const { body } = await v.post('/api/orders').send(contact()).expect(201)
+    const after = (await a.get('/api/cms/tables/order/state-counts').expect(200)).body
+    expect(after.total).toBe(before.total + 1)
+    const row = await db('order').where({ number: body.order.number }).first()
+    const sc = (s: any, id: number) => s.states.find((x: any) => x.id === id)?.count ?? 0
+    expect(sc(after, row.order_state_id)).toBe(sc(before, row.order_state_id) + 1)
+    const other = after.states.find((s: any) => s.id !== row.order_state_id)
+    await a.patch(`/api/cms/tables/order/${row.id}`).send({ order_state_id: other.id }).expect(200)
+    const moved = (await a.get('/api/cms/tables/order/state-counts').expect(200)).body
+    expect(sc(moved, other.id)).toBe(sc(after, other.id) + 1)
+    const list = (await a.get(`/api/cms/tables/order?order_state_id=${other.id}&limit=100`).expect(200)).body
+    expect(list.rows.some((r: any) => r.id === row.id)).toBe(true)
+    await request(app).get('/api/cms/tables/order/state-counts').expect(401)
   })
 })

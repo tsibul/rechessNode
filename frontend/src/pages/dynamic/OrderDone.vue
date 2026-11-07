@@ -10,6 +10,7 @@ import { useRoute } from 'vue-router'
 import ShopPage from '@/components/layout/ShopPage.vue'
 import { api } from '@/services/api'
 import { uploadUrl } from '@/data/api'
+import { getSetting } from '@/data/content'
 
 interface Order {
   number: number; sum: number; delivery_cost: number | null; state: string | null
@@ -22,6 +23,7 @@ interface Order {
 const route = useRoute()
 const order = ref<Order | null>(null)
 const state = ref<'loading' | 'ok' | 'missing' | 'error'>('loading')
+const stubText = getSetting('shop.order_stub_text', 'Оплата на сайте пока не подключена. Мы свяжемся с вами по телефону или почте, уточним детали заказа и расскажем, как оплатить.')
 const rub = (n: number) => `${new Intl.NumberFormat('ru-RU').format(n)} ₽`
 
 onMounted(async () => {
@@ -54,6 +56,7 @@ onMounted(async () => {
         {{ order.payment.state === 'failed' ? 'Оплата не прошла.' : 'Заказ ещё не оплачен.' }}
         <router-link v-if="order.payment.url" :to="order.payment.url" data-testid="order-pay-link">Перейти к оплате</router-link>
       </p>
+      <p v-if="order.payment_state !== 'paid' && (!order.payment || order.payment.state !== 'failed')" data-testid="order-contact-note">{{ stubText }}</p>
       <!-- Place for the 54-FZ receipt (stage 11 does not issue receipts). -->
       <p class="receipt" data-testid="receipt-slot" hidden></p>
       <p v-if="order.tracking_url" data-testid="order-tracking">
