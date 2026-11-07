@@ -62,7 +62,7 @@ async function change(id: number, delta: 1 | -1) {
 
 <template>
   <section class="colors" data-testid="colors">
-    <article v-for="pair in pairs" :key="pair.id" class="card">
+    <article v-for="pair in pairs" :key="pair.id" class="card" :class="{ 'card--in-cart': inCart(pair.id) }">
       <div class="card__media">
       <div class="card__slides" :class="{ 'card__slides--single': pair.photos.length < 2 }" data-testid="pair-slides" tabindex="0" @pointerdown="dragStart" @pointermove="dragMove" @pointerup="dragEnd" @pointercancel="dragEnd" :aria-label="`Фото: ${pair.name}`">
         <div v-for="(p, i) in pair.photos" :key="i" class="card__slide">
@@ -74,10 +74,9 @@ async function change(id: number, delta: 1 | -1) {
       <p class="card__name">
         <span v-for="(l, i) in lines(pair.name)" :key="i" class="card__line">{{ l }}</span>
       </p>
+      <p v-if="inCart(pair.id)" class="card__incart" data-testid="pair-in-cart">в корзине: {{ inCart(pair.id) }}</p>
       <p class="card__actions">
-        <button type="button" :disabled="busy === pair.id" @click="change(pair.id, 1)">
-          + добавить<template v-if="inCart(pair.id)"> ({{ inCart(pair.id) }})</template>
-        </button>
+        <button type="button" class="card__add" :disabled="busy === pair.id" @click="change(pair.id, 1)">+ добавить</button>
         <button v-if="inCart(pair.id)" type="button" :disabled="busy === pair.id" @click="change(pair.id, -1)">– удалить</button>
       </p>
     </article>
@@ -164,6 +163,21 @@ async function change(id: number, delta: 1 | -1) {
 
       &:hover { text-decoration: underline; }
     }
+
+    .card__add {
+      padding: 6px 14px;
+      border: 1px solid currentColor;
+      border-radius: 4px;
+
+      &:hover { text-decoration: none; background: #000; color: #fff; }
+    }
+  }
+
+  &__incart { margin-top: 8px; font-weight: 600; }
+
+  &--in-cart {
+    outline: 2px solid #000;
+    outline-offset: 8px;
   }
 }
 

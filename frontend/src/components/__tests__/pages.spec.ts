@@ -5,6 +5,8 @@ import { createMemoryHistory, createRouter } from 'vue-router'
 import { createHead } from '@unhead/vue/client'
 import { routes } from '@/router'
 import PageView from '@/pages/static/PageView.vue'
+import { useCartStore } from '@/store/cart'
+import { getProduct } from '@/data/content'
 import CookieBanner from '@/components/floating/CookieBanner.vue'
 
 async function render(slug: string) {
@@ -66,6 +68,24 @@ describe('public pages', () => {
     const w = await render('colors')
     expect(w.findAll('.card').length).toBe(7)
     expect(w.find('.card__actions button').text()).toContain('добавить')
+  })
+
+  it('marks a pair that is in the cart with a frame and the quantity', async () => {
+    const pinia = createPinia()
+    setActivePinia(pinia)
+    const cart = useCartStore()
+    vi.spyOn(cart, 'load').mockResolvedValue(undefined as never)
+    const router = createRouter({ history: createMemoryHistory(), routes })
+    router.push('/')
+    await router.isReady()
+    const first = getProduct().pairs[0].id
+    cart.items = [{ item_id: first, quantity: 2 }] as never
+    const w = mount(PageView, { props: { slug: 'colors' }, global: { plugins: [pinia, router, createHead()] } })
+    const framed = w.findAll('.card--in-cart')
+    expect(framed).toHaveLength(1)
+    expect(framed[0].find('[data-testid="pair-in-cart"]').text()).toBe('в корзине: 2')
+    expect(framed[0].find('.card__add').text()).toBe('+ добавить')
+    expect(w.findAll('[data-testid="pair-in-cart"]')).toHaveLength(1)
   })
 
   it('has no where-to-buy page, the route redirects to the shop', () => {

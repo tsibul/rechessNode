@@ -22,7 +22,7 @@ test('buyer buys a pair of colours and gets the confirmation', async ({ page }) 
   await expect(banner).toBeHidden()
 
   await page.getByRole('button', { name: /добавить/ }).nth(1).click()
-  await expect(page.getByRole('button', { name: /добавить \(1\)/ })).toBeVisible()
+  await expect(page.getByTestId('pair-in-cart')).toHaveText('в корзине: 1')
   await expect(page.getByTestId('cart-badge')).toContainText('(1)')
 
   await page.getByTestId('cart-badge').click()
