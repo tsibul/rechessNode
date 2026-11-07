@@ -12,15 +12,18 @@ export interface RateLimitOptions {
   max: number
   /** Apply the limit under NODE_ENV=test too (the suites share one IP and would hit it). */
   inTest?: boolean
+  /** Counting key; default is the client IP. Returning undefined skips the limit for the request. */
+  key?: (req: Request) => string | undefined
 }
 
-export function rateLimit({ windowMs, max, inTest = false }: RateLimitOptions) {
+export function rateLimit({ windowMs, max, inTest = false, key: keyOf }: RateLimitOptions) {
   const hits = new Map<string, { count: number; reset: number }>()
   return (req: Request, res: Response, next: NextFunction) => {
     if (process.env.NODE_ENV === 'test' && !inTest) return next()
     const now = Date.now()
     if (hits.size > 10000) for (const [k, v] of hits) if (v.reset <= now) hits.delete(k)
-    const key = req.ip || 'unknown'
+    const key = keyOf ? keyOf(req) : req.ip || 'unknown'
+    if (key === undefined) return next()
     let h = hits.get(key)
     if (!h || h.reset <= now) {
       h = { count: 0, reset: now + windowMs }
@@ -43,3 +46,8 @@ export const publicReadLimit = rateLimit({ windowMs: 60_000, max: 300 })
 export const cartWriteLimit = rateLimit({ windowMs: 60_000, max: 60 })
 /** Order creation: a person places few orders. */
 export const orderLimit = rateLimit({ windowMs: 10 * 60_000, max: 10 })
+/** Order confirmations go to the address typed by the buyer; one address gets few of them per hour. */
+export const orderEmailLimit = rateLimit({
+  windowMs: 60 * 60_000, max: 5,
+  key: (req) => (typeof req.body?.e_mail === 'string' ? `mail|${req.body.e_mail.trim().toLowerCase()}` : undefined)
+})

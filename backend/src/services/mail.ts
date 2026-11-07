@@ -119,7 +119,9 @@ export function managerRecipients(value: string | null | undefined): string[] {
 
 export function trackingUrl(template: string, track: string | null | undefined): string | null {
   if (!track || !template) return null
-  return template.replace(/\{\{\s*track\s*\}\}/g, encodeURIComponent(track))
+  const url = template.replace(/\{\{\s*track\s*\}\}/g, encodeURIComponent(track))
+  // Only web links go into the mail, whatever the setting holds.
+  return /^https?:\/\//i.test(url) ? url : null
 }
 
 async function build(orderId: number, kind: MailKind): Promise<MailMessage> {

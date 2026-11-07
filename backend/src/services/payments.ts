@@ -6,7 +6,7 @@
  */
 import { db } from '../db'
 import { ApiError } from '../middleware/error'
-import { getProvider, getProviderByCode } from './payment'
+import { assertPaymentAvailable, getProvider, getProviderByCode } from './payment'
 import type { PaymentNotification, PaymentStatus } from './payment/types'
 
 export const PAYMENT_STATES = ['not_paid', 'pending', 'paid', 'failed', 'refunded'] as const
@@ -79,6 +79,7 @@ export async function getPaymentView(clientId: number, number: number): Promise<
 
 /** Retry after a refusal (or when the page was lost): new payment, old reference stops working. */
 export async function retryPayment(clientId: number, number: number): Promise<PaymentView> {
+  assertPaymentAvailable()
   const o = await ownerOrder(clientId, number)
   if (o.payment_state === 'paid' || o.payment_state === 'refunded') return getPaymentView(clientId, number)
   const view = await startPayment(o.id)

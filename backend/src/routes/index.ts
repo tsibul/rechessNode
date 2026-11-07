@@ -10,7 +10,7 @@ import { cmsTablesRouter } from './cms/tables'
 import { cmsRolesRouter } from './cms/roles'
 import { cmsUploadsRouter } from './cms/uploads'
 import { cmsPublishRouter } from './cms/publish'
-import { cartWriteLimit, orderLimit, publicReadLimit } from '../middleware/rateLimit'
+import { cartWriteLimit, orderEmailLimit, orderLimit, publicReadLimit } from '../middleware/rateLimit'
 
 export const router = Router()
 
@@ -24,7 +24,7 @@ router.use(publicPaths, publicReadLimit)
 router.post(['/cart/items'], cartWriteLimit)
 router.patch('/cart/items/:itemId', cartWriteLimit)
 router.delete('/cart/items/:itemId', cartWriteLimit)
-router.post('/orders', orderLimit)
+router.post('/orders', orderLimit, orderEmailLimit)
 
 router.use('/', publicRouter)
 router.use('/', shopRouter)
