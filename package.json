@@ -8,6 +8,7 @@
     "dev": "nodemon --exec ts-node src/index.ts",
     "build": "tsc",
     "test": "jest",
+    "lint": "npm --prefix backend run lint && npm --prefix frontend run lint",
     "migrate": "knex migrate:latest",
     "migrate:make": "knex migrate:make",
     "seed": "knex seed:run"
