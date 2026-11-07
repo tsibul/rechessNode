@@ -372,7 +372,8 @@ describe('orders and carts', () => {
 })
 
 describe('uploads', () => {
-  const png = Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), Buffer.alloc(32)])
+  // a real 1x1 PNG
+  const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64')
 
   it('stores an image under a random name by content type', async () => {
     const a = await login('refs')
@@ -402,6 +403,27 @@ describe('uploads', () => {
     const none = await login('none')
     await none.post('/api/cms/uploads').attach('file', png, 'a.png').expect(403)
     await request(app).post('/api/cms/uploads').attach('file', png, 'a.png').expect(401)
+  })
+
+  it('refuses a file that only starts like an image', async () => {
+    const a = await login('refs')
+    const fake = Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), Buffer.alloc(32)])
+    await a.post('/api/cms/uploads').attach('file', fake, 'a.png').expect(400)
+    await a.post('/api/cms/uploads').attach('file', Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0, 4, 0, 0]), 'a.jpg').expect(400)
+  })
+
+  it('stores the cleaned file: no metadata, no tail, same pixels', async () => {
+    const sharp = (await import('sharp')).default
+    const src = await sharp({ create: { width: 40, height: 30, channels: 3, background: '#2e86c1' } })
+      .withExif({ IFD0: { Copyright: 'secret-owner' } }).jpeg().toBuffer()
+    const dirty = Buffer.concat([src, Buffer.from('<script>alert(1)</script>')])
+    const a = await login('refs')
+    const res = await a.post('/api/cms/uploads').attach('file', dirty, 'a.jpg').expect(201)
+    const stored = await fs.readFile(path.join(uploadRoot, res.body.photo))
+    expect(stored.includes('secret-owner')).toBe(false)
+    expect(stored.includes('<script>')).toBe(false)
+    const raw = async (b: Buffer) => (await sharp(b).raw().toBuffer())
+    expect((await raw(stored)).equals(await raw(src))).toBe(true)
   })
 
   it('rejects files over 10 MB', async () => {

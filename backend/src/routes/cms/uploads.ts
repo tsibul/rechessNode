@@ -11,6 +11,7 @@ import { requireAuth, requirePermission } from '../../middleware/cmsAuth'
 import { ApiError } from '../../middleware/error'
 import { wrap } from '../../utils/async'
 import { makeVariants } from '../../services/images'
+import { BadImageError, cleanImage } from '../../services/imageClean'
 
 /**
  * Maximum size of an uploaded image in bytes.
@@ -64,10 +65,18 @@ cmsUploadsRouter.post(
     if (!req.file) throw new ApiError(400, 'File is required')
     const ext = detectImage(req.file.buffer)
     if (!ext) throw new ApiError(400, 'Unsupported image type')
+    // Metadata and bytes after the image are removed before anything is stored.
+    let clean: Buffer
+    try {
+      clean = await cleanImage(req.file.buffer, ext)
+    } catch (e) {
+      if (e instanceof BadImageError) throw new ApiError(400, 'Damaged image')
+      throw e
+    }
     const name = `${randomBytes(16).toString('hex')}.${ext}`
     await fs.mkdir(uploadDir(), { recursive: true })
     const target = path.join(uploadDir(), name)
-    await fs.writeFile(target, req.file.buffer, { flag: 'wx' })
+    await fs.writeFile(target, clean, { flag: 'wx' })
     await makeVariants(target)
     res.status(201).json({ photo: name })
   })
