@@ -11,6 +11,7 @@ import {
 } from '../services/cart'
 import { sendOrderMail } from '../services/mail'
 import { assertPaymentAvailable } from '../services/payment'
+import { beginConfirmation, changeEmail, confirmByToken, resendLink } from '../services/emailConfirm'
 import { getPaymentView, handleNotification, retryPayment, startPayment } from '../services/payments'
 import { wrap } from '../utils/async'
 import { normalizePhone } from '../utils/phone'
@@ -102,12 +103,35 @@ shopRouter.post('/orders', wrap(async (req, res) => {
   assertPaymentAvailable()
   const number = await createOrder(token, input)
   setCountCookie(res, 0)
-  const payment = await startPayment(await orderId(number))
+  // The address is confirmed by a link in the mail (or was confirmed recently): until then no payment and no mail to the managers.
   // A mail failure is stored in the order and does not fail it.
   const id = await orderId(number)
-  await sendOrderMail(id, 'confirmation')
-  await sendOrderMail(id, 'manager')
+  await beginConfirmation(id)
+  const payment = await startPayment(id)
   res.status(201).json({ order: { ...(await getOrderView(token, number)), payment } })
+}))
+
+/** Body of `POST /orders/confirm`. */
+export const confirmSchema = z.object({ token: z.string().min(1).max(200) }).strict()
+/** Body of `POST /orders/:number/confirm/email`. */
+export const confirmEmailSchema = z.object({ e_mail: z.string().trim().max(255).email() }).strict()
+
+// The link opens a page that asks for the confirmation: a mail scanner that only fetches the link confirms nothing.
+shopRouter.post('/orders/confirm', wrap(async (req, res) => {
+  const { token } = confirmSchema.parse(req.body)
+  const status = await confirmByToken(token)
+  res.json({ status })
+}))
+
+shopRouter.post('/orders/:number/confirm/resend', wrap(async (req, res) => {
+  await resendLink(await requireOwner(req), orderNumber(req.params.number))
+  res.json({ ok: true })
+}))
+
+shopRouter.post('/orders/:number/confirm/email', wrap(async (req, res) => {
+  const { e_mail } = confirmEmailSchema.parse(req.body)
+  await changeEmail(await requireOwner(req), orderNumber(req.params.number), e_mail)
+  res.json({ ok: true })
 }))
 
 shopRouter.get('/orders/:number', wrap(async (req, res) => {

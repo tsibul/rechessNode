@@ -54,6 +54,8 @@ export async function startPayment(orderId: number): Promise<PaymentView | null>
   return db.transaction(async (trx) => {
     const o = await trx('order').where({ id: orderId }).forUpdate().first()
     if (!o) throw new ApiError(404, 'Not found')
+    // No payment until the buyer has confirmed the e-mail.
+    if (o.email_confirm_status !== 'confirmed') return null
     if (o.payment_state === 'paid' || o.payment_state === 'refunded') return toView(o, provider.isStub)
     // Pending payment of the same provider is kept: reload of the page does not create a second one.
     if (o.payment_state === 'pending' && o.payment_ref && o.payment_provider === provider.code) {
@@ -99,6 +101,7 @@ export async function getPaymentView(clientId: number, number: number): Promise<
 export async function retryPayment(clientId: number, number: number): Promise<PaymentView> {
   assertPaymentAvailable()
   const o = await ownerOrder(clientId, number)
+  if (o.email_confirm_status !== 'confirmed') throw new ApiError(409, 'E-mail is not confirmed')
   if (o.payment_state === 'paid' || o.payment_state === 'refunded') return getPaymentView(clientId, number)
   const view = await startPayment(o.id)
   if (!view) throw new ApiError(409, 'Payment is not enabled')

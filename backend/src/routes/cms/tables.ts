@@ -11,6 +11,7 @@ import { wrap } from '../../utils/async'
 import crypto from 'crypto'
 import { notDeleted } from '../../utils/db'
 import { sendOrderMail } from '../../services/mail'
+import { confirmByManager } from '../../services/emailConfirm'
 import { hashPassword } from '../../utils/password'
 import { cleanHtml, cleanJson } from '../../utils/sanitizeHtml'
 
@@ -232,7 +233,7 @@ export const REGISTRY: Record<string, Spec> = {
     }
   },
   order: {
-    table: 'order', permission: 'orders', ops: { update: true }, searchColumn: 'name',
+    table: 'order', permission: 'orders', ops: { update: true }, searchColumn: 'name', hidden: ['confirm_hash'],
     fields: {
       order_state_id: fk, delivery_reference: opt(255),
       payment_state: z.enum(PAYMENT_STATES), comment: opt(1000)
@@ -258,7 +259,9 @@ export const REGISTRY: Record<string, Spec> = {
         .whereIn('oi.order_id', rows.map((r) => r.id))
         .select('oi.order_id', 'oi.item_id', 'i.name', 'm.code as m_code', 's.code as s_code', 'oi.quantity', 'oi.price')
       for (const r of rows) {
-        r.state = states.find((s) => s.id === r.order_state_id)?.name ?? null
+        r.state = r.email_confirm_status === 'pending' ? 'Ждёт подтверждения почты'
+          : r.email_confirm_status === 'expired' ? 'Отменён: не подтверждён'
+            : states.find((s) => s.id === r.order_state_id)?.name ?? null
         r.items = items.filter((i) => i.order_id === r.id).map((i) => ({
           item_id: i.item_id, name: i.name, article: `${i.m_code}${i.s_code}`, quantity: i.quantity, price: i.price
         }))
@@ -436,6 +439,14 @@ cmsTablesRouter.post('/:name/:id/restore', wrap(async (req, res) => {
   res.json({ row })
 }))
 
+/** The manager confirms the order instead of the buyer. Right `orders`. */
+cmsTablesRouter.post('/order/:id/confirm', wrap(async (req, res) => {
+  const id = idOf(req.params.id)
+  await confirmByManager(id)
+  const [row] = await readRows(specOf('order'), [id])
+  res.json({ row })
+}))
+
 /** Sends a mail of the order again (after a failure or on request). Right `orders`. */
 /** Body of `POST /order/:id/send-mail`. */
 export const sendMailSchema = z.object({ kind: z.enum(['confirmation', 'track', 'manager']) }).strict()
@@ -443,8 +454,9 @@ export const sendMailSchema = z.object({ kind: z.enum(['confirmation', 'track', 
 cmsTablesRouter.post('/order/:id/send-mail', wrap(async (req, res) => {
   const id = idOf(req.params.id)
   const { kind } = sendMailSchema.parse(req.body)
-  const order = await db('order').where({ id }).first('id', 'delivery_reference')
+  const order = await db('order').where({ id }).first('id', 'delivery_reference', 'email_confirm_status')
   if (!order) throw new ApiError(404, 'Not found')
+  if (order.email_confirm_status !== 'confirmed') throw new ApiError(409, 'Order is not confirmed')
   if (kind === 'track' && !order.delivery_reference) throw new ApiError(400, 'Order has no tracking number')
   const ok = await sendOrderMail(id, kind)
   const [row] = await readRows(specOf('order'), [id])

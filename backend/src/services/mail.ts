@@ -15,7 +15,7 @@ import { uploadDir } from '../routes/cms/uploads'
 /**
  * Kind of an e-mail the shop sends.
  */
-export type MailKind = 'confirmation' | 'track' | 'manager'
+export type MailKind = 'confirmation' | 'track' | 'manager' | 'confirm'
 
 /** Picture embedded in the mail (`<img src="cid:…">`): shown without any public site. */
 export interface MailImage { cid: string; filename: string; content: Buffer }
@@ -151,7 +151,7 @@ export function trackingUrl(template: string, track: string | null | undefined):
   return /^https?:\/\//i.test(url) ? url : null
 }
 
-async function build(orderId: number, kind: MailKind): Promise<MailMessage> {
+async function build(orderId: number, kind: MailKind, extra: Record<string, string> = {}): Promise<MailMessage> {
   const order = await db('order').where({ id: orderId }).first()
   if (!order) throw new Error('Order not found')
   const s = await settings()
@@ -186,7 +186,7 @@ async function build(orderId: number, kind: MailKind): Promise<MailMessage> {
     items: `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:12px 0;border-top:1px solid #888888;border-bottom:1px solid #888888">${rows}</table>`
   }
   const siteName = s['site.name'] || 'reChess'
-  const tplKey = kind === 'confirmation' ? 'order' : kind === 'track' ? 'track' : 'manager'
+  const tplKey = kind === 'confirmation' ? 'order' : kind === 'track' ? 'track' : kind === 'confirm' ? 'confirm' : 'manager'
   const subjectTpl = s[`mail.${tplKey}.subject`]
   const bodyTpl = s[`mail.${tplKey}.body`]
   let to = order.e_mail
@@ -202,6 +202,7 @@ async function build(orderId: number, kind: MailKind): Promise<MailMessage> {
       payment: escapeHtml(order.payment_state === 'paid' ? 'оплачен' : 'не оплачен')
     })
   }
+  Object.assign(values, extra)
   const body = fill(bodyTpl, values)
   const contacts = [s['contact.email'], s['contact.phone']].filter(Boolean).map(escapeHtml).join(' · ')
   const html = layout(siteName, body, contacts || escapeHtml(siteName))
@@ -216,10 +217,15 @@ async function build(orderId: number, kind: MailKind): Promise<MailMessage> {
 }
 
 /** Sends the mail and stores the result in the order. Never throws. Returns true on success. */
-export async function sendOrderMail(orderId: number, kind: MailKind): Promise<boolean> {
+export async function sendOrderMail(orderId: number, kind: MailKind, extra: Record<string, string> = {}): Promise<boolean> {
   const column = kind
   try {
-    const message = await build(orderId, kind)
+    // Until the e-mail is confirmed only the mail with the link goes out.
+    if (kind !== 'confirm') {
+      const o = await db('order').where({ id: orderId }).first('email_confirm_status')
+      if (o && o.email_confirm_status !== 'confirmed') return false
+    }
+    const message = await build(orderId, kind, extra)
     await deliver(message)
     const marks: Record<string, unknown> = { [`${column}_sent_at`]: db.fn.now(), [`${column}_error`]: null }
     if (kind === 'track') {

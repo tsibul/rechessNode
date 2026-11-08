@@ -10,6 +10,7 @@ import { shortProductName } from '../utils/productName'
 import { hashToken, newToken } from '../utils/visitor'
 import { currentPrice } from './catalog'
 import { cartWeight, quoteDelivery } from './delivery'
+import { CONFIRM_TTL_MS } from './emailConfirm'
 import { trackingUrl } from './mail'
 
 /**
@@ -237,6 +238,7 @@ export async function createOrder(token: string | null, input: OrderInput) {
           delivery_address: input.delivery_address, address_delivery: input.address_delivery,
           delivery_point_code: input.address_delivery ? null : input.delivery_point_code ?? null,
           order_state_id: state.id, payment_state: 'not_paid', comment: input.comment ?? null,
+          email_confirm_status: 'pending', confirm_expires_at: new Date(Date.now() + CONFIRM_TTL_MS),
           consent_at: trx.fn.now(), consent_version: consent?.value || DEFAULT_CONSENT_VERSION, deleted: false
         })
         await trx('order_item').insert(view.items.map((i) => ({
@@ -279,6 +281,8 @@ export async function getOrderView(token: string | null, number: number) {
   return {
     number: order.number, date: order.date, sum: order.sum, delivery_cost: order.delivery_cost ?? null,
     state: state?.name ?? null, payment_state: order.payment_state,
+    email_confirm: order.email_confirm_status as 'pending' | 'confirmed' | 'expired',
+    confirm_expires_at: order.confirm_expires_at ?? null,
     delivery_reference: order.delivery_reference ?? null,
     tracking_url: trackingUrl(urlSetting?.value ?? '', order.delivery_reference),
     name: order.name, family_name: order.family_name ?? null, city: order.city ?? null,

@@ -28,6 +28,9 @@ router.post(['/cart/items'], cartWriteLimit)
 router.patch('/cart/items/:itemId', cartWriteLimit)
 router.delete('/cart/items/:itemId', cartWriteLimit)
 router.post('/orders', orderLimit, orderEmailLimit)
+// A mail with the link also goes to the address typed in the correction.
+router.post('/orders/:number/confirm/email', orderEmailLimit)
+router.post('/orders/:number/confirm/resend', orderLimit)
 
 router.use('/', publicRouter)
 router.use('/', shopRouter)
