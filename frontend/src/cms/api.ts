@@ -186,8 +186,16 @@ export const cmsApi = {
    * @param kind - E-mail kind.
    * @returns The updated order.
    */
-  sendOrderMail: async (id: number, kind: 'confirmation' | 'track' | 'manager'): Promise<Row> =>
+  sendOrderMail: async (id: number, kind: 'confirmation' | 'track' | 'manager' | 'confirm'): Promise<Row> =>
     (await http.post(`/tables/order/${id}/send-mail`, { kind })).data.row,
+
+  /**
+   * The manager confirms an order that waits for the buyer's e-mail confirmation.
+   * @param id - Order id.
+   * @returns The updated order.
+   */
+  confirmOrder: async (id: number): Promise<Row> =>
+    (await http.post(`/tables/order/${id}/confirm`)).data.row,
 
   /**
    * Lists roles with permissions.

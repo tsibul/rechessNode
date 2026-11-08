@@ -24,6 +24,18 @@ async function resend(kind: 'confirmation' | 'track' | 'manager') {
     mailError.value = 'Не удалось отправить письмо'
   }
 }
+const CONFIRM_LABELS: Record<string, string> = {
+  pending: 'ждёт подтверждения', confirmed: 'подтверждена', expired: 'отменён: не подтверждена вовремя'
+}
+const BY_LABELS: Record<string, string> = { link: 'по ссылке', known: 'адрес подтверждён ранее', manager: 'менеджером' }
+async function confirmByManager() {
+  mailError.value = ''
+  try {
+    mail.value = await cmsApi.confirmOrder(props.row.id)
+  } catch {
+    mailError.value = 'Не удалось подтвердить заказ'
+  }
+}
 const sent = (at: unknown, err: unknown) => (err ? `ошибка: ${err}` : at ? formatDate(at as string) : 'не отправлялось')
 const payment = (v: string) => PAYMENT_STATES.find((p) => p.value === v)?.label ?? v
 </script>
@@ -40,12 +52,18 @@ const payment = (v: string) => PAYMENT_STATES.find((p) => p.value === v)?.label 
         </dd>
         <dt>Оплата</dt>
         <dd data-testid="order-payment">
-          {{ payment(row.payment_state) }}<template v-if="row.payment_provider">, провайдер {{ row.payment_provider }}<template v-if="row.paid_at">, оплачен {{ formatDate(row.paid_at) }}</template></template>
-          <template v-if="row.payment_provider === 'stub'"> (заглушка, деньги не списывались)</template>
+          {{ payment(String(m('payment_state'))) }}<template v-if="m('payment_provider')">, провайдер {{ m('payment_provider') }}<template v-if="m('paid_at')">, оплачен {{ formatDate(m('paid_at') as string) }}</template></template>
+          <template v-if="m('payment_provider') === 'stub'"> (заглушка, деньги не списывались)</template>
         </dd>
         <dt>Чек 54-ФЗ</dt><dd data-testid="order-receipt">не формируется (будет после подключения платёжного сервиса)</dd>
         <dt>Стоимость</dt><dd>доставка {{ formatMoney(row.delivery_cost ?? 0) }}, вес {{ row.weight_g ?? 0 }} г</dd>
         <dt>Трек</dt><dd>{{ row.delivery_reference || '—' }}</dd>
+        <dt>Почта покупателя</dt>
+        <dd data-testid="order-email-confirm">
+          {{ CONFIRM_LABELS[String(m('email_confirm_status'))] ?? m('email_confirm_status') }}<template v-if="m('email_confirmed_at')">, {{ formatDate(m('email_confirmed_at') as string) }} ({{ BY_LABELS[String(m('email_confirmed_by'))] ?? '' }})</template>
+          <template v-if="m('email_confirm_status') === 'pending'">; письмо со ссылкой: {{ sent(m('confirm_sent_at'), m('confirm_error')) }}, отправок: {{ m('confirm_sends') }}</template>
+          <button v-if="m('email_confirm_status') === 'pending'" type="button" class="cms-btn" data-testid="order-confirm-btn" @click="confirmByManager">Подтвердить</button>
+        </dd>
         <dt>Письмо заказа</dt>
         <dd>
           {{ sent(m('confirmation_sent_at'), m('confirmation_error')) }}

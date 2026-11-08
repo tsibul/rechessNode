@@ -35,6 +35,11 @@ export const routes: RouteRecordRaw[] = [
     component: () => import('../pages/dynamic/Order.vue')
   },
   {
+    path: '/order/confirm/:token',
+    name: 'order-confirm',
+    component: () => import('../pages/dynamic/ConfirmEmail.vue')
+  },
+  {
     path: '/order/:number',
     name: 'order-done',
     component: () => import('../pages/dynamic/OrderDone.vue')
