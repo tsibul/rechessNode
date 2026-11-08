@@ -5,7 +5,7 @@ dotenv.config({ path: path.join(__dirname, '../../.env') })
 import request from 'supertest'
 import { createApp } from '../app'
 import { db } from '../db'
-import { Catalog, createCatalog, createTariffs, dropCatalog, dropClients, dropTariffs, tag, Tariffs } from '../testing/fixtures'
+import { Catalog, createCatalog, createTariffs, dropCatalog, dropClients, dropTariffs, tag, Tariffs, rememberEmails } from '../testing/fixtures'
 import { hashToken } from '../utils/visitor'
 
 const app = createApp()
@@ -32,6 +32,7 @@ const contact = (over: Record<string, unknown> = {}) => ({
 
 beforeAll(async () => {
   cat = await createCatalog(prefix)
+  await rememberEmails(`${prefix}@example.com`)
   tariffs = await createTariffs(prefix)
 })
 
@@ -94,7 +95,9 @@ describe('cart', () => {
     await v.delete(`/api/cart/items/${cat.itemIds[1]}`).expect(404)
     res = await v.patch(`/api/cart/items/${cat.itemIds[0]}`).send({ quantity: 0 }).expect(200)
     expect(res.body.items).toEqual([])
-    const cart = await db('cart').where({ id: (await db('cart').orderBy('id', 'desc').first('id')).id }).first()
+    // This visitor's cart (the database is shared: the newest cart overall may belong to someone else).
+    const client = await db('client').where({ tokenHash: hashToken(tokens[tokens.length - 1]) }).first('id')
+    const cart = await db('cart').where({ client_id: client.id }).orderBy('id', 'desc').first()
     expect(cart.sum).toBe(0)
   })
 

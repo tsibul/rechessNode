@@ -5,7 +5,7 @@ dotenv.config({ path: path.join(__dirname, '../../.env') })
 import request from 'supertest'
 import { createApp } from '../app'
 import { db } from '../db'
-import { Catalog, createCatalog, createTariffs, dropCatalog, dropClients, dropTariffs, tag, Tariffs } from '../testing/fixtures'
+import { Catalog, createCatalog, createTariffs, dropCatalog, dropClients, dropTariffs, tag, Tariffs, rememberEmails } from '../testing/fixtures'
 import { hashToken } from '../utils/visitor'
 
 const app = createApp()
@@ -39,6 +39,7 @@ const notify = (ref: string, result: string) => request(app).post('/api/payments
 
 beforeAll(async () => {
   cat = await createCatalog(prefix)
+  await rememberEmails(`${prefix}@example.com`)
   tariffs = await createTariffs(prefix)
 })
 

@@ -3,6 +3,23 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { readState, TMP } from '../support/state'
 
+/** Link from the confirmation mail of the address (the mail is a file in the outbox). */
+async function confirmLink(email: string): Promise<string> {
+  const outbox = path.join(TMP, 'outbox')
+  let link = ''
+  await expect.poll(() => {
+    if (!fs.existsSync(outbox)) return ''
+    for (const f of fs.readdirSync(outbox).sort().reverse()) {
+      const raw = fs.readFileSync(path.join(outbox, f), 'utf8').replace(/=\r?\n/g, '').replace(/=3D/gi, '=')
+      if (!raw.includes(email)) continue
+      const m = raw.match(/\/order\/confirm\/([A-Za-z0-9_-]{20,100})/)
+      if (m) { link = `/order/confirm/${m[1]}`; return link }
+    }
+    return ''
+  }).not.toBe('')
+  return link
+}
+
 /** Whole purchase without payment: product -> cart -> order form -> confirmation -> mail in the outbox. */
 test('buyer buys a pair of colours and gets the confirmation', async ({ page }) => {
   const { tag } = readState()
@@ -58,7 +75,26 @@ test('buyer buys a pair of colours and gets the confirmation', async ({ page }) 
   await page.locator('input[name="consent"]').check()
   await page.getByTestId('submit').click()
 
-  // Payment stub: the page says that no money is charged. First decline, repeat, then pay.
+  // Until the e-mail is confirmed there is no payment: the order page asks for the link from the mail.
+  await expect(page).toHaveURL(/\/order\/\d+$/)
+  await expect(page.getByTestId('order-confirm-pending')).toContainText(email)
+  await expect(page.getByTestId('order-pay-link')).toHaveCount(0)
+  // Another mail right away is refused: a pause between the mails.
+  await page.getByTestId('confirm-resend').click()
+  await expect(page.getByTestId('confirm-notice')).toBeVisible()
+  const link = await confirmLink(email)
+  // The link opens in a fresh browser (another mail client): the page confirms, it needs no cookie.
+  const other = await page.context().browser()!.newContext({ baseURL: test.info().project.use.baseURL })
+  const p2 = await other.newPage()
+  await p2.goto(link)
+  await expect(p2.getByTestId('confirm-ok')).toBeVisible()
+  await p2.reload()
+  await expect(p2.getByTestId('confirm-ok')).toBeVisible()
+  await other.close()
+
+  // Payment stub appears on the order page without a reload (the page polls).
+  await expect(page.getByTestId('order-pay-link')).toBeVisible({ timeout: 20_000 })
+  await page.getByTestId('order-pay-link').click()
   await expect(page).toHaveURL(/\/order\/\d+\/pay$/)
   await expect(page.getByTestId('pay-stub-note')).toContainText('свяжемся')
   await expect(page.getByTestId('pay-stub-note')).toContainText('Нажмите «Оплатить»')
@@ -85,7 +121,7 @@ test('buyer buys a pair of colours and gets the confirmation', async ({ page }) 
   const outbox = path.join(TMP, 'outbox')
   await expect.poll(() => (fs.existsSync(outbox) ? fs.readdirSync(outbox).length : 0)).toBeGreaterThan(0)
   const mails = fs.readdirSync(outbox).map((f) => fs.readFileSync(path.join(outbox, f), 'utf8'))
-  const mail = mails.find((m) => m.includes(email))!
+  const mail = mails.find((m) => m.includes(email) && m.includes('multipart/related'))!
   expect(mail).toBeTruthy()
   // The photo travels inside the mail (inline part, cid), not as a link to the site.
   expect(mail).toMatch(/Content-Type: multipart\/related/)
@@ -133,6 +169,7 @@ test('after a refusal of the analytics the order is placed as usual', async ({ p
   await page.locator('input[name="delivery_address"]').fill('Москва, ул. Тестовая, 2')
   await page.locator('input[name="consent"]').check()
   await page.getByTestId('submit').click()
-  await expect(page).toHaveURL(/\/order\/\d+\/pay$/)
+  await expect(page).toHaveURL(/\/order\/\d+$/)
+  await expect(page.getByTestId('order-confirm-pending')).toBeVisible()
   await expect(page.getByTestId('cookie-consent')).toHaveCount(0)
 })

@@ -75,6 +75,12 @@ test.describe('CMS work', () => {
     const dialog = page.getByRole('dialog')
     await expect(dialog).toContainText(`№ ${number}`)
     await expect(dialog).toContainText('Тестов')
+    // The address is not confirmed yet: no payment; the manager confirms it by hand.
+    await expect(dialog.getByTestId('order-email-confirm')).toBeVisible()
+    await expect(dialog.getByTestId('order-payment')).not.toContainText('Ожидает оплаты')
+    await dialog.getByTestId('order-confirm-btn').click()
+    await expect(dialog.getByTestId('order-confirm-btn')).toHaveCount(0)
+    await expect(dialog.getByTestId('order-email-confirm')).toContainText('менеджер')
     // Payment status of the stub is visible; the place for the 54-FZ receipt is there.
     await expect(dialog.getByTestId('order-payment')).toContainText('Ожидает оплаты')
     await expect(dialog.getByTestId('order-payment')).toContainText('заглушка')

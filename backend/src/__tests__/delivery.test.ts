@@ -9,8 +9,7 @@ import { db } from '../db'
 import { quoteDelivery } from '../services/delivery'
 import { fill, MailMessage, outboxDir, setMailSender, trackingUrl } from '../services/mail'
 import {
-  Catalog, createCatalog, createTariffs, createUser, dropCatalog, dropClients, dropTariffs, tag, TEST_PASSWORD, Tariffs
-} from '../testing/fixtures'
+  Catalog, createCatalog, createTariffs, createUser, dropCatalog, dropClients, dropTariffs, tag, TEST_PASSWORD, Tariffs, rememberEmails } from '../testing/fixtures'
 import { hashToken } from '../utils/visitor'
 
 import os from 'os'
@@ -51,6 +50,7 @@ async function buyer(quantity = 1) {
 
 beforeAll(async () => {
   cat = await createCatalog(prefix)
+  await rememberEmails(`${prefix}@example.com`, `${prefix}-file@example.com`, `${prefix}-img@example.com`)
   tariffs = await createTariffs(prefix)
   await db('product').where({ id: cat.productId }).update({ weight_g: 600 })
   userId = (await createUser(prefix, 'admin')).id
@@ -139,12 +139,12 @@ describe('mail', () => {
   it('sends the confirmation, escapes buyer text and marks the order', async () => {
     const v = await buyer(1)
     const { body } = await v.post('/api/orders').send(contact()).expect(201)
-    expect(sent).toHaveLength(1)
-    expect(sent[0].to).toBe(`${prefix}@example.com`)
-    expect(sent[0].subject).toContain(String(body.order.number))
-    expect(sent[0].html).toContain('Иван &lt;b&gt;')
-    expect(sent[0].html).not.toContain('Иван <b>')
-    expect(sent[0].text).toContain(`${body.order.number}`)
+    const mine = sent.filter((m) => m.to === `${prefix}@example.com`)
+    expect(mine).toHaveLength(1)
+    expect(mine[0].subject).toContain(String(body.order.number))
+    expect(mine[0].html).toContain('Иван &lt;b&gt;')
+    expect(mine[0].html).not.toContain('Иван <b>')
+    expect(mine[0].text).toContain(`${body.order.number}`)
     const row = await db('order').where({ number: body.order.number }).first()
     expect(row.confirmation_sent_at).toBeTruthy()
     expect(row.confirmation_error).toBeNull()

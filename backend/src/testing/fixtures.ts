@@ -83,6 +83,9 @@ export async function createUser(prefix: string, roleCode: string) {
 /** Removes clients (by id list) with their carts and orders. */
 export async function dropClients(ids: number[]): Promise<void> {
   if (!ids.length) return
+  const mails = [...await db('order').whereIn('client_id', ids).pluck('e_mail'), ...await db('client').whereIn('id', ids).pluck('e_mail')]
+    .filter(Boolean).map((e: string) => e.toLowerCase())
+  if (mails.length) await db('confirmed_email').whereIn('e_mail', mails).delete()
   const orders = await db('order').whereIn('client_id', ids).pluck('id')
   if (orders.length) await db('order_item').whereIn('order_id', orders).delete()
   await db('order').whereIn('client_id', ids).delete()
@@ -90,6 +93,14 @@ export async function dropClients(ids: number[]): Promise<void> {
   if (carts.length) await db('cart_item').whereIn('cart_id', carts).delete()
   await db('cart').whereIn('client_id', ids).delete()
   await db('client').whereIn('id', ids).delete()
+}
+
+/** Marks the addresses as confirmed (30 days): orders from them are confirmed at once. Removed by `dropClients`. */
+export async function rememberEmails(...emails: string[]): Promise<void> {
+  for (const e of emails) {
+    await db('confirmed_email').insert({ e_mail: e.toLowerCase(), expires_at: new Date(Date.now() + 30 * 24 * 3600 * 1000) })
+      .onConflict('e_mail').merge()
+  }
 }
 
 export interface Tariffs { city: string; ids: number[] }

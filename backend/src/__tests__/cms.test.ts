@@ -10,7 +10,7 @@ import { db } from '../db'
 import { PERMISSIONS } from '../middleware/cmsAuth'
 import { resetLoginThrottle } from '../routes/cms/auth'
 import { setPublishRunner, shellRunner, waitForIdle } from '../services/publish'
-import { Catalog, createCatalog, createTariffs, createUser, dropCatalog, dropClients, dropTariffs, tag, TEST_PASSWORD, Tariffs } from '../testing/fixtures'
+import { Catalog, createCatalog, createTariffs, createUser, dropCatalog, dropClients, dropTariffs, tag, TEST_PASSWORD, Tariffs, rememberEmails } from '../testing/fixtures'
 import { hashToken } from '../utils/visitor'
 
 const uploadRoot = fsSync.mkdtempSync(path.join(os.tmpdir(), 'rc-up-'))
@@ -40,6 +40,7 @@ async function login(roleSuffix: string, expected = 200) {
 
 beforeAll(async () => {
   cat = await createCatalog(prefix)
+  await rememberEmails(`${prefix}@example.com`)
   tariffs = await createTariffs(prefix)
   for (const [suffix, perms] of [
     ['none', []], ['orders', ['orders']], ['refs', ['references']], ['pub', ['publish']],
